@@ -10,8 +10,6 @@ export default async function createRootUser(payload: Payload) {
     } else {
         throw new Error("PAYLOAd_INIT_ROOT_PASSWORD or PAYLOAD_INIT_ROOT_PASSWORD_FILE must be set.");
     }
-    console.log(password)
-
     const exists = (await payload.find({
         collection: "users",
         where: {
@@ -19,10 +17,8 @@ export default async function createRootUser(payload: Payload) {
         }
     })).totalDocs > 0;
     if (exists) {
-        console.log("return")
         return;
     }
-    console.log("create")
     await payload.create({
         collection: "users",
         data: {

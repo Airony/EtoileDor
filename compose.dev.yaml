@@ -10,6 +10,7 @@ services:
             - FRONTEND_URL=http://frontend:7979
             - PAYLOAD_SECRET=secret
             - MONGO_URL=mongodb://root:root@database:27017
+            - PAYLOAD_INIT_ROOT_PASSWORD=root
         volumes:
             - ./backend:/app/backend
             - ./shared:/app/shared
@@ -76,7 +77,6 @@ volumes:
     dev-backend-storage:
     dev-mongo-db:
     dev-static-files:
-
 networks:
     back-network:
         driver: bridge

@@ -6,9 +6,11 @@ services:
         secrets:
             - PAYLOAD_SECRET
             - MONGO_PASSWORD
+            - payload_root_password
         environment:
             - PORT=3456
             - FRONTEND_URL=http://frontend:7979
+            - PAYLOAD_INIT_ROOT_PASSWORD_FILE=/run/secrets/payload_root_password
         volumes:
             - backend-storage:/app/backend/storage
         tmpfs:
@@ -62,6 +64,8 @@ volumes:
     mongo-db:
     static-files:
 secrets:
+    payload_root_password:
+        file: ./payload_root_password.secret
     PAYLOAD_SECRET:
         file: ./payload_secret.secret
     MONGO_PASSWORD:

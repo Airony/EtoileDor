@@ -3,6 +3,7 @@ import payload from "payload";
 import dotenv from "dotenv";
 import registerReservationRoute from "./routes/reservationRoute";
 import deployRoute from "./routes/deployRoute";
+import createRootUser from "./utils/createRootUser";
 
 dotenv.config();
 const app = express();
@@ -18,6 +19,7 @@ const start = async () => {
         onInit: (payload) => {
             console.log("Payload is now running.");
             console.log("Admin URL: ", payload.getAdminURL());
+            createRootUser(payload);
         },
     });
 

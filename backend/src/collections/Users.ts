@@ -10,7 +10,7 @@ const Users: CollectionConfig = {
         },
     },
     admin: {
-        useAsTitle: "email",
+        useAsTitle: "Name",
     },
     fields: [
         {
@@ -23,14 +23,7 @@ const Users: CollectionConfig = {
             ],
             required: true,
             defaultValue: "staff",
-            validate: (_, { user, siblingData }) => {
-                if (
-                    user.role !== siblingData.role &&
-                    user.id === siblingData.id
-                ) {
-                    return "You cannot change your own role";
-                }
-            },
+            validate: validateRole,
         },
     ],
     access: {
@@ -41,4 +34,24 @@ const Users: CollectionConfig = {
     },
 };
 
+function validateRole(_, { user, siblingData }) {
+    // Igonre validation when creating default root user.
+    if (siblingData?.email === rootEmail) {
+        return null;
+    }
+
+    if (!user) {
+        return "You must be logged in to change a user's role";
+    }
+
+    if (
+        user.role !== siblingData.role &&
+        user.id === siblingData.id
+    ) {
+        return "You cannot change your own role";
+    }
+}
+
 export default Users;
+
+export const rootEmail = "root@root.com";

@@ -1,0 +1,86 @@
+services:
+    backend:
+        build:
+            context: .
+            dockerfile: ./backend/Dockerfile
+            target: development
+
+        environment:
+            - PORT=3456
+            - FRONTEND_URL=http://frontend:7979
+            - PAYLOAD_SECRET=secret
+            - MONGO_URL=mongodb://root:root@database:27017
+        volumes:
+            - ./backend:/app/backend
+            - ./shared:/app/shared
+            - /app/backend/node_modules
+        depends_on:
+            database:
+                condition: service_started
+
+        ports:
+            - 127.0.0.1:3456:3456
+        networks:
+            back-network:
+                aliases:
+                    - backend
+            front-network:
+
+    database:
+        image: mongo:7.0.14-jammy
+        restart: always
+        environment:
+            MONGO_INITDB_ROOT_USERNAME: root
+            MONGO_INITDB_ROOT_PASSWORD: root
+        volumes:
+            - dev-mongo-db:/data/db
+        networks:
+            - back-network
+
+    frontend:
+        build:
+            context: .
+            dockerfile: ./frontend/Dockerfile
+            target: development
+        volumes:
+            - dev-static-files:/app/frontend/result
+            - ./frontend:/app/frontend
+            - ./shared:/app/shared
+            - ./backend/src/types:/app/backend/src/types
+            - /app/frontend/node_modules
+        environment:
+            - API_URL=http://backend:3456/api
+            - PUBLIC_API_URL=http://backend:3456/api
+            - CMS_URL=http://backend:3456
+        ports:
+            - 127.0.0.1:4321:4321
+        networks:
+            back-network:
+                aliases:
+                    - frontend
+            front-network:
+
+    nginx:
+        build:
+            context: ./nginx
+        volumes:
+            - dev-static-files:/data/www/
+        environment:
+            - NGINX_ENVSUBST_OUTPUT_DIR=/etc/nginx
+            - CMS_URL=http://backend:3456
+        networks:
+            - front-network
+            - back-network
+
+volumes:
+    dev-backend-storage:
+    dev-mongo-db:
+    dev-static-files:
+
+networks:
+    back-network:
+        driver: bridge
+        internal: true
+    front-network:
+        driver: bridge
+        internal: false

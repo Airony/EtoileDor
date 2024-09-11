@@ -1,0 +1,9 @@
+{
+    "eslint.validate": [
+        "javascript",
+        "javascriptreact",
+        "astro", // Enable .astro
+        "typescript" // Enable .ts
+    ],
+    "typescript.tsdk": "node_modules\\typescript\\lib"
+}

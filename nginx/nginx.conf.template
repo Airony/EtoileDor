@@ -1,0 +1,79 @@
+
+user nginx;
+worker_processes auto;
+
+error_log /var/log/nginx/error.log notice;
+pid /var/run/nginx.pid;
+
+
+events {
+    worker_connections 1024;
+}
+
+
+http {
+    include /etc/nginx/mime.types;
+    include gzip.conf;
+    default_type application/octet-stream;
+
+    log_format main '$remote_addr - $remote_user [$time_local] "$request" '
+    '$status $body_bytes_sent "$http_referer" '
+    '"$http_user_agent" "$http_x_forwarded_for"';
+
+    access_log /var/log/nginx/access.log main;
+
+    sendfile on;
+    #tcp_nopush     on;
+
+    keepalive_timeout 65;
+
+
+    map $sent_http_content_type $static_expires {
+        default off;
+        text/html epoch;
+        text/css max;
+        application/javascript max;
+        ~image/ max;
+        ~font/ max;
+    }
+
+    map $sent_http_content_type $static_cache_control {
+        default off;
+        text/html "no-cache";
+        text/css "immutable, max-age=31536000";
+        application/javascript "immutable, max-age=31536000";
+        ~font/ "immutable, max-age=31536000";
+        ~image/ "immutable, max-age=31536000";
+    }
+
+    server {
+        listen 80;
+        server_name localhost;
+        return 301 https://$server_name$request_uri;
+    }
+
+    server {
+        listen 443 ssl;
+        server_name localhost;
+        ssl_certificate /etc/ssl/certs/localhost.pem;
+        ssl_certificate_key /etc/ssl/certs/localhost-key.pem;
+        port_in_redirect off;
+        location / {
+            rewrite ^([^.]*[^/])$ $1/ permanent;
+            root /data/www/html;
+            error_page 404 /404.html;
+            expires $static_expires;
+            add_header Cache-Control $static_cache_control;
+        }
+        location ~ ^/(admin|api|media) {
+            proxy_pass $CMS_URL;
+            client_max_body_size 10M;
+
+            location ~ ^/admin {
+                proxy_pass $CMS_URL;
+                expires $static_expires;
+                add_header Cache-Control $static_cache_control;
+            }
+        }
+    }
+}

@@ -1,0 +1,19 @@
+---
+import Header from "../../components/Header.astro";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import MyForm from "./MyForm.tsx";
+---
+
+<BaseLayout title="Reservation">
+    <Header />
+    <main class="bg-primary-950 py-24 sm:py-28 xl:py-32">
+        <div class="px-4 sm:px-8">
+            <h1
+                class="mb-[2em] text-center font-main text-xl text-secondary-200 xs:text-2xl sm:text-4xl lg:text-5xl"
+            >
+                Book A Table
+            </h1>
+            <MyForm client:only={"react"} />
+        </div>
+    </main>
+</BaseLayout>

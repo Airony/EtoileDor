@@ -1,0 +1,35 @@
+---
+import { Icon } from "astro-icon/components";
+import type { ContactInfo } from "@backend/payload-types.ts";
+import { formatPhone } from "../helpers/FormatPhone";
+const response = await fetch(`${process.env.API_URL}/globals/contact_info`);
+if (response.status !== 200) {
+    throw new Error("Failed to fetch contact info.");
+}
+const contanctInfo: ContactInfo = await response.json();
+("astro-icon/components");
+const items = [
+    [
+        "phone-filled",
+        formatPhone(contanctInfo.phone_numbers[0]!.phone_number),
+        "phone number",
+    ],
+    ["clock-filled", "08:00 to 23:00", "open hours"],
+    ["pin-filled", contanctInfo.address, "address"],
+];
+---
+
+<ul
+    class="flex flex-row flex-wrap gap-x-5 gap-y-3 bg-primary-900 px-4 py-4 font-main text-xs text-primary-300 sm:gap-x-8 sm:gap-y-4 sm:text-base md:gap-x-12 md:px-8 md:py-5 lg:py-8 lg:text-base"
+>
+    {
+        items.map((item) => {
+            return (
+                <li class="md: flex flex-row items-center gap-2 sm:gap-3">
+                    <Icon name={item[0]} class="scale-125 text-primary-300" />
+                    <p>{item[1]}</p>
+                </li>
+            );
+        })
+    }
+</ul>

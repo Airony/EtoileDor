@@ -1,0 +1,75 @@
+services:
+    backend:
+        build:
+            dockerfile: ./backend/Dockerfile
+            target: production
+        secrets:
+            - PAYLOAD_SECRET
+            - MONGO_PASSWORD
+        environment:
+            - PORT=3456
+            - FRONTEND_URL=http://frontend:7979
+        volumes:
+            - backend-storage:/app/backend/storage
+        tmpfs:
+            - /run/secrets
+        depends_on:
+            - database
+        networks:
+            back-network:
+                aliases:
+                    - backend
+            front-network:
+    database:
+        image: mongo:7.0.14-jammy
+        restart: always
+        secrets:
+            - MONGO_PASSWORD
+        environment:
+            MONGO_INITDB_ROOT_USERNAME: root
+            MONGO_INITDB_ROOT_PASSWORD_FILE: /run/secrets/MONGO_PASSWORD
+        volumes:
+            - mongo-db:/data/db
+        networks:
+            - back-network
+    frontend:
+        build:
+            dockerfile: ./frontend/Dockerfile
+            target: production
+        volumes:
+            - static-files:/app/frontend/result
+        environment:
+            - API_URL=http://backend:3456/api
+            - PUBLIC_API_URL=http://backend:3456/api
+            - CMS_URL=http://backend:3456
+        networks:
+            back-network:
+                aliases:
+                    - frontend
+    nginx:
+        build:
+            context: ./nginx
+        volumes:
+            - static-files:/data/www/
+        environment:
+            - NGINX_ENVSUBST_OUTPUT_DIR=/etc/nginx
+            - CMS_URL=http://backend:3456
+        networks:
+            - front-network
+            - back-network
+volumes:
+    backend-storage:
+    mongo-db:
+    static-files:
+secrets:
+    PAYLOAD_SECRET:
+        file: ./payload_secret.secret
+    MONGO_PASSWORD:
+        file: ./mongo_password.secret
+networks:
+    back-network:
+        driver: bridge
+        internal: true
+    front-network:
+        driver: bridge
+        internal: false

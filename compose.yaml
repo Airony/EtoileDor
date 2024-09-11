@@ -1,0 +1,49 @@
+services:
+    backend:
+        build:
+            dockerfile: ./backend/Dockerfile
+        environment:
+            - PORT=3456
+            - FRONTEND_URL=http://frontend:7979
+        depends_on:
+            - database
+        networks:
+            back-network:
+                aliases:
+                    - backend
+            front-network:
+    database:
+        image: mongo:7.0.14-jammy
+        restart: always
+        networks:
+            - back-network
+    frontend:
+        build:
+            dockerfile: ./frontend/Dockerfile
+        environment:
+            - API_URL=http://backend:3456/api
+            - PUBLIC_API_URL=http://backend:3456/api
+            - CMS_URL=http://backend:3456
+        networks:
+            back-network:
+                aliases:
+                    - frontend
+    nginx:
+        build:
+            context: ./nginx
+        environment:
+            - NGINX_ENVSUBST_OUTPUT_DIR=/etc/nginx
+            - CMS_URL=http://backend:3456
+        ports:
+            - 80:80
+            - 443:443
+        networks:
+            - front-network
+            - back-network
+networks:
+    back-network:
+        driver: bridge
+        internal: true
+    front-network:
+        driver: bridge
+        internal: false

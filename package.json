@@ -1,0 +1,22 @@
+{
+    "name": "restaurant-site",
+    "version": "1.0.0",
+    "description": "",
+    "scripts": {
+        "pre-commit": "npm run --workspace frontend --workspace backend pre-commit",
+        "build": "npm run --workspace backend build",
+        "prepare": "husky install",
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "workspaces": [
+        "frontend",
+        "backend",
+        "shared"
+    ],
+    "author": "",
+    "license": "ISC",
+    "devDependencies": {
+        "copyfiles": "^2.4.1",
+        "husky": "^9.0.11"
+    }
+}

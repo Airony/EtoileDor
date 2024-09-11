@@ -1,0 +1,22 @@
+---
+import Header from "../components/Header.astro";
+import BaseLayout from "../layouts/BaseLayout.astro";
+---
+
+<BaseLayout title="Not Found">
+    <Header />
+    <main
+        class="flex min-h-[70vh] w-full flex-col items-center justify-center px-4 text-center font-main sm:px-8"
+    >
+        <h1 class="text-3xl text-primary-300 md:text-4xl">404</h1>
+        <h2 class="mb-[1em] text-lg text-primary-300 md:text-xl">
+            Page not found
+        </h2>
+        <p class="mb-4 max-w-lg text-sm text-primary-300 md:mb-6 md:text-base">
+            Sorry, the page you requested may have been deleted.
+        </p>
+        <a href="/" class="btn-secondary btn-secondary-sm md:btn-secondary-md"
+            >Go back home</a
+        >
+    </main>
+</BaseLayout>

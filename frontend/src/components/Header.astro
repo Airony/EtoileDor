@@ -1,0 +1,181 @@
+---
+import { Icon } from "astro-icon/components";
+let currentUrl = Astro.url.pathname;
+import resolveConfig from "tailwindcss/resolveConfig";
+import tailwindConfig from "../../tailwind.config.js";
+const fullConfig = resolveConfig(tailwindConfig);
+const smBreakpoint = parseInt(fullConfig.theme.screens.sm.replace("px", ""));
+const navItems = [
+    ["Home", "/"],
+    ["Menu", "/menu/"],
+];
+
+interface Props {
+    className?: string;
+}
+---
+
+<header
+    class=`sticky top-0 z-10 flex flex-row items-center justify-between bg-primary-900 px-4 py-3 sm:px-8 sm:py-0 ${Astro.props.className}`
+>
+    <Icon
+        name="logo"
+        class="h-auto w-1/12 min-w-12 max-w-16 sm:py-2.5 md:py-4"
+    />
+    <nav
+        class="hidden justify-center gap-5 self-stretch font-main sm:flex"
+        role="navigation"
+    >
+        {
+            navItems.map(([label, href]) => (
+                <a
+                    href={href}
+                    class="flex items-center border-b-2 border-current px-2 py-6 text-sm text-primary-300 transition-opacity duration-200 ease-linear sm:h-full sm:border-0 md:text-base lg:py-7"
+                    class:list={[
+                        {
+                            "opacity-100 sm:border-b-2": href === currentUrl,
+                            "opacity-75 hover:opacity-100": href !== currentUrl,
+                        },
+                    ]}
+                >
+                    {label}
+                </a>
+            ))
+        }
+    </nav>
+
+    <a
+        href="/reservation/"
+        class:list={[
+            "btn-primary md:btn-primary-md lg:btn-primary-lg",
+            {
+                invisible: currentUrl === "/reservation/",
+            },
+        ]}
+    >
+        <p class="sm:hidden">Reserve</p>
+        <p class="hidden sm:block">Make a Reservation</p>
+    </a>
+    <button
+        class="p-1 outline-none hover:bg-primary-750 focus:outline-2 focus:outline-secondary-200 sm:hidden"
+        aria-controls="nav-container"
+        id="menu-open-btn"
+        aria-label="Open navigation menu."
+    >
+        <span aria-hidden="true" aria-label="Open navigation menu.">
+            <Icon name="menu" class="h-8 w-8 text-primary-300" />
+        </span>
+    </button>
+    <div
+        class="fixed inset-0 z-10 flex h-full w-full flex-col justify-center gap-20 bg-primary-950 p-4 transition-transform duration-300 ease-in-out sm:hidden"
+        id="nav-container"
+        aria-hidden="true"
+    >
+        <button
+            aria-controls="nav-container"
+            class="absolute right-0 top-0 ml-auto mr-4 mt-8 outline-none hover:bg-primary-750 focus:outline-2 focus:outline-secondary-200"
+            id="menu-close-btn"
+            aria-label="Close navigation menu."
+        >
+            <span aria-hidden="true">
+                <Icon name="close" class="h-8 w-8 text-primary-300" />
+            </span>
+        </button>
+        <nav role="navigation">
+            {
+                navItems.map(([label, href]) => (
+                    <a
+                        href={href}
+                        class="relative flex items-center px-2 py-6 font-main text-sm text-primary-500 outline-none transition-colors duration-200 ease-linear before:absolute before:bottom-0 before:left-0 before:h-0.5 before:w-full before:origin-left before:scale-x-0 before:bg-secondary-400 before:px-[inherit] before:transition-transform before:duration-200 before:ease-in hover:text-primary-300 focus:text-primary-300 focus:before:scale-x-100 sm:h-full sm:border-0 md:text-base lg:py-7"
+                    >
+                        {label}
+                    </a>
+                ))
+            }
+        </nav>
+    </div>
+    <style>
+        #nav-container {
+            visibility: hidden;
+        }
+
+        #nav-container.open {
+            animation: slide-in 0.3s ease-in-out forwards;
+        }
+
+        #nav-container[closing] {
+            animation: slide-out 0.3s ease-in-out forwards;
+        }
+        @keyframes slide-in {
+            from {
+                transform: translateX(-100%);
+                visibility: visible;
+            }
+            to {
+                transform: translateX(0);
+                visibility: visible;
+            }
+        }
+
+        @keyframes slide-out {
+            from {
+                transform: translateX(0);
+                visibility: visible;
+            }
+            to {
+                transform: translateX(-100%);
+                visibility: hidden;
+            }
+        }
+    </style>
+
+    <script define:vars={{ smBreakpoint }}>
+        const openBtn = document.getElementById("menu-open-btn");
+        const closeBtn = document.getElementById("menu-close-btn");
+        const navContainer = document.getElementById("nav-container");
+        const body = document.body;
+        let isOpen = false;
+        openBtn.addEventListener("click", open);
+        closeBtn.addEventListener("click", close);
+        function close() {
+            isOpen = false;
+            navContainer.classList.remove("open");
+            navContainer.setAttribute("aria-hidden", "true");
+            openBtn.setAttribute("aria-expanded", "false");
+            closeBtn.setAttribute("aria-expanded", "false");
+            navContainer.setAttribute("closing", "");
+            navContainer.addEventListener("animationend", () => {
+                navContainer.removeAttribute("closing");
+            });
+            openBtn.focus();
+            body.style.overflow = "initial";
+        }
+        function open() {
+            isOpen = true;
+            navContainer.classList.add("open");
+            navContainer.setAttribute("aria-hidden", "false");
+            openBtn.setAttribute("aria-expanded", "true");
+            closeBtn.setAttribute("aria-expanded", "true");
+            closeBtn.focus();
+            body.style.overflow = "hidden";
+        }
+        //Unlock scroll when menu is open and user resizes the window
+        window.addEventListener("resize", () => {
+            if (isOpen && window.innerWidth > smBreakpoint) {
+                close();
+            }
+        });
+
+        navContainer.addEventListener("focusout", (e) => {
+            if (isOpen && !navContainer.contains(e.relatedTarget)) {
+                closeBtn.focus();
+            }
+        });
+
+        navContainer.addEventListener("keydown", (e) => {
+            if (e.key === "Escape") {
+                close();
+            }
+        });
+    </script>
+</header>

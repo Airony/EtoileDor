@@ -1,0 +1,24 @@
+---
+interface Props {
+    title: string;
+}
+import "../styles/global.css";
+import "../styles/components.css";
+import Infobar from "../components/Infobar.astro";
+import Footer from "../components/Footer.astro";
+const { title } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>{title}</title>
+    </head>
+    <body class="min-h-screen bg-primary-800">
+        <Infobar />
+        <slot />
+        <Footer />
+    </body>
+</html>

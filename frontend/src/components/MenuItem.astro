@@ -1,0 +1,22 @@
+---
+interface Props {
+    name: string;
+    price: number;
+}
+const { name, price } = Astro.props;
+function numberWithCommas(x: string) {
+    return x.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+const priceStr = numberWithCommas(price.toString());
+---
+
+<div
+    class="flex w-full flex-row items-baseline gap-2 font-main text-primary-950 sm:gap-3 md:gap-4"
+>
+    <p class="text-sm sm:text-base">{name}</p>
+    <div
+        class="h-full flex-grow border-b-2 border-dashed border-secondary-700 bg-transparent"
+    >
+    </div>
+    <p class="text-xs font-semibold xs:text-sm">{priceStr}</p>
+</div>

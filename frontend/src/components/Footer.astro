@@ -1,0 +1,59 @@
+---
+import { Icon } from "astro-icon/components";
+import type { ContactInfo } from "@backend/payload-types";
+import { formatPhone } from "../helpers/FormatPhone";
+const response = await fetch(`${process.env.API_URL}/globals/contact_info`);
+if (response.status !== 200) {
+    throw new Error("Failed to fetch contact info.");
+}
+const contanctInfo: ContactInfo = await response.json();
+---
+
+<footer class="bg-primary-1000 px-4 py-14 sm:px-8">
+    <div class="flex flex-col gap-8 font-main sm:flex-row sm:gap-[15%]">
+        <div class="">
+            <p
+                class="mb-[1em] text-sm font-semibold uppercase tracking-wider text-primary-300 lg:text-base"
+            >
+                Contact
+            </p>
+            <div class="grid grid-cols-max-2 items-baseline gap-4 lg:text-lg">
+                <Icon
+                    name="phone-filled"
+                    class="h-auto w-5 text-primary-300"
+                    aria-label="Phone numbers"
+                />
+                <ul class="text-primary-300">
+                    {
+                        contanctInfo.phone_numbers.map((item) => (
+                            <li>{formatPhone(item.phone_number)}</li>
+                        ))
+                    }
+                </ul>
+                <Icon
+                    name="phone-filled"
+                    class="h-auto w-5 text-primary-300"
+                    aria-label="Email"
+                />
+                <p class="text-primary-300">{contanctInfo.email}<p></p></p>
+            </div>
+        </div>
+        <div class="">
+            <p
+                class="mb-[1em] text-sm font-semibold uppercase tracking-wider text-primary-300 lg:text-base"
+            >
+                Find Us
+            </p>
+            <p class="mb-[0.75em] text-sm text-primary-300 lg:text-lg">
+                {contanctInfo.address}
+            </p>
+            <iframe
+                src={contanctInfo.google_maps_link}
+                style="border:0;"
+                class="max-w-full"
+                allowfullscreen=""
+                loading="lazy"
+                referrerpolicy="no-referrer-when-downgrade"></iframe>
+        </div>
+    </div>
+</footer>

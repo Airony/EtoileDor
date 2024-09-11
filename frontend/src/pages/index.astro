@@ -1,0 +1,225 @@
+---
+import { Icon } from "astro-icon/components";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Header from "../components/Header.astro";
+import heroImg from "../images/hero.png";
+import Image from "astro/components/Image.astro";
+import teamImg from "../images/team.jpg";
+import fabricBackground from "../images/fabric-pattern.png";
+import { getImage } from "astro:assets";
+import Offers from "../components/Offers.astro";
+
+const optimizedFabricBackground = await getImage({
+    src: fabricBackground,
+    format: "webp",
+    inferSize: true,
+});
+
+const socials = [
+    ["instagram", "resutrantpage", "https://www.instagram.com/"],
+    ["facebook", "restaurantpage", "https://www.facebook.com/"],
+];
+---
+
+<BaseLayout title="Restaurant Home">
+    <Header className="main-header" />
+    <!-- HERO -->
+
+    <section class="hero relative">
+        <div
+            class="flex min-h-screen w-full flex-col items-center justify-center px-4"
+        >
+            <Image
+                src={heroImg}
+                format="jpg"
+                widths={[400, 800, 1200, 1600]}
+                alt=""
+                loading={"eager"}
+                class="absolute inset-0 -z-10 h-full w-full object-cover"
+            />
+            <h1
+                class="mb-5 font-main text-xl text-primary-300 xs:text-2xl sm:text-3xl lg:text-5xl"
+            >
+                An Interesting Title
+            </h1>
+            <p
+                class="mb-[1.5em] max-w-2xl text-center font-main text-xs text-primary-300 xs:text-base sm:max-w-[85%] sm:text-lg lg:max-w-3xl"
+            >
+                Lorem ipsum dolor sit amet consectetur. A pretium et vulputate
+                ut et odio porta dignissim ornare. Eu est in eu nulla.
+            </p>
+            <a class="btn-primary btn-primary-md xs:btn-lg" href="/reservation">
+                Make A Reservation
+            </a>
+        </div>
+    </section>
+
+    <!-- Featured -->
+    <section
+        class="relative bg-primary-950 bg-repeat px-4 py-20 bg-blend-multiply md:px-8 lg:py-28"
+        style={`background-image: url(${optimizedFabricBackground.src})`}
+    >
+        <h2
+            class="mb-[1.5em] text-center font-main text-xl text-secondary-200 sm:text-2xl lg:text-3xl xl:text-4xl"
+        >
+            Our Best Sellers
+        </h2>
+        <div class="mx-auto max-w-section">
+            <Offers />
+            <a
+                href="/menu"
+                class="btn-secondary xs:btn-secondary-md md:btn-secondary-lg ml-auto mt-10 block w-fit"
+            >
+                View Full Menu
+            </a>
+        </div>
+    </section>
+
+    <!-- About -->
+
+    <section class="relative bg-primary-950 px-4 py-20 md:px-8 lg:py-28">
+        <div class="mx-auto max-w-section">
+            <h2
+                class="mb-[1.5em] text-center font-main text-xl text-secondary-200 sm:text-2xl lg:text-3xl xl:text-4xl"
+            >
+                About us
+            </h2>
+            <div
+                class="grid grid-cols-1 items-center justify-items-center gap-12 md:grid-cols-2 md:items-center"
+            >
+                <p
+                    class="max-w-lg basis-5/12 text-center font-main text-xs text-primary-300 xs:text-sm md:justify-self-start md:text-left lg:text-base 2xl:text-lg"
+                >
+                    Lorem ipsum dolor sit amet consectetur. Turpis dolor ut sem
+                    scelerisque eget etiam pulvinar nibh tempor. Mi vitae elit
+                    sed neque. Feugiat ac adipiscing arcu risus etiam sed. Vel
+                    vulputate tortor nullam feugiat. Eu condimentum tellus
+                    ullamcorper ante ut. Nibh at aliquet purus amet id et id
+                    gravida. Morbi integer fermentum dolor blandit nulla sapien
+                    dignissim.
+                </p>
+                <Image
+                    src={teamImg}
+                    format="jpg"
+                    alt={"A picture of our team"}
+                    class="h-auto w-full max-w-md lg:max-w-2xl"
+                    widths={[400, 700]}
+                />
+            </div>
+        </div>
+    </section>
+
+    <section class="relative bg-secondary-800 px-4 py-20 md:px-8 lg:py-28">
+        <h2
+            class="mb-[0.5em] text-center font-main text-xl text-primary-300 sm:text-2xl lg:text-3xl xl:text-4xl"
+        >
+            Follow us
+        </h2>
+        <p
+            class="text-small mb-[2em] text-center font-main text-primary-300 sm:text-lg"
+        >
+            To get the latest news offers
+        </p>
+        <div class="flex flex-row items-stretch justify-center gap-[10%]">
+            {
+                socials.map(([icon, tag, href]) => (
+                    <a
+                        href={href}
+                        class="group flex flex-col items-center gap-2"
+                    >
+                        <div class="rounded-full border-2 border-solid p-4 text-primary-300 transition-colors duration-200 ease-in group-hover:bg-primary-300 group-hover:text-secondary-800 group-focus:border-primary-950 sm:p-6">
+                            <Icon
+                                name={icon}
+                                class="aspect-square h-auto w-6 fill-current sm:w-8"
+                            />
+                        </div>
+
+                        <p class="lg:text-md relative pb-1 font-main text-xs text-primary-300 before:absolute before:bottom-0 before:h-0.5 before:w-full before:origin-left before:scale-x-0 before:rounded-full before:bg-primary-300 before:transition-transform before:duration-[400ms] before:ease-elastic-in group-hover:before:scale-x-100 sm:text-sm 2xl:text-lg">
+                            @{tag}
+                        </p>
+                    </a>
+                ))
+            }
+        </div>
+
+        <style>
+            .salt {
+                @apply absolute aspect-auto h-auto fill-primary-300 stroke-primary-300 opacity-10;
+                @apply w-8 sm:w-12 lg:w-16;
+                pointer-events: none;
+            }
+            .pepper {
+                @apply absolute aspect-auto h-auto fill-primary-300 stroke-primary-300 opacity-10;
+                @apply w-14 sm:w-20 lg:w-28;
+                pointer-events: none;
+            }
+        </style>
+        <Icon name="pepper" class="pepper left-[10%] top-[10%] rotate-6" />
+        <Icon
+            name="pepper"
+            class="pepper bottom-[15%] right-[20%] -rotate-45"
+        />
+        <Icon
+            name="pepper"
+            class="pepper bottom-[40%] right-[35%] rotate-[65deg]"
+        />
+        <Icon
+            name="pepper"
+            class="pepper bottom-[10%] left-[35%] hidden -rotate-[25deg] lg:block"
+        />
+        <Icon name="salt" class="salt bottom-[10%] left-[15%] -rotate-12" />
+        <Icon
+            name="salt"
+            class="salt left-[50%] top-[10%] hidden -rotate-12 lg:block"
+        />
+        <Icon name="salt" class="salt right-[15%] top-[15%] rotate-[35deg]" />
+    </section>
+
+    <style is:global>
+        .main-header {
+            background-color: transparent;
+            transition: background-color 350ms ease-in-out;
+        }
+
+        .main-header.scrolled {
+            background-color: transparent;
+            @apply bg-primary-900;
+        }
+
+        header {
+            float: right;
+            width: 100%;
+            shape-outside: inset(50%);
+        }
+    </style>
+    <script>
+        const header = document.querySelector(".main-header") as HTMLElement;
+        const hero = document.querySelector(".hero") as HTMLElement;
+        const observationHelper = document.createElement("div");
+        observationHelper.style.height = "1px";
+        observationHelper.style.position = "absolute";
+        observationHelper.style.top = "0";
+        observationHelper.style.left = "0";
+        observationHelper.style.right = "0";
+
+        hero.appendChild(observationHelper);
+        const observerOptions: IntersectionObserverInit = {
+            root: null,
+            threshold: [1],
+            rootMargin: "10%",
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            if (!entries[0]) {
+                return;
+            }
+            if (entries[0].isIntersecting) {
+                header.classList.remove("scrolled");
+            } else {
+                header.classList.add("scrolled");
+            }
+        }, observerOptions);
+
+        observer.observe(observationHelper);
+    </script>
+</BaseLayout>

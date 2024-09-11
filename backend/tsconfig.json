@@ -1,0 +1,24 @@
+{
+    "compilerOptions": {
+        "target": "es6",
+        "lib": ["es5", "es6", "dom"],
+
+        "module": "commonjs",
+        "allowJs": true,
+        "strict": false,
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "outDir": "./dist",
+        "jsx": "react-jsx"
+    },
+    "include": [
+        "src/**/*.ts",
+        "src/fields/offerSelectComponent.tsx",
+        "src/deploymentView.tsx"
+    ],
+
+    "exclude": ["node_modules", "dist", "build"],
+    "ts-node": {
+        "transpileOnly": true
+    }
+}

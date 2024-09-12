@@ -14,16 +14,11 @@ const List = offersData.list;
 ---
 
 <div
-    class="grid grid-cols-1 grid-rows-2 gap-x-4 gap-y-8 xs:grid-cols-2 xs:grid-rows-2 sm:grid-cols-3 sm:grid-rows-1 lg:gap-x-8"
+    class="nmd:gap-x-6 nlg:gap-x-10 flex flex-row flex-wrap justify-stretch gap-x-3 gap-y-8"
 >
     {
-        List.map((item, i) => (
-            <div
-                class="flex flex-col bg-primary-850"
-                class:list={{
-                    "xs:col-span-2 sm:col-span-1": i === 0,
-                }}
-            >
+        List.map((item) => (
+            <div class="flex shrink-0 grow basis-[175px] flex-col bg-primary-850 font-main">
                 <Image
                     widths={[450, 600]}
                     src={
@@ -33,15 +28,15 @@ const List = offersData.list;
                     }
                     inferSize={true}
                     alt=""
-                    class="h-72 max-h-72 w-full object-cover brightness-[65%] sm:h-auto sm:max-h-none"
+                    class="aspect-video h-auto max-h-[220px] w-full object-cover brightness-[65%]"
                     format="webp"
                     loading="lazy"
                 />
-                <div class="flex grow flex-col p-3 font-main text-sm md:p-4 md:text-lg lg:py-5 xl:py-6 xl:text-xl">
-                    <p class="mb-[0.25em] block text-secondary-200 lg:mb-5 xl:mb-6">
+                <div class="nmd:p-3 nlg:p-y-5 nlg:px-4 nmd:text-lg nlg:py flex flex-col gap-1 p-2 text-xs">
+                    <p class="nmd:text-sm nlg:text-lg block text-xs text-secondary-200">
                         {item.details.item}
                     </p>
-                    <p class="mt-auto text-secondary-300">
+                    <p class="nmd:text-sm text-xs text-secondary-300">
                         {item.details.price}
                     </p>
                 </div>

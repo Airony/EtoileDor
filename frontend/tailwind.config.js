@@ -66,7 +66,7 @@ export default {
         screens: {
             xs: "400px",
             nmd: "800px",
-            nlg: "1000px",
+            nlg: "1100px",
             nxl: "1400px",
             ...defaultTheme.screens,
         },

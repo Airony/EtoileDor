@@ -1,0 +1,13 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+    .pdx {
+        @apply nmd:px-6 nlg:px-8 px-4;
+    }
+
+    .pdy {
+        @apply nlg:py-[82px] nmd:py-[72px] py-16; /* TODO */
+    }
+}

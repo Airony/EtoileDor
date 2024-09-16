@@ -40,10 +40,6 @@ services:
             target: production
         volumes:
             - static-files:/app/frontend/result
-        environment:
-            - API_URL=http://backend:3456/api
-            - PUBLIC_API_URL=http://backend:3456/api
-            - CMS_URL=http://backend:3456
         networks:
             back-network:
                 aliases:

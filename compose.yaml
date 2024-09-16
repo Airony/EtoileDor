@@ -21,8 +21,8 @@ services:
         build:
             dockerfile: ./frontend/Dockerfile
         environment:
-            - API_URL=http://backend:3456/api
-            - PUBLIC_API_URL=http://backend:3456/api
+            - API_URL=http://backend:3456/api # Back network
+            - PUBLIC_API_URL=/api # Front network
             - CMS_URL=http://backend:3456
         networks:
             back-network:

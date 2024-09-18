@@ -8,6 +8,7 @@ import teamImg from "../images/team.jpg";
 import fabricBackground from "../images/fabric-pattern.png";
 import { getImage } from "astro:assets";
 import Offers from "../components/Offers.astro";
+import Cadre from "../components/Cadre.astro";
 
 const optimizedFabricBackground = await getImage({
     src: fabricBackground,
@@ -27,7 +28,7 @@ const socials = [
 
     <section class="hero relative">
         <div
-            class="pdx flex min-h-screen w-full flex-col items-center justify-center text-center font-main"
+            class="pdx pdy flex min-h-screen w-full flex-col items-center justify-center text-center font-main"
         >
             <Image
                 src={heroImg}
@@ -37,33 +38,46 @@ const socials = [
                 loading={"eager"}
                 class="absolute inset-0 -z-10 h-full w-full object-cover"
             />
-            <h1
-                class="nmd:text-3xl nlg:text-4xl nlg:mb-10 nmd:mb-8 mb-7 text-xl text-primary-300"
-            >
-                An Interesting Title
-            </h1>
-            <p
-                class="nmd:text-base nlg:text-lg nlg:max-w-2xl nmd:mb-5 nlg:mb-6 mb-4 max-w-xl text-xs text-primary-300"
-            >
-                Lorem ipsum dolor sit amet consectetur. A pretium et vulputate
-                ut et odio porta dignissim ornare. Eu est in eu nulla.
-            </p>
-            <a
-                class="btn-primary btn-primary-md mlg:btn-primary-lg"
-                href="/reservation"
-            >
-                Make A Reservation
-            </a>
+            <Cadre className="">
+                <div class="flex flex-col items-center">
+                    <h1
+                        class="mb-4 text-xl text-primary-300 nmd:mb-4 nmd:text-3xl nlg:mb-5 nlg:text-4xl"
+                    >
+                        Discover the true beauty of cuisine
+                    </h1>
+                    <p
+                        class="mb-6 text-sm text-primary-300 nmd:mb-8 nmd:text-base nlg:mb-10"
+                    >
+                        Exquisite flavors served in a setting of timeless
+                        elegance.
+                    </p>
+                    <div
+                        class="flex flex-row flex-wrap justify-center gap-x-7 gap-y-5 nlg:gap-x-12"
+                    >
+                        <a
+                            class="btn-primary nmd:btn-primary-md"
+                            href="/reservation"
+                        >
+                            Make a Reservation
+                        </a>
+                        <a
+                            class="btn-secondary nmd:btn-secondary-md"
+                            href="/reservation"
+                        >
+                            Checkout Our Menu
+                        </a>
+                    </div>
+                </div>
+            </Cadre>
         </div>
     </section>
-
     <!-- Featured -->
     <section
         class="pdx pdy relative bg-primary-950 bg-repeat bg-blend-multiply"
         style={`background-image: url(${optimizedFabricBackground.src})`}
     >
         <h2
-            class="nmd:text-2xl nmd:mb-10 nlg:text-3xl nlg:mb-12 mb-6 text-center font-main text-xl text-secondary-200"
+            class="mb-6 text-center font-main text-xl text-secondary-200 nmd:mb-10 nmd:text-2xl nlg:mb-12 nlg:text-3xl"
         >
             Our Best Sellers
         </h2>
@@ -71,7 +85,7 @@ const socials = [
             <Offers />
             <a
                 href="/menu"
-                class="btn-secondary btn-secondary-md nlg:btn-secondary-lg nmd:mt-10 nlg:mt-12 ml-auto mt-8 block w-fit"
+                class="btn-secondary btn-secondary-md nlg:btn-secondary-lg ml-auto mt-8 block w-fit nmd:mt-10 nlg:mt-12"
             >
                 View Full Menu
             </a>

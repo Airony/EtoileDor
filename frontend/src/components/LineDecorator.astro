@@ -1,0 +1,33 @@
+---
+interface Props {
+    class?: string;
+}
+---
+
+<style>
+    .sqr-trans {
+        transform: scaleX(80%) rotate(45deg);
+    }
+</style>
+
+<div
+    class:list={[
+        "relative flex items-center justify-center",
+        Astro.props.class,
+    ]}
+>
+    <div
+        class="absolute left-0 right-0 top-1/2 h-1 -translate-y-1/2 bg-secondary-200"
+    >
+    </div>
+    <div class="sqr-trans aspect-square w-[20px] bg-secondary-200 nmd:w-[26px]">
+    </div>
+    <div
+        class="absolute left-0 top-1/2 aspect-square w-3 -translate-y-1/2 rounded-full bg-secondary-200 nmd:w-[16px]"
+    >
+    </div>
+    <div
+        class="absolute right-0 top-1/2 aspect-square w-3 -translate-y-1/2 rounded-full bg-secondary-200 nmd:w-[16px]"
+    >
+    </div>
+</div>

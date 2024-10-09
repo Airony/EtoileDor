@@ -6,6 +6,7 @@ import heroImg from "../images/hero.png";
 import Image from "astro/components/Image.astro";
 import teamImg from "../images/team.jpg";
 import fabricBackground from "../images/fabric-pattern.png";
+import starBackground from "../images/8-star-pattern.png";
 import { getImage } from "astro:assets";
 import Offers from "../components/Offers.astro";
 import Cadre from "../components/Cadre.astro";
@@ -13,6 +14,11 @@ import LineDecorator from "../components/LineDecorator.astro";
 
 const optimizedFabricBackground = await getImage({
     src: fabricBackground,
+    format: "webp",
+    inferSize: true,
+});
+const optimizedStarBackground = await getImage({
+    src: starBackground,
     format: "webp",
     inferSize: true,
 });
@@ -96,36 +102,37 @@ const socials = [
 
     <!-- About -->
 
-    <section class="relative bg-primary-950 px-4 py-20 md:px-8 lg:py-28">
-        <div class="mx-auto max-w-section">
+    <section class="pdx pdy relative isolate bg-primary-950">
+        <div class="relative z-10 mx-auto max-w-section">
             <h2
-                class="mb-[1.5em] text-center font-main text-xl text-secondary-200 sm:text-2xl lg:text-3xl xl:text-4xl"
+                class="mb-8 text-center font-main text-xl text-secondary-200 nmd:mb-14 nmd:text-2xl nlg:text-3xl"
             >
                 About us
             </h2>
             <div
-                class="grid grid-cols-1 items-center justify-items-center gap-12 md:grid-cols-2 md:items-center"
+                class="flex flex-wrap items-center justify-center gap-6 md:gap-8 lg:gap-14"
             >
                 <p
-                    class="max-w-lg basis-5/12 text-center font-main text-xs text-primary-300 xs:text-sm md:justify-self-start md:text-left lg:text-base 2xl:text-lg"
+                    class="body min-w-64 max-w-sm shrink-0 grow basis-0 text-left font-main text-primary-300 nmd:max-w-lg"
                 >
-                    Lorem ipsum dolor sit amet consectetur. Turpis dolor ut sem
-                    scelerisque eget etiam pulvinar nibh tempor. Mi vitae elit
-                    sed neque. Feugiat ac adipiscing arcu risus etiam sed. Vel
-                    vulputate tortor nullam feugiat. Eu condimentum tellus
-                    ullamcorper ante ut. Nibh at aliquet purus amet id et id
-                    gravida. Morbi integer fermentum dolor blandit nulla sapien
-                    dignissim.
+                    Founded in 1974 by an Algerian chef and cuisine lover, John
+                    Doe. For over 50 years Etoile D’or has served customers and
+                    worked to introduce people to the art of cuisine.
                 </p>
                 <Image
                     src={teamImg}
                     format="jpg"
                     alt={"A picture of our team"}
-                    class="h-auto w-full max-w-md lg:max-w-2xl"
+                    class="h-auto w-full min-w-64 max-w-sm shrink-0 grow basis-0 nmd:max-w-lg"
                     widths={[400, 700]}
                 />
             </div>
         </div>
+        <img
+            class="absolute inset-0 h-full w-full bg-repeat opacity-10 mix-blend-overlay"
+            style={`background-image: url(${optimizedStarBackground.src})`}
+            alt=""
+        />
     </section>
 
     <section class="relative bg-secondary-800 px-4 py-20 md:px-8 lg:py-28">

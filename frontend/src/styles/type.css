@@ -1,0 +1,9 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+    .body {
+        @apply text-xs leading-[22px] nmd:text-sm nmd:leading-[26px] nlg:text-lg nlg:leading-[34px];
+    }
+}

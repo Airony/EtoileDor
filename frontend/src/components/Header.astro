@@ -18,10 +18,12 @@ interface Props {
 <header
     class=`sticky top-0 z-10 flex flex-row items-center justify-between bg-primary-900 px-4 py-3 sm:px-8 sm:py-0 ${Astro.props.className}`
 >
-    <Icon
-        name="logo"
-        class="h-auto w-1/12 min-w-12 max-w-16 sm:py-2.5 md:py-4"
-    />
+    <a href={"/"} class="w-1/12">
+        <Icon
+            name="logo"
+            class="h-auto w-full min-w-12 max-w-16 sm:py-2.5 md:py-4"
+        />
+    </a>
     <nav
         class="hidden justify-center gap-5 self-stretch font-main sm:flex"
         role="navigation"

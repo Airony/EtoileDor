@@ -24,8 +24,8 @@ const optimizedStarBackground = await getImage({
 });
 
 const socials = [
-    ["instagram", "resutrantpage", "https://www.instagram.com/"],
-    ["facebook", "restaurantpage", "https://www.facebook.com/"],
+    ["instagram", "etoiledor", "https://www.instagram.com/"],
+    ["facebook", "etoiledor", "https://www.facebook.com/"],
 ];
 ---
 
@@ -135,32 +135,34 @@ const socials = [
         />
     </section>
 
-    <section class="relative bg-secondary-800 px-4 py-20 md:px-8 lg:py-28">
+    <section class="pdx pdy relative bg-secondary-800">
         <h2
-            class="mb-[0.5em] text-center font-main text-xl text-primary-300 sm:text-2xl lg:text-3xl xl:text-4xl"
+            class="mb-1 text-center font-main text-lg text-primary-300 nmd:text-xl nlg:mb-2 nlg:text-2xl"
         >
             Follow us
         </h2>
         <p
-            class="text-small mb-[2em] text-center font-main text-primary-300 sm:text-lg"
+            class="mb-12 text-center font-main text-xs text-primary-300 nmd:text-sm nlg:text-base"
         >
             To get the latest news offers
         </p>
-        <div class="flex flex-row items-stretch justify-center gap-[10%]">
+        <div
+            class="flex flex-row items-stretch justify-center gap-10 nmd:gap-16"
+        >
             {
                 socials.map(([icon, tag, href]) => (
                     <a
                         href={href}
                         class="group flex flex-col items-center gap-2"
                     >
-                        <div class="rounded-full border-2 border-solid p-4 text-primary-300 transition-colors duration-200 ease-in group-hover:bg-primary-300 group-hover:text-secondary-800 group-focus:border-primary-950 sm:p-6">
+                        <div class="rounded-full border-2 border-solid p-4 text-primary-300 transition-colors duration-200 ease-in group-hover:bg-primary-300 group-hover:text-secondary-800 group-focus:border-primary-950 nlg:p-5">
                             <Icon
                                 name={icon}
-                                class="aspect-square h-auto w-6 fill-current sm:w-8"
+                                class="aspect-square h-auto w-6 fill-current nlg:w-7"
                             />
                         </div>
 
-                        <p class="lg:text-md relative pb-1 font-main text-xs text-primary-300 before:absolute before:bottom-0 before:h-0.5 before:w-full before:origin-left before:scale-x-0 before:rounded-full before:bg-primary-300 before:transition-transform before:duration-[400ms] before:ease-elastic-in group-hover:before:scale-x-100 sm:text-sm 2xl:text-lg">
+                        <p class="relative pb-1 font-main text-xs text-primary-300 before:absolute before:bottom-0 before:h-0.5 before:w-full before:origin-left before:scale-x-0 before:rounded-full before:bg-primary-300 before:transition-transform before:duration-[400ms] before:ease-elastic-in group-hover:before:scale-x-100 nmd:text-sm nlg:text-base">
                             @{tag}
                         </p>
                     </a>
@@ -171,33 +173,29 @@ const socials = [
         <style>
             .salt {
                 @apply absolute aspect-auto h-auto fill-primary-300 stroke-primary-300 opacity-10;
-                @apply w-8 sm:w-12 lg:w-16;
+                @apply w-8 nmd:w-10 nlg:w-12;
                 pointer-events: none;
             }
             .pepper {
                 @apply absolute aspect-auto h-auto fill-primary-300 stroke-primary-300 opacity-10;
-                @apply w-14 sm:w-20 lg:w-28;
+                @apply w-14 nmd:w-16 nlg:w-20;
                 pointer-events: none;
             }
         </style>
-        <Icon name="pepper" class="pepper left-[10%] top-[10%] rotate-6" />
         <Icon
             name="pepper"
             class="pepper bottom-[15%] right-[20%] -rotate-45"
         />
         <Icon
             name="pepper"
-            class="pepper bottom-[40%] right-[35%] rotate-[65deg]"
+            class="pepper bottom-[40%] right-[25%] hidden rotate-[65deg] nmd:block"
         />
         <Icon
             name="pepper"
-            class="pepper bottom-[10%] left-[35%] hidden -rotate-[25deg] lg:block"
+            class="pepper bottom-[10%] left-[30%] hidden -rotate-[25deg] nmd:block"
         />
         <Icon name="salt" class="salt bottom-[10%] left-[15%] -rotate-12" />
-        <Icon
-            name="salt"
-            class="salt left-[50%] top-[10%] hidden -rotate-12 lg:block"
-        />
+        <Icon name="pepper" class="pepper left-[25%] top-[10%] -rotate-12" />
         <Icon name="salt" class="salt right-[15%] top-[15%] rotate-[35deg]" />
     </section>
 

@@ -9,42 +9,44 @@ if (response.status !== 200) {
 const contanctInfo: ContactInfo = await response.json();
 ---
 
-<footer class="bg-primary-1000 px-4 py-14 sm:px-8">
-    <div class="flex flex-col gap-8 font-main sm:flex-row sm:gap-[15%]">
+<style>
+    .title {
+        @apply mb-4 text-xs font-semibold uppercase tracking-widest text-primary-100 nmd:mb-3 nmd:text-sm nlg:mb-4;
+    }
+    .icon {
+        @apply h-auto w-4 text-primary-300 nmd:w-5;
+    }
+</style>
+<footer class="pdx pdy bg-primary-1000">
+    <div
+        class="mx-auto flex w-fit flex-row flex-wrap gap-x-14 nmd:gap-x-32 nlg:gap-48 gap-y-6 font-main"
+    >
         <div class="">
-            <p
-                class="mb-[1em] text-sm font-semibold uppercase tracking-wider text-primary-300 lg:text-base"
+            <p class="title">Contact</p>
+            <div
+                class="grid grid-cols-max-2 items-start gap-x-3 gap-y-5 text-sm nmd:text-sm nlg:text-base"
             >
-                Contact
-            </p>
-            <div class="grid grid-cols-max-2 items-baseline gap-4 lg:text-lg">
                 <Icon
                     name="phone-filled"
-                    class="h-auto w-5 text-primary-300"
+                    class="icon mt-[2px] nmd:mt-0 nlg:mt-[2px]"
                     aria-label="Phone numbers"
                 />
-                <ul class="text-primary-300">
+                <ul class="flex flex-col gap-2 text-primary-300 nmd:gap-2">
                     {
                         contanctInfo.phone_numbers.map((item) => (
                             <li>{formatPhone(item.phone_number)}</li>
                         ))
                     }
                 </ul>
-                <Icon
-                    name="phone-filled"
-                    class="h-auto w-5 text-primary-300"
-                    aria-label="Email"
-                />
+                <Icon name="mail" class="mt-1 nmd:mt-[2px] nlg:mt-1 icon" aria-label="Email" />
                 <p class="text-primary-300">{contanctInfo.email}<p></p></p>
             </div>
         </div>
-        <div class="">
+        <div>
+            <p class="title">Find Us</p>
             <p
-                class="mb-[1em] text-sm font-semibold uppercase tracking-wider text-primary-300 lg:text-base"
+                class="mb-3 text-sm text-primary-300 nmd:mb-3 nmd:text-sm nlg:mb-4 nlg:text-base"
             >
-                Find Us
-            </p>
-            <p class="mb-[0.75em] text-sm text-primary-300 lg:text-lg">
                 {contanctInfo.address}
             </p>
             <iframe

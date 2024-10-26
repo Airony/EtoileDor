@@ -6,6 +6,7 @@
     .btn-primary {
         --border-padding-x: 10px;
         --border-padding-y: 7px;
+        --outline-width: 3px;
         position: relative;
         display: inline-block;
         padding: 10px 13px;
@@ -23,7 +24,7 @@
         top: var(--border-padding-y);
         bottom: var(--border-padding-y);
         outline-style: solid;
-        outline-width: 3px;
+        outline-width: var(--outline-width);
         opacity: 0;
         outline-color: theme("colors.primary.950");
         @apply transition-opacity;
@@ -37,7 +38,7 @@
     .btn-primary-md {
         --border-padding-x: 10px;
         --border-padding-y: 10px;
-        outline-width: 4px;
+        --outline-width: 4px;
         padding: 12px 14px;
         font-size: theme("fontSize.sm");
     }
@@ -45,7 +46,7 @@
     .btn-primary-lg {
         --border-padding-x: 10px;
         --border-padding-y: 12px;
-        outline-width: 4px;
+        --outline-width: 4px;
         padding: 14px 13px;
         font-size: theme("fontSize.base");
     }

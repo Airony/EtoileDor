@@ -52,16 +52,77 @@
     }
 
     .btn-secondary {
-        @apply btn-secondary-sm relative isolate inline-block overflow-hidden border-2 border-solid border-secondary-200 bg-transparent font-main font-medium text-secondary-200 transition-colors duration-200 ease-in before:absolute before:inset-0 before:-z-10 before:-translate-x-full before:bg-secondary-200 before:transition-transform before:duration-200 before:ease-in hover:text-primary-950 hover:before:translate-x-0;
+        --padding-x: 10px;
+        --padding-y: 10px;
+        position: relative;
+        display: inline-block;
+        isolation: isolate;
+        overflow: hidden;
+        border: solid 2px;
+        border-color: theme("colors.secondary.200");
+        background-color: transparent;
+        font-family: theme("fontFamily.main");
+        font-size: theme("fontSize.xs");
+        color: theme("colors.secondary.200");
+        padding: var(--padding-y) var(--padding-y);
+        @apply transition-colors;
+        @apply duration-200;
+        @apply ease-in;
+        outline: none;
     }
-    .btn-secondary-lg {
-        @apply px-3 py-3 text-lg;
+
+    .btn-secondary:hover,
+    .btn-secondary:focus {
+        color: theme("colors.primary.950");
     }
+
+    .btn-secondary::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        z-index: -10;
+        transform: translateX(-100%);
+        background-color: theme("colors.secondary.200");
+        @apply transition-transform;
+        @apply duration-200;
+        @apply ease-in;
+    }
+
+    .btn-secondary:hover::before,
+    .btn-secondary:focus::before {
+        transform: translateX(0);
+    }
+
+    .btn-secondary::after {
+        content: "";
+        position: absolute;
+        bottom: 4px;
+        height: 3px;
+        background-color: theme("colors.primary.950");
+        right: var(--padding-x);
+        left: var(--padding-x);
+        transform: scaleX(0);
+        border-radius: 999px;
+        transform-origin: left;
+        @apply transition-transform;
+        @apply duration-200;
+        @apply ease-in;
+    }
+
+    .btn-secondary:focus::after {
+        transform: scaleX(1);
+    }
+
     .btn-secondary-md {
-        @apply px-3 py-3 text-sm;
+        --padding-x: 12px;
+        --padding-y: 12px;
+        font-size: theme("fontSize.sm");
     }
-    .btn-secondary-sm {
-        @apply px-3 py-2 text-xs;
+
+    .btn-secondary-lg {
+        --padding-x: 14px;
+        --padding-y: 14px;
+        font-size: theme("fontSize.base");
     }
 }
 

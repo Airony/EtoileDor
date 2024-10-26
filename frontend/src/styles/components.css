@@ -16,6 +16,10 @@
         outline: none;
     }
 
+    .btn-primary:active {
+        background-color: theme("backgroundColor.secondary.300");
+    }
+
     .btn-primary::before {
         content: "";
         position: absolute;
@@ -74,6 +78,10 @@
     .btn-secondary:hover,
     .btn-secondary:focus {
         color: theme("colors.primary.950");
+    }
+
+    .btn-secondary:active::before {
+        background-color: theme("backgroundColor.secondary.300");
     }
 
     .btn-secondary::before {

@@ -1,6 +1,5 @@
 import { GlobalConfig } from "payload/types";
 import { isAdmin } from "../accessControls";
-import offerSelectComponent from "../fields/offerSelectComponent";
 import offersHandler from "../endpointHandlers/offersHandler";
 
 const offersConfig: GlobalConfig = {
@@ -23,11 +22,9 @@ const offersConfig: GlobalConfig = {
                 {
                     name: "menu_item",
                     label: "Menu Item",
-                    type: "text",
                     required: true,
-                    admin: {
-                        components: { Field: offerSelectComponent },
-                    },
+                    type: "relationship",
+                    relationTo: "menu_items",
                 },
                 {
                     name: "image",

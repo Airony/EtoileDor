@@ -10,9 +10,12 @@ import Reservations from "./collections/Reservations";
 import offersConfig from "./globals/offersConfig";
 import { OfferImages } from "./collections/OfferImages";
 import deploymentConfig from "./globals/deploymentConfig";
+import Categories from "./collections/Categories";
+import SubCategories from "./collections/SubCategories";
+import MenuItems from "./collections/MenuItems";
 
 export default buildConfig({
-    collections: [Users, Reservations, OfferImages],
+    collections: [Users, Reservations, OfferImages, Categories, SubCategories, MenuItems],
     admin: {
         bundler: webpackBundler(),
     },

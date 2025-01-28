@@ -20,6 +20,7 @@ const Categories: CollectionConfig = {
         group: "Menu",
     },
     access: {
+        read: () => true,
         update: isAdmin,
         create: isAdmin,
         delete: isAdmin,

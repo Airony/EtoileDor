@@ -31,6 +31,7 @@ const SubCategories: CollectionConfig = {
         beforeDelete: [onDeleteSubCategory],
     },
     access: {
+        read: () => true,
         update: isAdmin,
         create: isAdmin,
         delete: isAdmin,

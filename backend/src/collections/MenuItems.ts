@@ -1,5 +1,6 @@
 import { CollectionConfig } from "payload/types";
 import onDeleteMenuItem from "../hooks/onDeleteMenuItem";
+import { isAdmin } from "../accessControls";
 
 const MenuItems: CollectionConfig = {
     slug: "menu_items",
@@ -36,6 +37,13 @@ const MenuItems: CollectionConfig = {
     admin: {
         useAsTitle: "name",
         group: "Menu",
+    },
+    access: {
+        read: () => true,
+        create: isAdmin,
+        update: isAdmin,
+        delete: isAdmin,
+        unlock: isAdmin,
     },
 };
 

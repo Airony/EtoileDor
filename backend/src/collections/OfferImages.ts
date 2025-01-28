@@ -1,6 +1,7 @@
 import { CollectionConfig } from "payload/types";
 import { isAdmin } from "../accessControls";
 import path from "path";
+import onDeleteOfferImage from "../hooks/onDeleteOfferImage";
 
 export const OfferImages: CollectionConfig = {
     slug: "offer-images",
@@ -34,6 +35,9 @@ export const OfferImages: CollectionConfig = {
         ],
     },
     fields: [],
+    hooks: {
+        beforeDelete: [onDeleteOfferImage],
+    },
     access: {
         read: () => true,
         create: isAdmin,

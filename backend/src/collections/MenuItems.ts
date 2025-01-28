@@ -1,4 +1,5 @@
 import { CollectionConfig } from "payload/types";
+import onDeleteMenuItem from "../hooks/onDeleteMenuItem";
 
 const MenuItems: CollectionConfig = {
     slug: "menu_items",
@@ -29,6 +30,9 @@ const MenuItems: CollectionConfig = {
         },
     ],
 
+    hooks: {
+        beforeDelete: [onDeleteMenuItem],
+    },
     admin: {
         useAsTitle: "name",
         group: "Menu",

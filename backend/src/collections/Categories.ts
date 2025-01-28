@@ -1,5 +1,6 @@
 import { CollectionConfig } from "payload/types";
 import { isAdmin } from "../accessControls";
+import onDeleteCategory from "../hooks/onDeleteCategory";
 
 const Categories: CollectionConfig = {
     slug: "categories",
@@ -11,6 +12,9 @@ const Categories: CollectionConfig = {
             required: true,
         },
     ],
+    hooks: {
+        beforeDelete: [onDeleteCategory],
+    },
     admin: {
         useAsTitle: "name",
         group: "Menu",

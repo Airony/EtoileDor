@@ -17,7 +17,7 @@ const SubCategories: CollectionConfig = {
         },
         {
             name: "category",
-            label: "Category",
+            label: "Parent Category",
             type: "relationship",
             relationTo: ["categories"],
             required: true,

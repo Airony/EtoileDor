@@ -21,18 +21,18 @@ const MenuItems: CollectionConfig = {
         },
         {
             name: "Category",
-            label: "Sub Category",
+            label: "Category",
             type: "relationship",
             relationTo: ["sub_categories", "categories"],
             required: true,
             hasMany: false,
-        }
+        },
     ],
 
     admin: {
         useAsTitle: "name",
         group: "Menu",
-    }
-}
+    },
+};
 
 export default MenuItems;

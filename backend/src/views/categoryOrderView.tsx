@@ -2,7 +2,7 @@ import { AdminViewComponent } from "payload/config";
 import { DefaultTemplate } from "payload/components/templates";
 import { Redirect } from "react-router-dom";
 import React, { useEffect, useState } from "react";
-import { Gutter } from "payload/components/elements";
+import { Gutter, Button } from "payload/components/elements";
 import { LoadingOverlayToggle } from "payload/dist/admin/components/elements/Loading";
 import { Category } from "../payload-types";
 import {
@@ -22,21 +22,23 @@ import {
     verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { toast, ToastContainer } from "react-toastify";
 
-type MyCategory = {
+export type MyCategory = {
     name: string;
     id: string;
+    initialIndex: number;
 };
 
 type State = {
     loading: boolean;
-    error: boolean;
+    error: string;
     categories: MyCategory[];
 };
 
 const initialState: State = {
     loading: true,
-    error: false,
+    error: "",
     categories: [],
 };
 
@@ -73,7 +75,7 @@ const categoryOrderView: AdminViewComponent = ({ user }) => {
                 );
                 return {
                     loading: false,
-                    error: false,
+                    error: "",
                     categories: arrayMove(state.categories, oldIndex, newIndex),
                 };
             });
@@ -89,30 +91,74 @@ const categoryOrderView: AdminViewComponent = ({ user }) => {
             }
             const json = await response.json();
             const categories = json.docs as Category[];
+            const extractedCategories = categories
+                .sort((a, b) => a.index - b.index)
+                .map((category) => ({
+                    name: category.name,
+                    id: category.id,
+                    initialIndex: category.index,
+                }));
+
             setState({
                 loading: false,
-                error: false,
-                categories: categories
-                    .sort((a, b) => a.index - b.index)
-                    .map((category) => ({
-                        name: category.name,
-                        id: category.id,
-                    })),
+                error: "",
+                categories: extractedCategories,
             });
         };
+
         try {
             fetchCategories();
         } catch (error) {
             console.error(error);
             setState({
                 loading: false,
-                error: true,
+                error: "Failed to fetch categories. Please refresh the page",
                 categories: [],
             });
         }
 
         return () => {};
     }, []);
+
+    async function onSave() {
+        setState((state) => ({
+            ...state,
+            loading: true,
+        }));
+
+        // Custom endpoint
+        const response = await fetch("/api/categories/reorder", {
+            credentials: "include",
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(
+                state.categories.map((cat, index) => {
+                    return { id: cat.id, index };
+                }),
+            ),
+        });
+
+        if (response.status !== 200) {
+            setState((state) => ({
+                ...state,
+                loading: false,
+                error: "",
+            }));
+            toast.error("Failed to update order.", {
+                position: "bottom-center",
+            });
+        } else {
+            setState((state) => ({
+                ...state,
+                loading: false,
+            }));
+            toast.success("Order updated successfully.", {
+                position: "bottom-center",
+            });
+        }
+    }
 
     return (
         <>
@@ -134,6 +180,7 @@ const categoryOrderView: AdminViewComponent = ({ user }) => {
                         <SortableContext
                             items={state.categories}
                             strategy={verticalListSortingStrategy}
+                            disabled={state.loading}
                         >
                             {state.categories.map((cat) => (
                                 <SortableItem
@@ -144,7 +191,9 @@ const categoryOrderView: AdminViewComponent = ({ user }) => {
                             ))}
                         </SortableContext>
                     </DndContext>
-                    <ul>{state.error && <li>Error fetching Categories</li>}</ul>
+                    {state.error && <p>{state.error}</p>}
+                    <Button onClick={onSave}>Save</Button>
+                    <ToastContainer />
                 </Gutter>
             </DefaultTemplate>
         </>

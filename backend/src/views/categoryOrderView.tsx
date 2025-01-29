@@ -1,6 +1,7 @@
 import { AdminViewComponent } from "payload/config";
 import { DefaultTemplate } from "payload/components/templates";
 import React from "react";
+import { Redirect } from "react-router-dom";
 import { Gutter } from "payload/components/elements";
 
 const categoryOrderView: AdminViewComponent = ({ user }) => {
@@ -13,9 +14,7 @@ const categoryOrderView: AdminViewComponent = ({ user }) => {
             );
         }
     } else {
-        <DefaultTemplate>
-            You must be logged in to view this page
-        </DefaultTemplate>;
+        return <Redirect to="/admin/login" />;
     }
 
     return (

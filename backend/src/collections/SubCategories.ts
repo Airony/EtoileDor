@@ -22,6 +22,13 @@ const SubCategories: CollectionConfig = {
             relationTo: ["categories"],
             required: true,
         },
+        {
+            name: "index",
+            label: "Index",
+            type: "number",
+            required: true,
+            defaultValue: -1,
+        },
     ],
     admin: {
         useAsTitle: "name",

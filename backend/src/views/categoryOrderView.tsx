@@ -4,30 +4,38 @@ import { Redirect } from "react-router-dom";
 import React, { useEffect, useState } from "react";
 import { Gutter, Button } from "payload/components/elements";
 import { LoadingOverlayToggle } from "payload/dist/admin/components/elements/Loading";
-import { Category } from "../payload-types";
+import { Category, SubCategory } from "../payload-types";
 import {
     DndContext,
     closestCenter,
-    KeyboardSensor,
     PointerSensor,
     useSensor,
     useSensors,
     DragEndEvent,
+    SensorDescriptor,
+    SensorOptions,
 } from "@dnd-kit/core";
 import {
     arrayMove,
     SortableContext,
-    sortableKeyboardCoordinates,
     useSortable,
     verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { toast, ToastContainer } from "react-toastify";
+import {
+    restrictToParentElement,
+    restrictToVerticalAxis,
+} from "@dnd-kit/modifiers";
 
-export type MyCategory = {
+export type CategoryData = {
     name: string;
     id: string;
     initialIndex: number;
+};
+
+export type MyCategory = CategoryData & {
+    SubCategories: CategoryData[];
 };
 
 type State = {
@@ -56,12 +64,7 @@ const categoryOrderView: AdminViewComponent = ({ user }) => {
     }
 
     const [state, setState] = useState<State>(initialState);
-    const sensors = useSensors(
-        useSensor(PointerSensor),
-        useSensor(KeyboardSensor, {
-            coordinateGetter: sortableKeyboardCoordinates,
-        }),
-    );
+    const sensors = useSensors(useSensor(PointerSensor));
 
     function handleDragEnd(event: DragEndEvent) {
         const { active, over } = event;
@@ -83,21 +86,60 @@ const categoryOrderView: AdminViewComponent = ({ user }) => {
     }
     useEffect(() => {
         const fetchCategories = async () => {
-            const response = await fetch("/api/categories?limit=0", {
+            const categoriesResponse = await fetch("/api/categories?limit=0", {
                 credentials: "include",
             });
-            if (response.status !== 200) {
+            if (categoriesResponse.status !== 200) {
                 throw new Error("Failed to fetch categories");
             }
-            const json = await response.json();
+            const json = await categoriesResponse.json();
+
+            const subCategoriesResponse = await fetch(
+                "/api/sub_categories?limit=0&depth=1",
+                {
+                    credentials: "include",
+                },
+            );
+            if (subCategoriesResponse.status !== 200) {
+                throw new Error("Failed to fetch sub categories");
+            }
+            const subCategoriesJson = await subCategoriesResponse.json();
+
             const categories = json.docs as Category[];
-            const extractedCategories = categories
+            const subCategories = subCategoriesJson.docs as SubCategory[];
+
+            const extractedCategories: MyCategory[] = categories
                 .sort((a, b) => a.index - b.index)
                 .map((category) => ({
                     name: category.name,
                     id: category.id,
                     initialIndex: category.index,
+                    SubCategories: [],
                 }));
+
+            subCategories.forEach((subCategory) => {
+                const parentCaregoryId = (
+                    subCategory.category.value as Category
+                ).id;
+
+                // Insert subcategory into parent category
+                const index = extractedCategories.findIndex(
+                    (cat) => cat.id === parentCaregoryId,
+                );
+                if (index >= 0) {
+                    extractedCategories[index].SubCategories.push({
+                        name: subCategory.name,
+                        id: subCategory.id,
+                        initialIndex: subCategory.index,
+                    });
+                }
+            });
+
+            extractedCategories.forEach((cat) => {
+                cat.SubCategories.sort(
+                    (a, b) => a.initialIndex - b.initialIndex,
+                );
+            });
 
             setState({
                 loading: false,
@@ -160,6 +202,36 @@ const categoryOrderView: AdminViewComponent = ({ user }) => {
         }
     }
 
+    function handleSubCategoryDragEnd(id: string, event: DragEndEvent) {
+        const { active, over } = event;
+        const parentCategory = state.categories.find((cat) => cat.id === id);
+        const activeIndex = parentCategory.SubCategories.findIndex(
+            (cat) => cat.id === active.id,
+        );
+        const overIndex = parentCategory.SubCategories.findIndex(
+            (cat) => cat.id === over.id,
+        );
+
+        return setState((state) => {
+            return {
+                ...state,
+                categories: state.categories.map((cat) => {
+                    if (cat.id === id) {
+                        return {
+                            ...cat,
+                            SubCategories: arrayMove(
+                                cat.SubCategories,
+                                activeIndex,
+                                overIndex,
+                            ),
+                        };
+                    }
+                    return cat;
+                }),
+            };
+        });
+    }
+
     return (
         <>
             <LoadingOverlayToggle
@@ -176,6 +248,10 @@ const categoryOrderView: AdminViewComponent = ({ user }) => {
                         sensors={sensors}
                         collisionDetection={closestCenter}
                         onDragEnd={handleDragEnd}
+                        modifiers={[
+                            restrictToVerticalAxis,
+                            restrictToParentElement,
+                        ]}
                     >
                         <SortableContext
                             items={state.categories}
@@ -183,10 +259,15 @@ const categoryOrderView: AdminViewComponent = ({ user }) => {
                             disabled={state.loading}
                         >
                             {state.categories.map((cat) => (
-                                <SortableItem
+                                <CategorySortableItem
                                     key={cat.id}
                                     id={cat.id}
                                     name={cat.name}
+                                    sensors={sensors}
+                                    subCategories={cat.SubCategories || []}
+                                    handleSubCategoryDragEnd={(event) => {
+                                        handleSubCategoryDragEnd(cat.id, event);
+                                    }}
                                 />
                             ))}
                         </SortableContext>
@@ -200,6 +281,56 @@ const categoryOrderView: AdminViewComponent = ({ user }) => {
     );
 };
 
+function CategorySortableItem(props: {
+    key: string;
+    id: string;
+    name: string;
+    sensors: SensorDescriptor<SensorOptions>[];
+    subCategories: CategoryData[];
+    handleSubCategoryDragEnd: (event: DragEndEvent) => void;
+}) {
+    const { attributes, listeners, setNodeRef, transform, transition } =
+        useSortable({ id: props.id });
+
+    const style = {
+        transform: CSS.Translate.toString(transform),
+        transition,
+    };
+    return (
+        <div
+            ref={setNodeRef}
+            style={style}
+            {...attributes}
+            {...listeners}
+            className="category-order__container"
+        >
+            <div className="category-order__category">
+                <Icon />
+                {props.name}
+            </div>
+            <DndContext
+                sensors={props.sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={props.handleSubCategoryDragEnd}
+                modifiers={[restrictToVerticalAxis, restrictToParentElement]}
+            >
+                <SortableContext
+                    items={props.subCategories}
+                    strategy={verticalListSortingStrategy}
+                >
+                    {props.subCategories.map((cat) => (
+                        <SortableItem
+                            key={cat.id}
+                            id={cat.id}
+                            name={cat.name}
+                        />
+                    ))}
+                </SortableContext>
+            </DndContext>
+        </div>
+    );
+}
+
 interface SortableItemProps {
     key: string;
     id: string;
@@ -210,7 +341,7 @@ function SortableItem(props: SortableItemProps) {
         useSortable({ id: props.id });
 
     const style = {
-        transform: CSS.Transform.toString(transform),
+        transform: CSS.Translate.toString(transform),
         transition,
     };
     return (
@@ -219,14 +350,20 @@ function SortableItem(props: SortableItemProps) {
             style={style}
             {...attributes}
             {...listeners}
-            className="category-order__category"
+            className="category-order__sub-category"
         >
-            <div className="category-order__draggable-icon">
-                <div className="category-order__draggable-icon__line"></div>
-                <div className="category-order__draggable-icon__line"></div>
-                <div className="category-order__draggable-icon__line"></div>
-            </div>
+            <Icon />
             {props.name}
+        </div>
+    );
+}
+
+function Icon() {
+    return (
+        <div className="category-order__draggable-icon">
+            <div className="category-order__draggable-icon__line"></div>
+            <div className="category-order__draggable-icon__line"></div>
+            <div className="category-order__draggable-icon__line"></div>
         </div>
     );
 }

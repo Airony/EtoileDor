@@ -1,8 +1,9 @@
 @import '~payload/scss';
 
 
-.category-order__category {
-    background-color: var(--theme-elevation-50);
+.category-order__category,
+.category-order__sub-category {
+    background-color: var(--color-base-950);
     margin-top: 1rem;
     padding: 1rem;
     display: flex;
@@ -11,14 +12,27 @@
     gap: 1rem;
     cursor: pointer;
 
-    // aria-pressed = true
-    &[aria-pressed='true'] {
-        background-color: var(--theme-elevation-100);
-        @include shadow-lg
-    }
 
 }
 
+.category-order__container[aria-pressed='true'] {
+    .category-order__category {
+        background-color: var(--theme-elevation-150);
+        @include shadow-lg
+    }
+}
+
+.category-order__sub-category {
+    background-color: var;
+    background-color: var(--color-base-1000);
+    margin-left: 30px;
+    margin-top: 5px;
+
+    &[aria-pressed='true'] {
+        background-color: var(--theme-elevation-150);
+        @include shadow-lg
+    }
+}
 
 .category-order__draggable-icon {
     display: flex;

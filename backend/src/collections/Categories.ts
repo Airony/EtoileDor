@@ -11,6 +11,11 @@ const Categories: CollectionConfig = {
             type: "text",
             required: true,
         },
+        {
+            name: "index",
+            type: "number",
+            defaultValue: -1,
+        },
     ],
     hooks: {
         beforeDelete: [onDeleteCategory],
@@ -18,6 +23,7 @@ const Categories: CollectionConfig = {
     admin: {
         useAsTitle: "name",
         group: "Menu",
+        // hidden: true,
     },
     access: {
         read: () => true,

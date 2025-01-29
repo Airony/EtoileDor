@@ -90,7 +90,7 @@ export interface OfferImage {
 export interface Category {
     id: string;
     name: string;
-    index?: number | null;
+    index: number;
     updatedAt: string;
     createdAt: string;
 }

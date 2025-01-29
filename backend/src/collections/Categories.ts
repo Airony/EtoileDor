@@ -15,6 +15,7 @@ const Categories: CollectionConfig = {
             name: "index",
             type: "number",
             defaultValue: -1,
+            required: true,
         },
     ],
     hooks: {

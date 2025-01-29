@@ -4,8 +4,24 @@ import { Redirect } from "react-router-dom";
 import React, { useEffect, useState } from "react";
 import { Gutter } from "payload/components/elements";
 import { LoadingOverlayToggle } from "payload/dist/admin/components/elements/Loading";
-
 import { Category } from "../payload-types";
+import {
+    DndContext,
+    closestCenter,
+    KeyboardSensor,
+    PointerSensor,
+    useSensor,
+    useSensors,
+    DragEndEvent,
+} from "@dnd-kit/core";
+import {
+    arrayMove,
+    SortableContext,
+    sortableKeyboardCoordinates,
+    useSortable,
+    verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 type MyCategory = {
     name: string;
@@ -38,7 +54,31 @@ const categoryOrderView: AdminViewComponent = ({ user }) => {
     }
 
     const [state, setState] = useState<State>(initialState);
+    const sensors = useSensors(
+        useSensor(PointerSensor),
+        useSensor(KeyboardSensor, {
+            coordinateGetter: sortableKeyboardCoordinates,
+        }),
+    );
 
+    function handleDragEnd(event: DragEndEvent) {
+        const { active, over } = event;
+        if (active.id !== over.id) {
+            setState((state) => {
+                const oldIndex = state.categories.findIndex(
+                    (cat) => cat.id === active.id,
+                );
+                const newIndex = state.categories.findIndex(
+                    (cat) => cat.id === over.id,
+                );
+                return {
+                    loading: false,
+                    error: false,
+                    categories: arrayMove(state.categories, oldIndex, newIndex),
+                };
+            });
+        }
+    }
     useEffect(() => {
         const fetchCategories = async () => {
             const response = await fetch("/api/categories?limit=0", {
@@ -86,16 +126,60 @@ const categoryOrderView: AdminViewComponent = ({ user }) => {
                     <h1>Category Order</h1>
                     <p>Drag and drop to reorder categories</p>
 
-                    <ul>
-                        {state.error && <li>Error fetching Categories</li>}
-                        {state.categories.map((category) => (
-                            <li key={category.id}>{category.name}</li>
-                        ))}
-                    </ul>
+                    <DndContext
+                        sensors={sensors}
+                        collisionDetection={closestCenter}
+                        onDragEnd={handleDragEnd}
+                    >
+                        <SortableContext
+                            items={state.categories}
+                            strategy={verticalListSortingStrategy}
+                        >
+                            {state.categories.map((cat) => (
+                                <SortableItem
+                                    key={cat.id}
+                                    id={cat.id}
+                                    name={cat.name}
+                                />
+                            ))}
+                        </SortableContext>
+                    </DndContext>
+                    <ul>{state.error && <li>Error fetching Categories</li>}</ul>
                 </Gutter>
             </DefaultTemplate>
         </>
     );
 };
+
+interface SortableItemProps {
+    key: string;
+    id: string;
+    name: string;
+}
+function SortableItem(props: SortableItemProps) {
+    const { attributes, listeners, setNodeRef, transform, transition } =
+        useSortable({ id: props.id });
+
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+    };
+    return (
+        <div
+            ref={setNodeRef}
+            style={style}
+            {...attributes}
+            {...listeners}
+            className="category-order__category"
+        >
+            <div className="category-order__draggable-icon">
+                <div className="category-order__draggable-icon__line"></div>
+                <div className="category-order__draggable-icon__line"></div>
+                <div className="category-order__draggable-icon__line"></div>
+            </div>
+            {props.name}
+        </div>
+    );
+}
 
 export default categoryOrderView;

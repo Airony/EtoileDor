@@ -34,6 +34,7 @@ export default buildConfig({
                 },
             },
         },
+        css: path.resolve(__dirname, "scss/style.scss"),
     },
     rateLimit: {
         trustProxy: true,

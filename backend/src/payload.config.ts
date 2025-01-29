@@ -13,11 +13,27 @@ import deploymentConfig from "./globals/deploymentConfig";
 import Categories from "./collections/Categories";
 import SubCategories from "./collections/SubCategories";
 import MenuItems from "./collections/MenuItems";
+import categoryOrderView from "./views/categoryOrderView";
 
 export default buildConfig({
-    collections: [Users, Reservations, OfferImages, Categories, SubCategories, MenuItems],
+    collections: [
+        Users,
+        Reservations,
+        OfferImages,
+        Categories,
+        SubCategories,
+        MenuItems,
+    ],
     admin: {
         bundler: webpackBundler(),
+        components: {
+            views: {
+                categoryOrderView: {
+                    Component: categoryOrderView,
+                    path: "/category-order",
+                },
+            },
+        },
     },
     rateLimit: {
         trustProxy: true,

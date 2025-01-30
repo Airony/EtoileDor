@@ -5,6 +5,7 @@ import React, { useEffect, useState } from "react";
 import { Gutter, Button } from "payload/components/elements";
 import { LoadingOverlayToggle } from "payload/dist/admin/components/elements/Loading";
 import { Category, SubCategory } from "../payload-types";
+import { Chevron } from "payload/components/icons";
 import {
     DndContext,
     closestCenter,
@@ -14,6 +15,7 @@ import {
     DragEndEvent,
     SensorDescriptor,
     SensorOptions,
+    DraggableAttributes,
 } from "@dnd-kit/core";
 import {
     arrayMove,
@@ -27,11 +29,13 @@ import {
     restrictToParentElement,
     restrictToVerticalAxis,
 } from "@dnd-kit/modifiers";
+import { SyntheticListenerMap } from "@dnd-kit/core/dist/hooks/utilities";
 
 export type CategoryData = {
     name: string;
     id: string;
     initialIndex: number;
+    collapsed: boolean;
 };
 
 export type MyCategory = CategoryData & {
@@ -115,6 +119,7 @@ const categoryOrderView: AdminViewComponent = ({ user }) => {
                     id: category.id,
                     initialIndex: category.index,
                     SubCategories: [],
+                    collapsed: false,
                 }));
 
             subCategories.forEach((subCategory) => {
@@ -131,6 +136,7 @@ const categoryOrderView: AdminViewComponent = ({ user }) => {
                         name: subCategory.name,
                         id: subCategory.id,
                         initialIndex: subCategory.index,
+                        collapsed: false,
                     });
                 }
             });
@@ -232,6 +238,21 @@ const categoryOrderView: AdminViewComponent = ({ user }) => {
         });
     }
 
+    function handleCategoryCollapseToggle(id: string): void {
+        console.log("called");
+        setState((state) => ({
+            ...state,
+            categories: state.categories.map((cat) => {
+                if (cat.id === id) {
+                    return {
+                        ...cat,
+                        collapsed: !cat.collapsed,
+                    };
+                }
+                return cat;
+            }),
+        }));
+    }
     return (
         <>
             <LoadingOverlayToggle
@@ -268,6 +289,11 @@ const categoryOrderView: AdminViewComponent = ({ user }) => {
                                     handleSubCategoryDragEnd={(event) => {
                                         handleSubCategoryDragEnd(cat.id, event);
                                     }}
+                                    collapsed={cat.collapsed}
+                                    onCollapseToggle={() => {
+                                        console.log("called");
+                                        handleCategoryCollapseToggle(cat.id);
+                                    }}
                                 />
                             ))}
                         </SortableContext>
@@ -288,6 +314,8 @@ function CategorySortableItem(props: {
     sensors: SensorDescriptor<SensorOptions>[];
     subCategories: CategoryData[];
     handleSubCategoryDragEnd: (event: DragEndEvent) => void;
+    collapsed: boolean;
+    onCollapseToggle: (event: React.MouseEvent) => void;
 }) {
     const { attributes, listeners, setNodeRef, transform, transition } =
         useSortable({ id: props.id });
@@ -300,33 +328,50 @@ function CategorySortableItem(props: {
         <div
             ref={setNodeRef}
             style={style}
-            {...attributes}
-            {...listeners}
             className="category-order__container"
         >
             <div className="category-order__category">
-                <Icon />
-                {props.name}
-            </div>
-            <DndContext
-                sensors={props.sensors}
-                collisionDetection={closestCenter}
-                onDragEnd={props.handleSubCategoryDragEnd}
-                modifiers={[restrictToVerticalAxis, restrictToParentElement]}
-            >
-                <SortableContext
-                    items={props.subCategories}
-                    strategy={verticalListSortingStrategy}
-                >
-                    {props.subCategories.map((cat) => (
-                        <SortableItem
-                            key={cat.id}
-                            id={cat.id}
-                            name={cat.name}
+                <div className="category-order__category__container">
+                    <DragHandle listeners={listeners} attributes={attributes} />
+                    {props.name}
+                </div>
+                {props.subCategories.length > 0 && (
+                    <Button
+                        buttonStyle="none"
+                        onClick={props.onCollapseToggle}
+                        className="category-order__category__collapse-button"
+                    >
+                        <Chevron
+                            direction={props.collapsed ? "down" : "up"}
+                            size="large"
                         />
-                    ))}
-                </SortableContext>
-            </DndContext>
+                    </Button>
+                )}
+            </div>
+            {!props.collapsed && (
+                <DndContext
+                    sensors={props.sensors}
+                    collisionDetection={closestCenter}
+                    onDragEnd={props.handleSubCategoryDragEnd}
+                    modifiers={[
+                        restrictToVerticalAxis,
+                        restrictToParentElement,
+                    ]}
+                >
+                    <SortableContext
+                        items={props.subCategories}
+                        strategy={verticalListSortingStrategy}
+                    >
+                        {props.subCategories.map((cat) => (
+                            <SortableItem
+                                key={cat.id}
+                                id={cat.id}
+                                name={cat.name}
+                            />
+                        ))}
+                    </SortableContext>
+                </DndContext>
+            )}
         </div>
     );
 }
@@ -348,19 +393,27 @@ function SortableItem(props: SortableItemProps) {
         <div
             ref={setNodeRef}
             style={style}
-            {...attributes}
-            {...listeners}
             className="category-order__sub-category"
         >
-            <Icon />
+            <DragHandle listeners={listeners} attributes={attributes} />
             {props.name}
         </div>
     );
 }
 
-function Icon() {
+function DragHandle({
+    attributes,
+    listeners,
+}: {
+    listeners: SyntheticListenerMap;
+    attributes: DraggableAttributes;
+}) {
     return (
-        <div className="category-order__draggable-icon">
+        <div
+            className="category-order__draggable-icon"
+            {...attributes}
+            {...listeners}
+        >
             <div className="category-order__draggable-icon__line"></div>
             <div className="category-order__draggable-icon__line"></div>
             <div className="category-order__draggable-icon__line"></div>

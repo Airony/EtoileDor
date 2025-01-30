@@ -2,7 +2,7 @@ import React from "react";
 import { AdminViewComponent } from "payload/config";
 import { DefaultTemplate } from "payload/components/templates";
 import { Redirect } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useReducer } from "react";
 import { Gutter, Button } from "payload/components/elements";
 import { LoadingOverlayToggle } from "payload/dist/admin/components/elements/Loading";
 import { Category, SubCategory } from "../payload-types";
@@ -12,7 +12,6 @@ import {
     PointerSensor,
     useSensor,
     useSensors,
-    DragEndEvent,
 } from "@dnd-kit/core";
 import {
     arrayMove,
@@ -25,6 +24,157 @@ import {
     restrictToVerticalAxis,
 } from "@dnd-kit/modifiers";
 import CategorySortableItem from "../components/CategorySortableItem";
+
+enum deployActionKind {
+    LOADING = "LOADING",
+    ERROR = "ERROR",
+    FETCHED = "FETCHED",
+    COLLAPSED = "COLLAPSED",
+    MOVE_CATEGORY = "MOVE_CATEGORY",
+    MOVE_SUB_CATEGORY = "MOVE_SUB_CATEGORY",
+    SAVED = "SAVED",
+}
+
+function Reducer(state: State, action: deployAction): State {
+    const { type } = action;
+    switch (type) {
+        case deployActionKind.LOADING:
+            return { ...state, loading: true, error: "" };
+        case deployActionKind.ERROR:
+            return { ...state, loading: false, error: action.error };
+        case deployActionKind.FETCHED:
+            // This is gonna be long
+            const { categories, subCategories } = action;
+
+            // Put each subcategory into its parent category
+            const extractedCategories: MyCategory[] = categories
+                .sort((a, b) => a.index - b.index)
+                .map((category) => ({
+                    name: category.name,
+                    id: category.id,
+                    initialIndex: category.index,
+                    SubCategories: [],
+                    collapsed: false,
+                }));
+
+            subCategories.forEach((subCategory) => {
+                const parentCaregoryId = (
+                    subCategory.category.value as Category
+                ).id;
+
+                // Insert subcategory into parent category
+                const index = extractedCategories.findIndex(
+                    (cat) => cat.id === parentCaregoryId,
+                );
+                if (index >= 0) {
+                    extractedCategories[index].SubCategories.push({
+                        name: subCategory.name,
+                        id: subCategory.id,
+                        initialIndex: subCategory.index,
+                        collapsed: false,
+                    });
+                }
+            });
+
+            extractedCategories.forEach((cat) => {
+                cat.SubCategories.sort(
+                    (a, b) => a.initialIndex - b.initialIndex,
+                );
+            });
+
+            return {
+                error: "",
+                loading: false,
+                categories: extractedCategories,
+            };
+        case deployActionKind.SAVED:
+            return {
+                ...state,
+                loading: false,
+                error: "",
+            };
+        case deployActionKind.COLLAPSED:
+            return {
+                ...state,
+                categories: state.categories.map((cat) => {
+                    if (cat.id === action.id) {
+                        return {
+                            ...cat,
+                            collapsed: !cat.collapsed,
+                        };
+                    }
+                    return cat;
+                }),
+            };
+
+        case deployActionKind.MOVE_CATEGORY:
+            return {
+                ...state,
+                categories: arrayMove(
+                    state.categories,
+                    state.categories.findIndex(
+                        (cat) => cat.id === action.activeId,
+                    ),
+                    state.categories.findIndex(
+                        (cat) => cat.id === action.overId,
+                    ),
+                ),
+            };
+        case deployActionKind.MOVE_SUB_CATEGORY:
+            return {
+                ...state,
+                categories: state.categories.map((cat) => {
+                    if (cat.id === action.parentId) {
+                        return {
+                            ...cat,
+                            SubCategories: arrayMove(
+                                cat.SubCategories,
+                                cat.SubCategories.findIndex(
+                                    (subCat) => subCat.id === action.activeId,
+                                ),
+                                cat.SubCategories.findIndex(
+                                    (subCat) => subCat.id === action.overId,
+                                ),
+                            ),
+                        };
+                    }
+                    return cat;
+                }),
+            };
+
+        default:
+            break;
+    }
+}
+
+type deployAction =
+    | {
+          type: deployActionKind.ERROR;
+          error: string;
+      }
+    | {
+          type: deployActionKind.LOADING | deployActionKind.SAVED;
+      }
+    | {
+          type: deployActionKind.FETCHED;
+          categories: Category[];
+          subCategories: SubCategory[];
+      }
+    | {
+          type: deployActionKind.COLLAPSED;
+          id: string;
+      }
+    | {
+          type: deployActionKind.MOVE_CATEGORY;
+          activeId: string;
+          overId: string;
+      }
+    | {
+          type: deployActionKind.MOVE_SUB_CATEGORY;
+          parentId: string;
+          activeId: string;
+          overId: string;
+      };
 
 export type CategoryData = {
     name: string;
@@ -62,27 +212,9 @@ const categoryOrderView: AdminViewComponent = ({ user }) => {
         return <Redirect to="/admin/login" />;
     }
 
-    const [state, setState] = useState<State>(initialState);
+    const [state, dispatch] = useReducer(Reducer, initialState);
     const sensors = useSensors(useSensor(PointerSensor));
 
-    function handleDragEnd(event: DragEndEvent) {
-        const { active, over } = event;
-        if (active.id !== over.id) {
-            setState((state) => {
-                const oldIndex = state.categories.findIndex(
-                    (cat) => cat.id === active.id,
-                );
-                const newIndex = state.categories.findIndex(
-                    (cat) => cat.id === over.id,
-                );
-                return {
-                    loading: false,
-                    error: "",
-                    categories: arrayMove(state.categories, oldIndex, newIndex),
-                };
-            });
-        }
-    }
     useEffect(() => {
         const fetchCategories = async () => {
             const categoriesResponse = await fetch("/api/categories?limit=0", {
@@ -107,56 +239,19 @@ const categoryOrderView: AdminViewComponent = ({ user }) => {
             const categories = json.docs as Category[];
             const subCategories = subCategoriesJson.docs as SubCategory[];
 
-            const extractedCategories: MyCategory[] = categories
-                .sort((a, b) => a.index - b.index)
-                .map((category) => ({
-                    name: category.name,
-                    id: category.id,
-                    initialIndex: category.index,
-                    SubCategories: [],
-                    collapsed: false,
-                }));
-
-            subCategories.forEach((subCategory) => {
-                const parentCaregoryId = (
-                    subCategory.category.value as Category
-                ).id;
-
-                // Insert subcategory into parent category
-                const index = extractedCategories.findIndex(
-                    (cat) => cat.id === parentCaregoryId,
-                );
-                if (index >= 0) {
-                    extractedCategories[index].SubCategories.push({
-                        name: subCategory.name,
-                        id: subCategory.id,
-                        initialIndex: subCategory.index,
-                        collapsed: false,
-                    });
-                }
-            });
-
-            extractedCategories.forEach((cat) => {
-                cat.SubCategories.sort(
-                    (a, b) => a.initialIndex - b.initialIndex,
-                );
-            });
-
-            setState({
-                loading: false,
-                error: "",
-                categories: extractedCategories,
+            dispatch({
+                type: deployActionKind.FETCHED,
+                categories,
+                subCategories,
             });
         };
 
         try {
             fetchCategories();
         } catch (error) {
-            console.error(error);
-            setState({
-                loading: false,
+            dispatch({
+                type: deployActionKind.ERROR,
                 error: "Failed to fetch categories. Please refresh the page",
-                categories: [],
             });
         }
 
@@ -164,10 +259,7 @@ const categoryOrderView: AdminViewComponent = ({ user }) => {
     }, []);
 
     async function onSave() {
-        setState((state) => ({
-            ...state,
-            loading: true,
-        }));
+        dispatch({ type: deployActionKind.LOADING });
 
         // Custom endpoint
         const response = await fetch("/api/categories/reorder", {
@@ -184,69 +276,21 @@ const categoryOrderView: AdminViewComponent = ({ user }) => {
         });
 
         if (response.status !== 200) {
-            setState((state) => ({
-                ...state,
-                loading: false,
+            dispatch({
+                type: deployActionKind.ERROR,
                 error: "",
-            }));
+            });
             toast.error("Failed to update order.", {
                 position: "bottom-center",
             });
         } else {
-            setState((state) => ({
-                ...state,
-                loading: false,
-            }));
+            dispatch({ type: deployActionKind.SAVED });
             toast.success("Order updated successfully.", {
                 position: "bottom-center",
             });
         }
     }
 
-    function handleSubCategoryDragEnd(id: string, event: DragEndEvent) {
-        const { active, over } = event;
-        const parentCategory = state.categories.find((cat) => cat.id === id);
-        const activeIndex = parentCategory.SubCategories.findIndex(
-            (cat) => cat.id === active.id,
-        );
-        const overIndex = parentCategory.SubCategories.findIndex(
-            (cat) => cat.id === over.id,
-        );
-
-        return setState((state) => {
-            return {
-                ...state,
-                categories: state.categories.map((cat) => {
-                    if (cat.id === id) {
-                        return {
-                            ...cat,
-                            SubCategories: arrayMove(
-                                cat.SubCategories,
-                                activeIndex,
-                                overIndex,
-                            ),
-                        };
-                    }
-                    return cat;
-                }),
-            };
-        });
-    }
-
-    function handleCategoryCollapseToggle(id: string): void {
-        setState((state) => ({
-            ...state,
-            categories: state.categories.map((cat) => {
-                if (cat.id === id) {
-                    return {
-                        ...cat,
-                        collapsed: !cat.collapsed,
-                    };
-                }
-                return cat;
-            }),
-        }));
-    }
     return (
         <>
             <LoadingOverlayToggle
@@ -262,7 +306,13 @@ const categoryOrderView: AdminViewComponent = ({ user }) => {
                     <DndContext
                         sensors={sensors}
                         collisionDetection={closestCenter}
-                        onDragEnd={handleDragEnd}
+                        onDragEnd={(e) => {
+                            dispatch({
+                                type: deployActionKind.MOVE_CATEGORY,
+                                activeId: e.active.id.toString(),
+                                overId: e.over.id.toString(),
+                            });
+                        }}
                         modifiers={[
                             restrictToVerticalAxis,
                             restrictToParentElement,
@@ -281,11 +331,20 @@ const categoryOrderView: AdminViewComponent = ({ user }) => {
                                     sensors={sensors}
                                     subCategories={cat.SubCategories || []}
                                     handleSubCategoryDragEnd={(event) => {
-                                        handleSubCategoryDragEnd(cat.id, event);
+                                        dispatch({
+                                            type: deployActionKind.MOVE_SUB_CATEGORY,
+                                            parentId: cat.id,
+                                            activeId:
+                                                event.active.id.toString(),
+                                            overId: event.over.id.toString(),
+                                        });
                                     }}
                                     collapsed={cat.collapsed}
                                     onCollapseToggle={() => {
-                                        handleCategoryCollapseToggle(cat.id);
+                                        dispatch({
+                                            type: deployActionKind.COLLAPSED,
+                                            id: cat.id,
+                                        });
                                     }}
                                 />
                             ))}
@@ -293,7 +352,9 @@ const categoryOrderView: AdminViewComponent = ({ user }) => {
                     </DndContext>
 
                     {state.error && <p>{state.error}</p>}
-                    <Button onClick={onSave}>Save</Button>
+                    <Button onClick={onSave} disabled={state.loading}>
+                        Save
+                    </Button>
                     <ToastContainer />
                 </Gutter>
             </DefaultTemplate>

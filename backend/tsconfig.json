@@ -15,7 +15,8 @@
         "src/**/*.ts",
         "src/fields/offerSelectComponent.tsx",
         "src/deploymentView.tsx",
-        "src/views/categoryOrderView.tsx"
+        "src/views/categoryOrderView.tsx",
+        "src/components/DragHandle.tsx"
     ],
 
     "exclude": ["node_modules", "dist", "build"],

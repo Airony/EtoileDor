@@ -1,11 +1,11 @@
+import React from "react";
 import { AdminViewComponent } from "payload/config";
 import { DefaultTemplate } from "payload/components/templates";
 import { Redirect } from "react-router-dom";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Gutter, Button } from "payload/components/elements";
 import { LoadingOverlayToggle } from "payload/dist/admin/components/elements/Loading";
 import { Category, SubCategory } from "../payload-types";
-import { Chevron } from "payload/components/icons";
 import {
     DndContext,
     closestCenter,
@@ -13,23 +13,18 @@ import {
     useSensor,
     useSensors,
     DragEndEvent,
-    SensorDescriptor,
-    SensorOptions,
-    DraggableAttributes,
 } from "@dnd-kit/core";
 import {
     arrayMove,
     SortableContext,
-    useSortable,
     verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
 import { toast, ToastContainer } from "react-toastify";
 import {
     restrictToParentElement,
     restrictToVerticalAxis,
 } from "@dnd-kit/modifiers";
-import { SyntheticListenerMap } from "@dnd-kit/core/dist/hooks/utilities";
+import CategorySortableItem from "../components/CategorySortableItem";
 
 export type CategoryData = {
     name: string;
@@ -38,7 +33,7 @@ export type CategoryData = {
     collapsed: boolean;
 };
 
-export type MyCategory = CategoryData & {
+type MyCategory = CategoryData & {
     SubCategories: CategoryData[];
 };
 
@@ -239,7 +234,6 @@ const categoryOrderView: AdminViewComponent = ({ user }) => {
     }
 
     function handleCategoryCollapseToggle(id: string): void {
-        console.log("called");
         setState((state) => ({
             ...state,
             categories: state.categories.map((cat) => {
@@ -256,7 +250,7 @@ const categoryOrderView: AdminViewComponent = ({ user }) => {
     return (
         <>
             <LoadingOverlayToggle
-                name="what"
+                name="category-order"
                 show={state.loading}
                 type="withoutNav"
             />
@@ -291,13 +285,13 @@ const categoryOrderView: AdminViewComponent = ({ user }) => {
                                     }}
                                     collapsed={cat.collapsed}
                                     onCollapseToggle={() => {
-                                        console.log("called");
                                         handleCategoryCollapseToggle(cat.id);
                                     }}
                                 />
                             ))}
                         </SortableContext>
                     </DndContext>
+
                     {state.error && <p>{state.error}</p>}
                     <Button onClick={onSave}>Save</Button>
                     <ToastContainer />
@@ -306,119 +300,5 @@ const categoryOrderView: AdminViewComponent = ({ user }) => {
         </>
     );
 };
-
-function CategorySortableItem(props: {
-    key: string;
-    id: string;
-    name: string;
-    sensors: SensorDescriptor<SensorOptions>[];
-    subCategories: CategoryData[];
-    handleSubCategoryDragEnd: (event: DragEndEvent) => void;
-    collapsed: boolean;
-    onCollapseToggle: (event: React.MouseEvent) => void;
-}) {
-    const { attributes, listeners, setNodeRef, transform, transition } =
-        useSortable({ id: props.id });
-
-    const style = {
-        transform: CSS.Translate.toString(transform),
-        transition,
-    };
-    return (
-        <div
-            ref={setNodeRef}
-            style={style}
-            className="category-order__container"
-        >
-            <div className="category-order__category">
-                <div className="category-order__category__container">
-                    <DragHandle listeners={listeners} attributes={attributes} />
-                    {props.name}
-                </div>
-                {props.subCategories.length > 0 && (
-                    <Button
-                        buttonStyle="none"
-                        onClick={props.onCollapseToggle}
-                        className="category-order__category__collapse-button"
-                    >
-                        <Chevron
-                            direction={props.collapsed ? "down" : "up"}
-                            size="large"
-                        />
-                    </Button>
-                )}
-            </div>
-            {!props.collapsed && (
-                <DndContext
-                    sensors={props.sensors}
-                    collisionDetection={closestCenter}
-                    onDragEnd={props.handleSubCategoryDragEnd}
-                    modifiers={[
-                        restrictToVerticalAxis,
-                        restrictToParentElement,
-                    ]}
-                >
-                    <SortableContext
-                        items={props.subCategories}
-                        strategy={verticalListSortingStrategy}
-                    >
-                        {props.subCategories.map((cat) => (
-                            <SortableItem
-                                key={cat.id}
-                                id={cat.id}
-                                name={cat.name}
-                            />
-                        ))}
-                    </SortableContext>
-                </DndContext>
-            )}
-        </div>
-    );
-}
-
-interface SortableItemProps {
-    key: string;
-    id: string;
-    name: string;
-}
-function SortableItem(props: SortableItemProps) {
-    const { attributes, listeners, setNodeRef, transform, transition } =
-        useSortable({ id: props.id });
-
-    const style = {
-        transform: CSS.Translate.toString(transform),
-        transition,
-    };
-    return (
-        <div
-            ref={setNodeRef}
-            style={style}
-            className="category-order__sub-category"
-        >
-            <DragHandle listeners={listeners} attributes={attributes} />
-            {props.name}
-        </div>
-    );
-}
-
-function DragHandle({
-    attributes,
-    listeners,
-}: {
-    listeners: SyntheticListenerMap;
-    attributes: DraggableAttributes;
-}) {
-    return (
-        <div
-            className="category-order__draggable-icon"
-            {...attributes}
-            {...listeners}
-        >
-            <div className="category-order__draggable-icon__line"></div>
-            <div className="category-order__draggable-icon__line"></div>
-            <div className="category-order__draggable-icon__line"></div>
-        </div>
-    );
-}
 
 export default categoryOrderView;

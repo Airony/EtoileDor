@@ -11,7 +11,6 @@ export enum categoryActionKind {
     LOADING = "LOADING",
     ERROR = "ERROR",
     FETCHED = "FETCHED",
-    COLLAPSED = "COLLAPSED",
     MOVE_CATEGORY = "MOVE_CATEGORY",
     MOVE_SUB_CATEGORY = "MOVE_SUB_CATEGORY",
     SAVED = "SAVED",
@@ -21,7 +20,6 @@ export type CategoryData = {
     name: string;
     id: string;
     initialIndex: number;
-    collapsed: boolean;
 };
 
 export type MyCategory = CategoryData & {
@@ -73,7 +71,6 @@ export function CategoriesReducer(
                         name: subCategory.name,
                         id: subCategory.id,
                         initialIndex: subCategory.index,
-                        collapsed: false,
                     });
                 }
             });
@@ -95,20 +92,6 @@ export function CategoriesReducer(
                 loading: false,
                 error: "",
             };
-        case categoryActionKind.COLLAPSED:
-            return {
-                ...state,
-                categories: state.categories.map((cat) => {
-                    if (cat.id === action.id) {
-                        return {
-                            ...cat,
-                            collapsed: !cat.collapsed,
-                        };
-                    }
-                    return cat;
-                }),
-            };
-
         case categoryActionKind.MOVE_CATEGORY:
             return {
                 ...state,
@@ -161,10 +144,6 @@ type categoryAction =
           type: categoryActionKind.FETCHED;
           categories: Category[];
           subCategories: SubCategory[];
-      }
-    | {
-          type: categoryActionKind.COLLAPSED;
-          id: string;
       }
     | {
           type: categoryActionKind.MOVE_CATEGORY;

@@ -1,9 +1,5 @@
-import {
-    categoryActionKind,
-    useCategories,
-    useCategoriesDispatch,
-} from "../contexts/CategoriesContext";
-import React from "react";
+import { useCategories } from "../contexts/CategoriesContext";
+import React, { useState } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import DragHandle from "./DragHandle";
@@ -19,11 +15,9 @@ interface CategorySortableItemProps {
 
 function CategorySortableItem({ id, sensors }: CategorySortableItemProps) {
     const { categories } = useCategories();
-    const dispatch = useCategoriesDispatch();
+    const [collapsed, setCollapsed] = useState<boolean>(true);
 
-    const { name, collapsed, SubCategories } = categories.find(
-        (cat) => cat.id === id,
-    );
+    const { name, SubCategories } = categories.find((cat) => cat.id === id);
 
     const { attributes, listeners, setNodeRef, transform, transition } =
         useSortable({ id: id });
@@ -47,10 +41,7 @@ function CategorySortableItem({ id, sensors }: CategorySortableItemProps) {
                     <Button
                         buttonStyle="none"
                         onClick={() => {
-                            dispatch({
-                                type: categoryActionKind.COLLAPSED,
-                                id: id,
-                            });
+                            setCollapsed(!collapsed);
                         }}
                         className="category-order__category__collapse-button"
                     >

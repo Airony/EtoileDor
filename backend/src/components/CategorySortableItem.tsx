@@ -1,46 +1,30 @@
-import type { CategoryData } from "../views/categoryOrderView";
-import React from "react";
 import {
-    SortableContext,
-    useSortable,
-    verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
+    categoryActionKind,
+    useCategories,
+    useCategoriesDispatch,
+} from "../contexts/CategoriesContext";
+import React from "react";
+import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import DragHandle from "./DragHandle";
-import {
-    SensorDescriptor,
-    SensorOptions,
-    DragEndEvent,
-    DndContext,
-    closestCenter,
-} from "@dnd-kit/core";
-import SubCategorySortableItem from "./SubCategorySortableItem";
+import { SensorDescriptor, SensorOptions } from "@dnd-kit/core";
 import { Button } from "payload/components/elements";
 import { Chevron } from "payload/components/icons";
-import {
-    restrictToVerticalAxis,
-    restrictToParentElement,
-} from "@dnd-kit/modifiers";
+import SubCategoriesList from "./SubCategoriesList";
 
 interface CategorySortableItemProps {
     id: string;
-    name: string;
     sensors: SensorDescriptor<SensorOptions>[];
-    subCategories: CategoryData[];
-    handleSubCategoryDragEnd: (event: DragEndEvent) => void;
-    collapsed: boolean;
-    onCollapseToggle: (event: React.MouseEvent) => void;
 }
 
-function CategorySortableItem({
-    id,
-    name,
-    sensors,
-    subCategories,
-    handleSubCategoryDragEnd,
-    collapsed,
-    onCollapseToggle,
-}: CategorySortableItemProps) {
+function CategorySortableItem({ id, sensors }: CategorySortableItemProps) {
+    const { categories } = useCategories();
+    const dispatch = useCategoriesDispatch();
+
+    const { name, collapsed, SubCategories } = categories.find(
+        (cat) => cat.id === id,
+    );
+
     const { attributes, listeners, setNodeRef, transform, transition } =
         useSortable({ id: id });
 
@@ -59,10 +43,15 @@ function CategorySortableItem({
                     <DragHandle listeners={listeners} attributes={attributes} />
                     {name}
                 </div>
-                {subCategories.length > 0 && (
+                {SubCategories.length > 0 && (
                     <Button
                         buttonStyle="none"
-                        onClick={onCollapseToggle}
+                        onClick={() => {
+                            dispatch({
+                                type: categoryActionKind.COLLAPSED,
+                                id: id,
+                            });
+                        }}
                         className="category-order__category__collapse-button"
                     >
                         <Chevron
@@ -73,28 +62,11 @@ function CategorySortableItem({
                 )}
             </div>
             {!collapsed && (
-                <DndContext
+                <SubCategoriesList
+                    parentId={id}
                     sensors={sensors}
-                    collisionDetection={closestCenter}
-                    onDragEnd={handleSubCategoryDragEnd}
-                    modifiers={[
-                        restrictToVerticalAxis,
-                        restrictToParentElement,
-                    ]}
-                >
-                    <SortableContext
-                        items={subCategories}
-                        strategy={verticalListSortingStrategy}
-                    >
-                        {subCategories.map((cat) => (
-                            <SubCategorySortableItem
-                                key={cat.id}
-                                id={cat.id}
-                                name={cat.name}
-                            />
-                        ))}
-                    </SortableContext>
-                </DndContext>
+                    subCategories={SubCategories}
+                />
             )}
         </div>
     );

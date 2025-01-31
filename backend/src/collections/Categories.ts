@@ -1,7 +1,7 @@
 import { CollectionConfig } from "payload/types";
 import { isAdmin } from "../accessControls";
 import onDeleteCategory from "../hooks/onDeleteCategory";
-import reorderCategoriesHandler from "../endpointHandlers/reoderCategoriesHandler";
+import updateCategoriesHandler from "../endpointHandlers/updateCategoriesHandler";
 
 const Categories: CollectionConfig = {
     slug: "categories",
@@ -36,9 +36,9 @@ const Categories: CollectionConfig = {
     },
     endpoints: [
         {
-            path: "/reorder",
+            path: "/update_all",
             method: "patch",
-            handler: reorderCategoriesHandler,
+            handler: updateCategoriesHandler,
         },
     ],
 };

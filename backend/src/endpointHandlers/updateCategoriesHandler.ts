@@ -1,10 +1,16 @@
 import { PayloadHandler } from "payload/config";
-import { PayloadRequest } from "payload/types";
 import { isAdmin } from "../accessControls";
 
 interface Data {
-    id: string;
-    index: number;
+    categories: {
+        id: string;
+        index: number;
+    }[];
+    subCategories: {
+        id: string;
+        index: number;
+        parentId: string;
+    }[];
 }
 
 const reorderCategoriesHandler: PayloadHandler = async (req, res) => {
@@ -17,8 +23,7 @@ const reorderCategoriesHandler: PayloadHandler = async (req, res) => {
         return res.status(400).end("No data provided");
     }
     // Use a transaction in the future
-    const categories = req.body as Data[];
-    const request = {} as PayloadRequest;
+    const { categories, subCategories } = req.body as Data;
     try {
         for (const category of categories) {
             await req.payload.update({
@@ -27,7 +32,20 @@ const reorderCategoriesHandler: PayloadHandler = async (req, res) => {
                 data: {
                     index: category.index,
                 },
-                req: request,
+            });
+        }
+
+        for (const subCategory of subCategories) {
+            await req.payload.update({
+                collection: "sub_categories",
+                id: subCategory.id,
+                data: {
+                    index: subCategory.index,
+                    category: {
+                        relationTo: "categories",
+                        value: subCategory.parentId,
+                    },
+                },
             });
         }
 

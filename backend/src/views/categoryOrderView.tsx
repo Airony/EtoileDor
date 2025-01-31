@@ -84,18 +84,41 @@ const categoryOrderView: AdminViewComponent = ({ user }) => {
     async function onSave() {
         dispatch({ type: categoryActionKind.LOADING });
 
+        // Just update everything
+        // Extract categories alone
+        const extractedCategories = state.categories.map((cat, index) => {
+            return {
+                id: cat.id,
+                index: index,
+            };
+        });
+
+        const extractedSubCategories = state.categories.flatMap((cat) => {
+            return cat.SubCategories.map((subCat, index) => {
+                return {
+                    id: subCat.id,
+                    parentId: cat.id,
+                    index,
+                };
+            });
+        });
+        console.log(extractedCategories);
+        console.log(extractedSubCategories);
+        // For now, just update everything
+
+        // Do a bulk update
+
         // Custom endpoint
-        const response = await fetch("/api/categories/reorder", {
+        const response = await fetch("/api/categories/update_all", {
             credentials: "include",
             method: "PATCH",
             headers: {
                 "Content-Type": "application/json",
             },
-            body: JSON.stringify(
-                state.categories.map((cat, index) => {
-                    return { id: cat.id, index };
-                }),
-            ),
+            body: JSON.stringify({
+                categories: extractedCategories,
+                subCategories: extractedSubCategories,
+            }),
         });
 
         if (response.status !== 200) {

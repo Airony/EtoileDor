@@ -14,6 +14,7 @@ export enum categoryActionKind {
     MOVE_CATEGORY = "MOVE_CATEGORY",
     MOVE_SUB_CATEGORY = "MOVE_SUB_CATEGORY",
     SAVED = "SAVED",
+    CHANGE_SUB_CATEGORY_PARENT = "CHANGE_SUB_CATEGORY_PARENT",
 }
 
 export type CategoryData = {
@@ -126,6 +127,38 @@ export function CategoriesReducer(
                     return cat;
                 }),
             };
+        case categoryActionKind.CHANGE_SUB_CATEGORY_PARENT:
+            const { currentParentId, newParentId, subCategoryId } = action;
+            const subCategory = state.categories
+                .find((cat) => cat.id === currentParentId)
+                .SubCategories.find((subCat) => subCat.id === subCategoryId);
+
+            if (!subCategory) {
+                return state;
+            }
+            if (currentParentId === newParentId) {
+                return state;
+            }
+            return {
+                ...state,
+                categories: state.categories.map((cat) => {
+                    if (cat.id === currentParentId) {
+                        return {
+                            ...cat,
+                            SubCategories: cat.SubCategories.filter(
+                                (subCat) => subCat.id !== subCategoryId,
+                            ),
+                        };
+                    }
+                    if (cat.id === newParentId) {
+                        return {
+                            ...cat,
+                            SubCategories: [...cat.SubCategories, subCategory],
+                        };
+                    }
+                    return cat;
+                }),
+            };
 
         default:
             break;
@@ -155,6 +188,12 @@ type categoryAction =
           parentId: string;
           activeId: string;
           overId: string;
+      }
+    | {
+          type: categoryActionKind.CHANGE_SUB_CATEGORY_PARENT;
+          currentParentId: string;
+          newParentId: string;
+          subCategoryId: string;
       };
 
 export function useCategories() {

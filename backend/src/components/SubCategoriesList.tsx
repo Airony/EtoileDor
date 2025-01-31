@@ -55,6 +55,7 @@ function SubCategoriesList({
                         key={cat.id}
                         id={cat.id}
                         name={cat.name}
+                        parentId={parentId}
                     />
                 ))}
             </SortableContext>

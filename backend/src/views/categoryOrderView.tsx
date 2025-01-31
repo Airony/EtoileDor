@@ -15,6 +15,7 @@ import {
     CategoriesState,
 } from "../contexts/CategoriesContext";
 import CategoriesList from "../components/CategoriesList";
+import { ModalContainer, ModalProvider } from "@faceless-ui/modal";
 
 const initialState: CategoriesState = {
     loading: true,
@@ -122,17 +123,20 @@ const categoryOrderView: AdminViewComponent = ({ user }) => {
                     type="withoutNav"
                 />
                 <DefaultTemplate>
-                    <Gutter>
-                        <h1>Category Order</h1>
-                        <p>Drag and drop to reorder categories</p>
+                    <ModalProvider transTime={0}>
+                        <ModalContainer />
+                        <Gutter>
+                            <h1>Category Order</h1>
+                            <p>Drag and drop to reorder categories</p>
 
-                        <CategoriesList />
-                        {state.error && <p>{state.error}</p>}
-                        <Button onClick={onSave} disabled={state.loading}>
-                            Save
-                        </Button>
-                        <ToastContainer />
-                    </Gutter>
+                            <CategoriesList />
+                            {state.error && <p>{state.error}</p>}
+                            <Button onClick={onSave} disabled={state.loading}>
+                                Save
+                            </Button>
+                            <ToastContainer />
+                        </Gutter>
+                    </ModalProvider>
                 </DefaultTemplate>
             </CategoriesDispatchContext.Provider>
         </CategoriesContext.Provider>

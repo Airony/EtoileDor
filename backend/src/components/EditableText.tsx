@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { TextInput } from "payload/components/forms";
 import { Button } from "payload/components/elements";
 import EditIcon from "payload/dist/admin/components/icons/Edit";
@@ -30,6 +30,23 @@ function EditableText({
     handleStartEdit,
     onChange,
 }: EditableText) {
+    const inputRef = React.useRef<HTMLInputElement>(null);
+
+    function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+        if (e.key === "Enter") {
+            handleSaveEdit();
+        } else if (e.key === "Escape") {
+            handleCancelEdit();
+        }
+    }
+
+    useEffect(() => {
+        if (isEditing) {
+            inputRef.current.focus();
+        }
+        return () => {};
+    }, [isEditing]);
+
     return (
         <div className={className + "editable-text"}>
             {isEditing ? (
@@ -40,6 +57,8 @@ function EditableText({
                         value={editedValue}
                         onChange={(e) => onChange(e.target.value)}
                         className="editable-text__input"
+                        onKeyDown={handleKeyDown}
+                        inputRef={inputRef}
                     />
                     <Button
                         buttonStyle="icon-label"

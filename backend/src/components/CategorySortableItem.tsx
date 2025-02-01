@@ -1,4 +1,8 @@
-import { useCategories } from "../contexts/CategoriesContext";
+import {
+    categoryActionKind,
+    useCategories,
+    useCategoriesDispatch,
+} from "../contexts/CategoriesContext";
 import React, { useState } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -7,6 +11,7 @@ import { SensorDescriptor, SensorOptions } from "@dnd-kit/core";
 import { Button } from "payload/components/elements";
 import { Chevron } from "payload/components/icons";
 import SubCategoriesList from "./SubCategoriesList";
+import EditableText from "./EditableText";
 
 interface CategorySortableItemProps {
     id: string;
@@ -15,9 +20,12 @@ interface CategorySortableItemProps {
 
 function CategorySortableItem({ id, sensors }: CategorySortableItemProps) {
     const { categories } = useCategories();
-    const [collapsed, setCollapsed] = useState<boolean>(true);
-
     const { name, SubCategories } = categories.find((cat) => cat.id === id);
+    const dispatch = useCategoriesDispatch();
+
+    const [collapsed, setCollapsed] = useState<boolean>(true);
+    const [isEditing, setIsEditing] = useState<boolean>(false);
+    const [newName, setNewName] = useState<string>(name);
 
     const { attributes, listeners, setNodeRef, transform, transition } =
         useSortable({ id: id });
@@ -26,6 +34,24 @@ function CategorySortableItem({ id, sensors }: CategorySortableItemProps) {
         transform: CSS.Translate.toString(transform),
         transition,
     };
+
+    function handleSaveName() {
+        if (!newName) {
+            return;
+        }
+        setIsEditing(false);
+        dispatch({
+            type: categoryActionKind.RENAME_CATEGORY,
+            id: id,
+            newName: newName,
+        });
+    }
+
+    function handleCancelEdit() {
+        setIsEditing(false);
+        setNewName(name);
+    }
+
     return (
         <div
             ref={setNodeRef}
@@ -35,7 +61,17 @@ function CategorySortableItem({ id, sensors }: CategorySortableItemProps) {
             <div className="category-order__category">
                 <div className="category-order__category__container">
                     <DragHandle listeners={listeners} attributes={attributes} />
-                    {name}
+                    <EditableText
+                        path="category_name"
+                        name="category_name"
+                        editedValue={newName}
+                        handleCancelEdit={handleCancelEdit}
+                        handleSaveEdit={handleSaveName}
+                        isEditing={isEditing}
+                        value={name}
+                        onChange={(val) => setNewName(val)}
+                        handleStartEdit={() => setIsEditing(true)}
+                    />
                 </div>
                 {/* <Button buttonStyle="icon-label" icon="plus" onClick={add} /> */}
                 {SubCategories.length > 0 && (

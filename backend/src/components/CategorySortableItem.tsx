@@ -52,6 +52,14 @@ function CategorySortableItem({ id, sensors }: CategorySortableItemProps) {
         setNewName(name);
     }
 
+    function handleAddSubCategory() {
+        dispatch({
+            type: categoryActionKind.ADD_SUB_CATEGORY,
+            parentId: id,
+        });
+        setCollapsed(false);
+    }
+
     return (
         <div
             ref={setNodeRef}
@@ -73,21 +81,30 @@ function CategorySortableItem({ id, sensors }: CategorySortableItemProps) {
                         handleStartEdit={() => setIsEditing(true)}
                     />
                 </div>
-                {/* <Button buttonStyle="icon-label" icon="plus" onClick={add} /> */}
-                {SubCategories.length > 0 && (
+                <div className="category-order__control-group">
                     <Button
-                        buttonStyle="none"
-                        onClick={() => {
-                            setCollapsed(!collapsed);
-                        }}
-                        className="category-order__category__collapse-button"
-                    >
-                        <Chevron
-                            direction={collapsed ? "down" : "up"}
-                            size="large"
-                        />
-                    </Button>
-                )}
+                        buttonStyle="icon-label"
+                        icon="plus"
+                        size="small"
+                        onClick={handleAddSubCategory}
+                    />
+                    {SubCategories.length > 0 && (
+                        <Button
+                            icon={
+                                <Chevron
+                                    direction={collapsed ? "down" : "up"}
+                                    size="large"
+                                />
+                            }
+                            buttonStyle="icon-label"
+                            size="small"
+                            onClick={() => {
+                                setCollapsed(!collapsed);
+                            }}
+                            className="category-order__category__collapse-button"
+                        ></Button>
+                    )}
+                </div>
             </div>
             {!collapsed && (
                 <SubCategoriesList

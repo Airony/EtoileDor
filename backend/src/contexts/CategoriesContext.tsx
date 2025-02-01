@@ -17,6 +17,7 @@ export enum categoryActionKind {
     CHANGE_SUB_CATEGORY_PARENT = "CHANGE_SUB_CATEGORY_PARENT",
     RENAME_SUB_CATEGORY = "RENAME_SUB_CATEGORY",
     RENAME_CATEGORY = "RENAME_CATEGORY",
+    ADD_SUB_CATEGORY = "ADD_SUB_CATEGORY",
 }
 
 export type CategoryData = {
@@ -201,6 +202,29 @@ export function CategoriesReducer(
                 }),
             };
         }
+
+        case categoryActionKind.ADD_SUB_CATEGORY: {
+            const { parentId } = action;
+            return {
+                ...state,
+                categories: state.categories.map((cat) => {
+                    if (cat.id === parentId) {
+                        return {
+                            ...cat,
+                            SubCategories: [
+                                ...cat.SubCategories,
+                                {
+                                    name: "",
+                                    id: Math.random().toString(), // TODO: Figure out something for the id
+                                    initialIndex: cat.SubCategories.length,
+                                },
+                            ],
+                        };
+                    }
+                    return cat;
+                }),
+            };
+        }
         default:
             break;
     }
@@ -246,8 +270,11 @@ type categoryAction =
           type: categoryActionKind.RENAME_CATEGORY;
           id: string;
           newName: string;
+      }
+    | {
+          type: categoryActionKind.ADD_SUB_CATEGORY;
+          parentId: string;
       };
-
 export function useCategories() {
     return useContext(CategoriesContext);
 }

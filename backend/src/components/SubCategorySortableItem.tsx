@@ -27,6 +27,7 @@ function SubCategorySortableItem({
     defaultIsEditing = false,
 }: SubCategorySortableItemProps) {
     const [isEditing, setIsEditing] = useState(defaultIsEditing);
+    const shouldEdit = isEditing || !name;
     const [newName, setNewName] = useState(name);
 
     const { categories } = useCategories();
@@ -89,7 +90,7 @@ function SubCategorySortableItem({
                 <EditableText
                     path="sub-category-name"
                     name="name"
-                    isEditing={isEditing}
+                    isEditing={shouldEdit}
                     editedValue={newName}
                     value={name}
                     onChange={(val) => setNewName(val)}
@@ -97,13 +98,14 @@ function SubCategorySortableItem({
                     handleSaveEdit={handleSaveName}
                     handleCancelEdit={handleCancelEdit}
                 />
-
-                <Button
-                    icon={<MoreIcon />}
-                    buttonStyle="icon-label"
-                    onClick={() => openModal(modalId)}
-                    className="category-order__sub-category__more"
-                />
+                <div className="category-order__control-group">
+                    <Button
+                        icon={<MoreIcon />}
+                        buttonStyle="icon-label"
+                        onClick={() => openModal(modalId)}
+                        className="category-order__sub-category__more"
+                    />
+                </div>
             </div>
             <Modal slug={modalId} closeOnBlur={false}>
                 <div className="category-order__modal">

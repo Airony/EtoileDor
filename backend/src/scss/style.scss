@@ -2,6 +2,18 @@
 @import "./editable-text.scss";
 
 
+.category-order__control-group {
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+    align-items: center;
+    margin-left: auto;
+
+    button {
+        margin-block: 0;
+    }
+}
+
 .category-order__category,
 .category-order__sub-category {
     background-color: var(--color-base-950);
@@ -26,11 +38,10 @@
 }
 
 .category-order__category__collapse-button {
-    padding: 0.5rem;
-
-    &:hover {
-        background-color: var(--theme-elevation-100);
+    .btn__icon {
+        padding: 0.5rem;
     }
+
 }
 
 .category-order__sub-category {
@@ -83,10 +94,14 @@
 }
 
 
-.category-order__sub-category__more {
-    margin-left: auto;
-    margin-block: 0;
+.category-order__category {
+
+    button {
+        margin-block: 0;
+    }
+
 }
+
 
 .category-order__modal__controls {
     display: flex;

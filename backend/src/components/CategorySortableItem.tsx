@@ -27,6 +27,7 @@ function CategorySortableItem({ id, sensors }: CategorySortableItemProps) {
     const [isEditing, setIsEditing] = useState<boolean>(false);
     const [newName, setNewName] = useState<string>(name);
 
+    const shouldEdit = isEditing || !name;
     const { attributes, listeners, setNodeRef, transform, transition } =
         useSortable({ id: id });
 
@@ -75,7 +76,7 @@ function CategorySortableItem({ id, sensors }: CategorySortableItemProps) {
                         editedValue={newName}
                         handleCancelEdit={handleCancelEdit}
                         handleSaveEdit={handleSaveName}
-                        isEditing={isEditing}
+                        isEditing={shouldEdit}
                         value={name}
                         onChange={(val) => setNewName(val)}
                         handleStartEdit={() => setIsEditing(true)}

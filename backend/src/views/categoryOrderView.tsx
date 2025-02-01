@@ -151,6 +151,19 @@ const categoryOrderView: AdminViewComponent = ({ user }) => {
                         <Gutter>
                             <h1>Category Order</h1>
                             <p>Drag and drop to reorder categories</p>
+                            <Button
+                                icon="plus"
+                                size="medium"
+                                aria-label="Add Category"
+                                buttonStyle="secondary"
+                                onClick={() => {
+                                    dispatch({
+                                        type: categoryActionKind.ADD_CATEGORY,
+                                    });
+                                }}
+                            >
+                                Add Category
+                            </Button>
 
                             <CategoriesList />
                             {state.error && <p>{state.error}</p>}

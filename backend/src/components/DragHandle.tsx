@@ -9,14 +9,10 @@ function DragHandle({
     attributes: DraggableAttributes;
 }) {
     return (
-        <div
-            className="category-order__draggable-icon"
-            {...attributes}
-            {...listeners}
-        >
-            <div className="category-order__draggable-icon__line"></div>
-            <div className="category-order__draggable-icon__line"></div>
-            <div className="category-order__draggable-icon__line"></div>
+        <div className="drag-handle" {...attributes} {...listeners}>
+            <div className="drag-handle__line"></div>
+            <div className="drag-handle__line"></div>
+            <div className="drag-handle__line"></div>
         </div>
     );
 }

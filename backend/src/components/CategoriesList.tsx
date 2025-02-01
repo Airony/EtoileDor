@@ -1,62 +1,21 @@
-import React, { useContext } from "react";
-import {
-    DndContext,
-    closestCenter,
-    PointerSensor,
-    useSensor,
-    useSensors,
-} from "@dnd-kit/core";
-
-import {
-    SortableContext,
-    verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
-import {
-    restrictToParentElement,
-    restrictToVerticalAxis,
-} from "@dnd-kit/modifiers";
-
-import CategorySortableItem from "../components/CategorySortableItem";
-import {
-    CategoriesContext,
-    CategoriesDispatchContext,
-    categoryActionKind,
-} from "../contexts/CategoriesContext";
+import React from "react";
+import { useCategories } from "../contexts/CategoriesContext";
+import MenuItemList from "./MenuItemList";
+import SubCategoriesList from "./SubCategoriesList";
 
 function CategoriesList() {
-    const { categories, loading } = useContext(CategoriesContext);
-    const dispatch = useContext(CategoriesDispatchContext);
-    const sensors = useSensors(useSensor(PointerSensor));
+    const { categories } = useCategories();
+
     return (
-        <DndContext
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            onDragEnd={(e) => {
-                if (!e.over) {
-                    return;
-                }
-                dispatch({
-                    type: categoryActionKind.MOVE_CATEGORY,
-                    activeId: e.active.id.toString(),
-                    overId: e.over.id.toString(),
-                });
-            }}
-            modifiers={[restrictToVerticalAxis, restrictToParentElement]}
-        >
-            <SortableContext
-                items={categories}
-                strategy={verticalListSortingStrategy}
-                disabled={loading}
-            >
-                {categories.map((cat) => (
-                    <CategorySortableItem
-                        key={cat.id}
-                        id={cat.id}
-                        sensors={sensors}
-                    />
-                ))}
-            </SortableContext>
-        </DndContext>
+        <div>
+            {categories.map((category, index) => (
+                <>
+                    <h2>{category.name}</h2>
+                    <MenuItemList key={category.id} list={category.menuItems} />
+                    <SubCategoriesList key={category.id} parentIndex={index} />
+                </>
+            ))}
+        </div>
     );
 }
 

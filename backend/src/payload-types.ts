@@ -126,6 +126,7 @@ export interface MenuItem {
               relationTo: "categories";
               value: string | Category;
           };
+    index: number;
     updatedAt: string;
     createdAt: string;
 }

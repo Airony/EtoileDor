@@ -10,7 +10,7 @@ import DragHandle from "./DragHandle";
 import { SensorDescriptor, SensorOptions } from "@dnd-kit/core";
 import { Button } from "payload/components/elements";
 import { Chevron } from "payload/components/icons";
-import SubCategoriesList from "./SubCategoriesList";
+import SubCategoriesNavList from "./SubCategoriesNavList";
 import EditableText from "./EditableText";
 
 interface CategorySortableItemProps {
@@ -108,7 +108,7 @@ function CategorySortableItem({ id, sensors }: CategorySortableItemProps) {
                 </div>
             </div>
             {!collapsed && (
-                <SubCategoriesList
+                <SubCategoriesNavList
                     parentId={id}
                     sensors={sensors}
                     subCategories={SubCategories}

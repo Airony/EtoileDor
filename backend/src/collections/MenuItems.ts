@@ -29,6 +29,12 @@ const MenuItems: CollectionConfig = {
             required: true,
             hasMany: false,
         },
+        {
+            name: "index",
+            required: true,
+            type: "number",
+            defaultValue: -1,
+        },
     ],
 
     hooks: {

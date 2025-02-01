@@ -1,5 +1,5 @@
 import { createContext, useContext } from "react";
-import { Category, SubCategory } from "../payload-types";
+import { Category, MenuItem, SubCategory } from "../payload-types";
 import { arrayMove } from "@dnd-kit/sortable";
 import { Dispatch } from "react";
 
@@ -21,10 +21,19 @@ export enum categoryActionKind {
     ADD_CATEGORY = "ADD_CATEGORY",
 }
 
+export type MenuItemData = {
+    name: string;
+    id: string;
+    iniitalIndex: number;
+    price: number;
+    parentType: "category" | "sub_category";
+    parentId: string;
+};
 export type CategoryData = {
     name: string;
     id: string;
     initialIndex: number;
+    menuItems: MenuItemData[];
 };
 
 export type MyCategory = CategoryData & {
@@ -49,7 +58,7 @@ export function CategoriesReducer(
             return { ...state, loading: false, error: action.error };
         case categoryActionKind.FETCHED:
             // This is gonna be long
-            const { categories, subCategories } = action;
+            const { categories, subCategories, menuItems } = action;
 
             // Put each subcategory into its parent category
             const extractedCategories: MyCategory[] = categories
@@ -59,6 +68,7 @@ export function CategoriesReducer(
                     id: category.id,
                     initialIndex: category.index,
                     SubCategories: [],
+                    menuItems: [],
                     collapsed: false,
                 }));
 
@@ -76,7 +86,42 @@ export function CategoriesReducer(
                         name: subCategory.name,
                         id: subCategory.id,
                         initialIndex: subCategory.index,
+                        menuItems: [],
                     });
+                }
+            });
+
+            menuItems.forEach((item) => {
+                if (item.Category.relationTo === "categories") {
+                    extractedCategories
+                        .find((cat) => cat.id === item.Category.value)
+                        .menuItems.push({
+                            name: item.name,
+                            id: item.id,
+                            iniitalIndex: item.index,
+                            price: item.price,
+                            parentType: "category",
+                            parentId:
+                                (item.Category.value as Category).id ||
+                                (item.Category.value as string),
+                        });
+                } else {
+                    for (const cat of extractedCategories) {
+                        const subCat = cat.SubCategories.find(
+                            (cat) => cat.id === item.Category.value,
+                        );
+                        if (subCat) {
+                            subCat.menuItems.push({
+                                name: item.name,
+                                id: item.id,
+                                iniitalIndex: item.index,
+                                price: item.price,
+                                parentType: "sub_category",
+                                parentId: subCat.id,
+                            });
+                            break;
+                        }
+                    }
                 }
             });
 
@@ -218,6 +263,7 @@ export function CategoriesReducer(
                                     name: "",
                                     id: Math.random().toString(), // TODO: Figure out something for the id
                                     initialIndex: cat.SubCategories.length,
+                                    menuItems: [],
                                 },
                             ],
                         };
@@ -237,6 +283,7 @@ export function CategoriesReducer(
                         id: Math.random().toString(), // TODO: Figure out something for the id
                         initialIndex: state.categories.length,
                         SubCategories: [],
+                        menuItems: [],
                     },
                 ],
             };
@@ -258,6 +305,7 @@ type categoryAction =
           type: categoryActionKind.FETCHED;
           categories: Category[];
           subCategories: SubCategory[];
+          menuItems: MenuItem[];
       }
     | {
           type: categoryActionKind.MOVE_CATEGORY;

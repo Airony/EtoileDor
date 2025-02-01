@@ -5,7 +5,7 @@ import { Redirect } from "react-router-dom";
 import { useEffect } from "react";
 import { Gutter, Button } from "payload/components/elements";
 import { LoadingOverlayToggle } from "payload/dist/admin/components/elements/Loading";
-import { Category, SubCategory } from "../payload-types";
+import { Category, MenuItem, SubCategory } from "../payload-types";
 import { toast, ToastContainer } from "react-toastify";
 import {
     CategoriesContext,
@@ -14,8 +14,9 @@ import {
     categoryActionKind,
     CategoriesState,
 } from "../contexts/CategoriesContext";
-import CategoriesList from "../components/CategoriesList";
+import MenuSideBar from "../components/MenuSideBar";
 import { ModalContainer, ModalProvider } from "@faceless-ui/modal";
+import CategoriesList from "../components/CategoriesList";
 
 const initialState: CategoriesState = {
     loading: true,
@@ -46,7 +47,6 @@ const categoryOrderView: AdminViewComponent = ({ user }) => {
             if (categoriesResponse.status !== 200) {
                 throw new Error("Failed to fetch categories");
             }
-            const json = await categoriesResponse.json();
 
             const subCategoriesResponse = await fetch(
                 "/api/sub_categories?limit=0&depth=1",
@@ -57,15 +57,29 @@ const categoryOrderView: AdminViewComponent = ({ user }) => {
             if (subCategoriesResponse.status !== 200) {
                 throw new Error("Failed to fetch sub categories");
             }
+
+            const menuItemsResponse = await fetch(
+                "/api/menu_items?limit=0&depth=0",
+                {
+                    credentials: "include",
+                },
+            );
+            if (menuItemsResponse.status !== 200) {
+                throw new Error("Failed to fetch menu items");
+            }
+            const json = await categoriesResponse.json();
+            const menuItemsJson = await menuItemsResponse.json();
             const subCategoriesJson = await subCategoriesResponse.json();
 
             const categories = json.docs as Category[];
             const subCategories = subCategoriesJson.docs as SubCategory[];
+            const menuItems = menuItemsJson.docs as MenuItem[];
 
             dispatch({
                 type: categoryActionKind.FETCHED,
                 categories,
                 subCategories,
+                menuItems,
             });
         };
 
@@ -149,24 +163,13 @@ const categoryOrderView: AdminViewComponent = ({ user }) => {
                     <ModalProvider transTime={0}>
                         <ModalContainer />
                         <Gutter>
-                            <h1>Category Order</h1>
-                            <p>Drag and drop to reorder categories</p>
-                            <Button
-                                icon="plus"
-                                size="medium"
-                                aria-label="Add Category"
-                                buttonStyle="secondary"
-                                onClick={() => {
-                                    dispatch({
-                                        type: categoryActionKind.ADD_CATEGORY,
-                                    });
-                                }}
-                            >
-                                Add Category
-                            </Button>
+                            <h1>Menu</h1>
 
-                            <CategoriesList />
                             {state.error && <p>{state.error}</p>}
+                            <div className="menu__container">
+                                <MenuSideBar />
+                                <CategoriesList />
+                            </div>
                             <Button onClick={onSave} disabled={state.loading}>
                                 Save
                             </Button>

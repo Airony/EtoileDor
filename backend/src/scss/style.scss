@@ -1,6 +1,27 @@
 @import '~payload/scss';
 @import "./editable-text.scss";
 
+.menu__container {
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: row;
+    column-gap: 3rem;
+    row-gap: 2rem;
+}
+
+.menu-sidebar {
+    flex-basis: 30%;
+    flex: 3 0 auto;
+    min-width: 350px;
+    max-width: 450px;
+    padding: 1rem;
+}
+
+.menu-contents {
+    flex-grow: 1;
+    flex: 7 0 auto;
+    min-width: 500px;
+}
 
 .category-order__control-group {
     display: flex;
@@ -18,7 +39,7 @@
 .category-order__sub-category {
     background-color: var(--color-base-950);
     margin-top: 1rem;
-    padding: 1rem 2rem 1rem 1rem;
+    padding: 0.5rem 1rem;
     display: flex;
     align-items: center;
     flex-direction: row;
@@ -86,11 +107,11 @@
     height: auto;
     width: auto;
     transform: translate(-50%, -50%);
-    background-color: var(--color-base-900);
+    background-color: var(--color-base-800);
     padding: 2rem;
     position: fixed;
     z-index: $z-modal;
-    @include shadow-sm;
+    @include shadow-lg;
 }
 
 

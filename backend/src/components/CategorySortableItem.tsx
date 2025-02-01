@@ -37,6 +37,7 @@ function CategorySortableItem({ id, sensors }: CategorySortableItemProps) {
                     <DragHandle listeners={listeners} attributes={attributes} />
                     {name}
                 </div>
+                {/* <Button buttonStyle="icon-label" icon="plus" onClick={add} /> */}
                 {SubCategories.length > 0 && (
                     <Button
                         buttonStyle="none"

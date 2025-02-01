@@ -11,23 +11,32 @@ import {
     useCategoriesDispatch,
 } from "../contexts/CategoriesContext";
 import { SelectInput } from "payload/components/forms";
+import EditableText from "./EditableText";
 
 interface SubCategorySortableItemProps {
     id: string;
     name: string;
     parentId: string;
+    defaultIsEditing?: boolean;
 }
 
-function SubCategorySortableItem(props: SubCategorySortableItemProps) {
+function SubCategorySortableItem({
+    id,
+    name,
+    parentId,
+    defaultIsEditing = false,
+}: SubCategorySortableItemProps) {
+    const [isEditing, setIsEditing] = useState(defaultIsEditing);
+    const [newName, setNewName] = useState(name);
+
     const { categories } = useCategories();
     const dispatch = useCategoriesDispatch();
 
     const { openModal, closeModal } = useModal();
     const { attributes, listeners, setNodeRef, transform, transition } =
-        useSortable({ id: props.id });
-    const [parentCategoryInput, setParentCategoryInput] = useState<string>(
-        props.parentId,
-    );
+        useSortable({ id: id });
+    const [parentCategoryInput, setParentCategoryInput] =
+        useState<string>(parentId);
 
     const style = {
         transform: CSS.Translate.toString(transform),
@@ -37,19 +46,37 @@ function SubCategorySortableItem(props: SubCategorySortableItemProps) {
     function handleModalSave() {
         dispatch({
             type: categoryActionKind.CHANGE_SUB_CATEGORY_PARENT,
-            currentParentId: props.parentId,
+            currentParentId: parentId,
             newParentId: parentCategoryInput,
-            subCategoryId: props.id,
+            subCategoryId: id,
         });
         closeModal(modalId);
     }
 
     function handleModalCancel() {
-        setParentCategoryInput(props.parentId);
+        setParentCategoryInput(parentId);
         closeModal(modalId);
     }
 
-    const modalId = "sub-cat-" + props.name + "-modal";
+    function handleSaveName() {
+        if (!newName) {
+            return;
+        }
+        setIsEditing(false);
+        dispatch({
+            type: categoryActionKind.RENAME_SUB_CATEGORY,
+            parentId: parentId,
+            id: id,
+            newName: newName,
+        });
+    }
+
+    function handleCancelEdit() {
+        setIsEditing(false);
+        setNewName(name);
+    }
+
+    const modalId = "sub-cat-" + name + "-modal";
     return (
         <>
             <div
@@ -58,7 +85,19 @@ function SubCategorySortableItem(props: SubCategorySortableItemProps) {
                 className="category-order__sub-category"
             >
                 <DragHandle listeners={listeners} attributes={attributes} />
-                {props.name}
+
+                <EditableText
+                    path="sub-category-name"
+                    name="name"
+                    isEditing={isEditing}
+                    editedValue={newName}
+                    value={name}
+                    onChange={(val) => setNewName(val)}
+                    handleStartEdit={() => setIsEditing(true)}
+                    handleSaveEdit={handleSaveName}
+                    handleCancelEdit={handleCancelEdit}
+                />
+
                 <Button
                     icon={<MoreIcon />}
                     buttonStyle="icon-label"
@@ -69,7 +108,7 @@ function SubCategorySortableItem(props: SubCategorySortableItemProps) {
             <Modal slug={modalId} closeOnBlur={false}>
                 <div className="category-order__modal">
                     <h2>Sub Category Options</h2>
-                    <h3>{props.name}</h3>
+                    <h3>{name}</h3>
                     <SelectInput
                         path="parent-category"
                         name="parent-category"

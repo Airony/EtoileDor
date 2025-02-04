@@ -12,6 +12,8 @@ import { Button } from "payload/components/elements";
 import { Chevron } from "payload/components/icons";
 import SubCategoriesNavList from "./SubCategoriesNavList";
 import EditableText from "./EditableText";
+import { useModal } from "@faceless-ui/modal";
+import DeleteModal from "./DeleteModal";
 
 interface CategorySortableItemProps {
     id: string;
@@ -35,6 +37,9 @@ function CategorySortableItem({ id, sensors }: CategorySortableItemProps) {
         transform: CSS.Translate.toString(transform),
         transition,
     };
+
+    const modalId = id + "-modal";
+    const { openModal } = useModal();
 
     function handleSaveName() {
         if (!newName) {
@@ -105,6 +110,15 @@ function CategorySortableItem({ id, sensors }: CategorySortableItemProps) {
                             className="category-order__category__collapse-button"
                         ></Button>
                     )}
+                    <Button
+                        icon="x"
+                        buttonStyle="icon-label"
+                        size="small"
+                        aria-label="Delete category"
+                        onClick={() => {
+                            openModal(modalId);
+                        }}
+                    />
                 </div>
             </div>
             {!collapsed && (
@@ -114,6 +128,18 @@ function CategorySortableItem({ id, sensors }: CategorySortableItemProps) {
                     subCategories={SubCategories}
                 />
             )}
+
+            <DeleteModal
+                slug={modalId}
+                deletedName={"category " + name}
+                warning="All related sub categories and menu items will be deleted."
+                onDeletion={() => {
+                    dispatch({
+                        type: categoryActionKind.DELETE_CATEGORY,
+                        id: id,
+                    });
+                }}
+            />
         </div>
     );
 }

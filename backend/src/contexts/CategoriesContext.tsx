@@ -20,6 +20,7 @@ export enum categoryActionKind {
     ADD_SUB_CATEGORY = "ADD_SUB_CATEGORY",
     ADD_CATEGORY = "ADD_CATEGORY",
     MOVE_MENU_ITEM = "MOVE_MENU_ITEM",
+    DELETE_CATEGORY = "DELETE_CATEGORY",
 }
 
 export type MenuItemData = {
@@ -350,6 +351,13 @@ export function CategoriesReducer(
                 };
             }
         }
+        case categoryActionKind.DELETE_CATEGORY: {
+            const { id } = action;
+            return {
+                ...state,
+                categories: state.categories.filter((cat) => cat.id !== id),
+            };
+        }
         default:
             break;
     }
@@ -410,6 +418,10 @@ type categoryAction =
           overId: string;
           parentType: "category" | "sub_category";
           parentId: string;
+      }
+    | {
+          type: categoryActionKind.DELETE_CATEGORY;
+          id: string;
       };
 
 export function useCategories() {

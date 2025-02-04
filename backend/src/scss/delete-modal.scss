@@ -1,0 +1,33 @@
+@import '~payload/scss';
+
+.delete-modal {
+    inset: 0;
+    overflow: visible;
+
+    padding: 2rem;
+    position: fixed;
+    z-index: $z-modal;
+    @include shadow-lg;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(20px);
+
+
+    &__controls {
+        display: flex;
+        flex-direction: row;
+        gap: 1rem;
+    }
+
+    p {
+        margin-bottom: 0.5rem;
+        font-size: base(0.65);
+    }
+
+    &__warning {
+        color: var(--color-warning-300);
+    }
+
+}

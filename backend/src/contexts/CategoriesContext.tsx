@@ -19,6 +19,7 @@ export enum categoryActionKind {
     RENAME_CATEGORY = "RENAME_CATEGORY",
     ADD_SUB_CATEGORY = "ADD_SUB_CATEGORY",
     ADD_CATEGORY = "ADD_CATEGORY",
+    MOVE_MENU_ITEM = "MOVE_MENU_ITEM",
 }
 
 export type MenuItemData = {
@@ -288,6 +289,67 @@ export function CategoriesReducer(
                 ],
             };
         }
+
+        case categoryActionKind.MOVE_MENU_ITEM: {
+            const { activeId, overId, parentId, parentType } = action;
+            if (parentType === "category") {
+                return {
+                    ...state,
+                    categories: state.categories.map((cat) => {
+                        if (cat.id === parentId) {
+                            return {
+                                ...cat,
+                                menuItems: arrayMove(
+                                    cat.menuItems,
+                                    cat.menuItems.findIndex(
+                                        (item) => item.id === activeId,
+                                    ),
+                                    cat.menuItems.findIndex(
+                                        (item) => item.id === overId,
+                                    ),
+                                ),
+                            };
+                        }
+                        return cat;
+                    }),
+                };
+            } else {
+                // Find the subcategory
+                return {
+                    ...state,
+                    categories: state.categories.map((cat) => {
+                        const subCat = cat.SubCategories.find(
+                            (sb) => sb.id === parentId,
+                        );
+                        if (subCat) {
+                            return {
+                                ...cat,
+                                SubCategories: cat.SubCategories.map((sb) => {
+                                    if (sb.id === parentId) {
+                                        return {
+                                            ...sb,
+                                            menuItems: arrayMove(
+                                                sb.menuItems,
+                                                sb.menuItems.findIndex(
+                                                    (item) =>
+                                                        item.id === activeId,
+                                                ),
+                                                sb.menuItems.findIndex(
+                                                    (item) =>
+                                                        item.id === overId,
+                                                ),
+                                            ),
+                                        };
+                                    }
+                                    return sb;
+                                }),
+                            };
+                        }
+                        return cat;
+                    }),
+                };
+            }
+        }
         default:
             break;
     }
@@ -341,6 +403,13 @@ type categoryAction =
       }
     | {
           type: categoryActionKind.ADD_CATEGORY;
+      }
+    | {
+          type: categoryActionKind.MOVE_MENU_ITEM;
+          activeId: string;
+          overId: string;
+          parentType: "category" | "sub_category";
+          parentId: string;
       };
 
 export function useCategories() {

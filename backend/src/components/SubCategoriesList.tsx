@@ -12,10 +12,10 @@ function SubCategoriesList({ parentIndex }: SubCategoriesListProps) {
     return (
         <div>
             {SubCategories.map((subCat) => (
-                <>
-                    <h3 key={subCat.id}>{subCat.name}</h3>
-                    <MenuItemList key={subCat.id} list={subCat.menuItems} />
-                </>
+                <div key={subCat.id}>
+                    <h3>{subCat.name}</h3>
+                    <MenuItemList list={subCat.menuItems} />
+                </div>
             ))}
         </div>
     );

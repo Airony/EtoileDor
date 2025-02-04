@@ -9,11 +9,11 @@ function CategoriesList() {
     return (
         <div>
             {categories.map((category, index) => (
-                <>
+                <div key={category.id}>
                     <h2>{category.name}</h2>
-                    <MenuItemList key={category.id} list={category.menuItems} />
-                    <SubCategoriesList key={category.id} parentIndex={index} />
-                </>
+                    <MenuItemList list={category.menuItems} />
+                    <SubCategoriesList parentIndex={index} />
+                </div>
             ))}
         </div>
     );

@@ -147,37 +147,26 @@ export function CategoriesReducer(
         case categoryActionKind.MOVE_CATEGORY:
             return {
                 ...state,
-                categories: arrayMove(
+                categories: arrayMoveWithId(
                     state.categories,
-                    state.categories.findIndex(
-                        (cat) => cat.id === action.activeId,
-                    ),
-                    state.categories.findIndex(
-                        (cat) => cat.id === action.overId,
-                    ),
+                    action.activeId,
+                    action.overId,
                 ),
             };
         case categoryActionKind.MOVE_SUB_CATEGORY:
-            return {
-                ...state,
-                categories: state.categories.map((cat) => {
-                    if (cat.id === action.parentId) {
-                        return {
-                            ...cat,
-                            SubCategories: arrayMove(
-                                cat.SubCategories,
-                                cat.SubCategories.findIndex(
-                                    (subCat) => subCat.id === action.activeId,
-                                ),
-                                cat.SubCategories.findIndex(
-                                    (subCat) => subCat.id === action.overId,
-                                ),
-                            ),
-                        };
-                    }
-                    return cat;
-                }),
-            };
+            const { parentId, activeId, overId } = action;
+
+            return updateCategory(parentId, state, (cat) => {
+                return {
+                    ...cat,
+                    SubCategories: arrayMoveWithId(
+                        cat.SubCategories,
+                        activeId,
+                        overId,
+                    ),
+                };
+            });
+
         case categoryActionKind.CHANGE_SUB_CATEGORY_PARENT:
             const { currentParentId, newParentId, subCategoryId } = action;
             const subCategory = state.categories
@@ -213,66 +202,42 @@ export function CategoriesReducer(
 
         case categoryActionKind.RENAME_SUB_CATEGORY: {
             const { parentId, id, newName } = action;
-            return {
-                ...state,
-                categories: state.categories.map((cat) => {
-                    if (cat.id === parentId) {
-                        return {
-                            ...cat,
-                            SubCategories: cat.SubCategories.map((subCat) => {
-                                if (subCat.id === id) {
-                                    return {
-                                        ...subCat,
-                                        name: newName,
-                                    };
-                                }
-                                return subCat;
-                            }),
-                        };
-                    }
-                    return cat;
-                }),
-            };
+            return updateSubCategoryWithParentId(
+                parentId,
+                id,
+                state,
+                (subCat) => {
+                    return {
+                        ...subCat,
+                        name: newName,
+                    };
+                },
+            );
         }
 
         case categoryActionKind.RENAME_CATEGORY: {
             const { id, newName } = action;
-            return {
-                ...state,
-                categories: state.categories.map((cat) => {
-                    if (cat.id === id) {
-                        return {
-                            ...cat,
-                            name: newName,
-                        };
-                    }
-                    return cat;
-                }),
-            };
+            return updateCategory(id, state, (cat) => {
+                return { ...cat, name: newName };
+            });
         }
 
         case categoryActionKind.ADD_SUB_CATEGORY: {
             const { parentId } = action;
-            return {
-                ...state,
-                categories: state.categories.map((cat) => {
-                    if (cat.id === parentId) {
-                        return {
-                            ...cat,
-                            SubCategories: [
-                                ...cat.SubCategories,
-                                {
-                                    name: "",
-                                    id: Math.random().toString(), // TODO: Figure out something for the id
-                                    initialIndex: cat.SubCategories.length,
-                                    menuItems: [],
-                                },
-                            ],
-                        };
-                    }
-                    return cat;
-                }),
-            };
+            return updateCategory(parentId, state, (cat) => {
+                return {
+                    ...cat,
+                    SubCategories: [
+                        ...cat.SubCategories,
+                        {
+                            name: "",
+                            id: Math.random().toString(),
+                            initialIndex: cat.SubCategories.length,
+                            menuItems: [],
+                        },
+                    ],
+                };
+            });
         }
 
         case categoryActionKind.ADD_CATEGORY: {
@@ -294,61 +259,28 @@ export function CategoriesReducer(
         case categoryActionKind.MOVE_MENU_ITEM: {
             const { activeId, overId, parentId, parentType } = action;
             if (parentType === "category") {
-                return {
-                    ...state,
-                    categories: state.categories.map((cat) => {
-                        if (cat.id === parentId) {
-                            return {
-                                ...cat,
-                                menuItems: arrayMove(
-                                    cat.menuItems,
-                                    cat.menuItems.findIndex(
-                                        (item) => item.id === activeId,
-                                    ),
-                                    cat.menuItems.findIndex(
-                                        (item) => item.id === overId,
-                                    ),
-                                ),
-                            };
-                        }
-                        return cat;
-                    }),
-                };
+                return updateCategory(parentId, state, (cat) => {
+                    return {
+                        ...cat,
+                        menuItems: arrayMoveWithId(
+                            cat.menuItems,
+                            activeId,
+                            overId,
+                        ),
+                    };
+                });
             } else {
                 // Find the subcategory
-                return {
-                    ...state,
-                    categories: state.categories.map((cat) => {
-                        const subCat = cat.SubCategories.find(
-                            (sb) => sb.id === parentId,
-                        );
-                        if (subCat) {
-                            return {
-                                ...cat,
-                                SubCategories: cat.SubCategories.map((sb) => {
-                                    if (sb.id === parentId) {
-                                        return {
-                                            ...sb,
-                                            menuItems: arrayMove(
-                                                sb.menuItems,
-                                                sb.menuItems.findIndex(
-                                                    (item) =>
-                                                        item.id === activeId,
-                                                ),
-                                                sb.menuItems.findIndex(
-                                                    (item) =>
-                                                        item.id === overId,
-                                                ),
-                                            ),
-                                        };
-                                    }
-                                    return sb;
-                                }),
-                            };
-                        }
-                        return cat;
-                    }),
-                };
+                return updateSubCategory(parentId, state, (subCat) => {
+                    return {
+                        ...subCat,
+                        menuItems: arrayMoveWithId(
+                            subCat.menuItems,
+                            activeId,
+                            overId,
+                        ),
+                    };
+                });
             }
         }
         case categoryActionKind.DELETE_CATEGORY: {
@@ -430,4 +362,80 @@ export function useCategories() {
 
 export function useCategoriesDispatch() {
     return useContext(CategoriesDispatchContext);
+}
+
+function updateCategory(
+    id: string,
+    state: CategoriesState,
+    func: (cat: MyCategory) => MyCategory,
+): CategoriesState {
+    return {
+        ...state,
+        categories: state.categories.map((cat) => {
+            if (cat.id === id) {
+                return func(cat);
+            }
+            return cat;
+        }),
+    };
+}
+
+function updateSubCategoryWithParentId(
+    parentId: string,
+    id: string,
+    state: CategoriesState,
+    func: (subcat: CategoryData) => CategoryData,
+): CategoriesState {
+    return {
+        ...state,
+        categories: state.categories.map((cat) => {
+            if (cat.id === parentId) {
+                return {
+                    ...cat,
+                    SubCategories: cat.SubCategories.map((subCat) => {
+                        if (subCat.id === id) {
+                            return func(subCat);
+                        }
+                        return subCat;
+                    }),
+                };
+            }
+            return cat;
+        }),
+    };
+}
+
+function updateSubCategory(
+    id: string,
+    state: CategoriesState,
+    func: (subCat: CategoryData) => CategoryData,
+): CategoriesState {
+    return {
+        ...state,
+        categories: state.categories.map((cat) => {
+            return {
+                ...cat,
+                SubCategories: cat.SubCategories.map((subCat) => {
+                    if (subCat.id === id) {
+                        return func(subCat);
+                    }
+                    return subCat;
+                }),
+            };
+        }),
+    };
+}
+
+type ItemWithId = {
+    id: string;
+};
+
+function arrayMoveWithId<T extends ItemWithId>(
+    arr: Array<T>,
+    fromId: string,
+    toId: string,
+) {
+    const fromIndex = arr.findIndex((item) => item.id === fromId);
+    const toIndex = arr.findIndex((item) => item.id === toId);
+    return arrayMove(arr, fromIndex, toIndex);
 }

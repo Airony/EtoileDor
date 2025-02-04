@@ -77,7 +77,7 @@ function SubCategorySortableItem({
         setNewName(name);
     }
 
-    const modalId = "sub-cat-" + name + "-modal";
+    const modalId = "sub-cat-" + id + "-modal";
     return (
         <>
             <div

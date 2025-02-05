@@ -1,7 +1,6 @@
 import {
     categoryActionKind,
     useCategoriesDispatch,
-    type MenuItemData,
 } from "../contexts/CategoriesContext";
 import React from "react";
 import MenuItem from "./MenuItem";
@@ -22,13 +21,12 @@ import {
 } from "@dnd-kit/modifiers";
 
 interface MenuItemListProps {
-    list: MenuItemData[];
+    list: string[];
+    parentId: string;
 }
-function MenuItemList({ list }: MenuItemListProps) {
+function MenuItemList({ list, parentId }: MenuItemListProps) {
     const sensors = useSensors(useSensor(PointerSensor));
     const dispatch = useCategoriesDispatch();
-    const parentId = list[0]?.parentId;
-    const parentType = list[0]?.parentType;
 
     return (
         <div>
@@ -41,7 +39,6 @@ function MenuItemList({ list }: MenuItemListProps) {
                         activeId: event.active.id.toString(),
                         overId: event.over.id.toString(),
                         parentId,
-                        parentType,
                     });
                 }}
                 modifiers={[restrictToVerticalAxis, restrictToParentElement]}
@@ -50,8 +47,8 @@ function MenuItemList({ list }: MenuItemListProps) {
                     items={list}
                     strategy={verticalListSortingStrategy}
                 >
-                    {list.map((item) => (
-                        <MenuItem key={item.id} item={item} />
+                    {list.map((id) => (
+                        <MenuItem key={id} id={id} />
                     ))}
                 </SortableContext>
             </DndContext>

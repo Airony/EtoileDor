@@ -15,22 +15,22 @@ import EditableText from "./EditableText";
 
 interface SubCategorySortableItemProps {
     id: string;
-    name: string;
     parentId: string;
     defaultIsEditing?: boolean;
 }
 
 function SubCategorySortableItem({
     id,
-    name,
     parentId,
     defaultIsEditing = false,
 }: SubCategorySortableItemProps) {
+    const { data, categories, subCategories } = useCategories();
+    const { name } = subCategories.get(id);
+
     const [isEditing, setIsEditing] = useState(defaultIsEditing);
     const shouldEdit = isEditing || !name;
     const [newName, setNewName] = useState(name);
 
-    const { categories } = useCategories();
     const dispatch = useCategoriesDispatch();
 
     const { openModal, closeModal } = useModal();
@@ -66,7 +66,6 @@ function SubCategorySortableItem({
         setIsEditing(false);
         dispatch({
             type: categoryActionKind.RENAME_SUB_CATEGORY,
-            parentId: parentId,
             id: id,
             newName: newName,
         });
@@ -115,8 +114,9 @@ function SubCategorySortableItem({
                         path="parent-category"
                         name="parent-category"
                         label="Parent Category"
-                        options={categories.map((cat) => {
-                            return { label: cat.name, value: cat.id };
+                        options={data.map((id) => {
+                            const cat = categories.get(id);
+                            return { label: cat.name, value: id };
                         })}
                         validate={null}
                         onChange={(val) => {

@@ -3,20 +3,23 @@ import MenuItemList from "./MenuItemList";
 import { useCategories } from "../contexts/CategoriesContext";
 
 interface SubCategoriesListProps {
-    parentIndex: number;
+    parentId: string;
 }
-function SubCategoriesList({ parentIndex }: SubCategoriesListProps) {
-    const { categories } = useCategories();
-    const { SubCategories } = categories[parentIndex];
+function SubCategoriesList({ parentId }: SubCategoriesListProps) {
+    const { categories, subCategories } = useCategories();
+    const { SubCategoriesIds } = categories.get(parentId);
 
     return (
         <div>
-            {SubCategories.map((subCat) => (
-                <div key={subCat.id}>
-                    <h3>{subCat.name}</h3>
-                    <MenuItemList list={subCat.menuItems} />
-                </div>
-            ))}
+            {SubCategoriesIds.map((subCatId) => {
+                const subCat = subCategories.get(subCatId);
+                return (
+                    <div key={subCatId}>
+                        <h3>{subCat.name}</h3>
+                        <MenuItemList list={subCat.menuItemsIds} parentId="" />
+                    </div>
+                );
+            })}
         </div>
     );
 }

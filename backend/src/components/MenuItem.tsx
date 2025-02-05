@@ -2,13 +2,14 @@ import { useSortable } from "@dnd-kit/sortable";
 import React from "react";
 import DragHandle from "./DragHandle";
 import { CSS } from "@dnd-kit/utilities";
-import { MenuItemData } from "../contexts/CategoriesContext";
+import { useCategories } from "../contexts/CategoriesContext";
 
 interface MenuItemProps {
-    item: MenuItemData;
+    id: string;
 }
-function MenuItem({ item }: MenuItemProps) {
-    const { name, price, id } = item;
+function MenuItem({ id }: MenuItemProps) {
+    const { menuItems } = useCategories();
+    const { name, price } = menuItems.get(id);
     const { attributes, listeners, setNodeRef, transform, transition } =
         useSortable({ id: id });
 

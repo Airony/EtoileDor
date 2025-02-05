@@ -2,6 +2,7 @@ import { createContext, useContext } from "react";
 import { Category, MenuItem, SubCategory } from "../payload-types";
 import { arrayMove } from "@dnd-kit/sortable";
 import { Dispatch } from "react";
+import { v4 as uuidv4 } from "uuid";
 
 export const CategoriesContext = createContext<CategoriesState>(null);
 export const CategoriesDispatchContext =
@@ -25,27 +26,26 @@ export enum categoryActionKind {
 
 export type MenuItemData = {
     name: string;
-    id: string;
-    iniitalIndex: number;
     price: number;
-    parentType: "category" | "sub_category";
-    parentId: string;
+    initialIndex: number;
 };
 export type CategoryData = {
     name: string;
-    id: string;
+    menuItemsIds: string[];
     initialIndex: number;
-    menuItems: MenuItemData[];
 };
 
 export type MyCategory = CategoryData & {
-    SubCategories: CategoryData[];
+    SubCategoriesIds: string[];
 };
 
 export type CategoriesState = {
     loading: boolean;
     error: string;
-    categories: MyCategory[];
+    data: string[];
+    categories: Map<string, MyCategory>;
+    subCategories: Map<string, CategoryData>;
+    menuItems: Map<string, MenuItemData>;
 };
 
 export function CategoriesReducer(
@@ -61,82 +61,105 @@ export function CategoriesReducer(
         case categoryActionKind.FETCHED:
             // This is gonna be long
             const { categories, subCategories, menuItems } = action;
+            const elements = [];
 
             // Put each subcategory into its parent category
-            const extractedCategories: MyCategory[] = categories
-                .sort((a, b) => a.index - b.index)
-                .map((category) => ({
-                    name: category.name,
-                    id: category.id,
-                    initialIndex: category.index,
-                    SubCategories: [],
-                    menuItems: [],
-                    collapsed: false,
-                }));
+            const extractedCategories: Map<string, MyCategory> = new Map(
+                categories.map((cat) => {
+                    elements.push(cat.id);
+                    return [
+                        cat.id,
+                        {
+                            name: cat.name,
+                            menuItemsIds: [],
+                            SubCategoriesIds: [],
+                            initialIndex: cat.index,
+                        },
+                    ];
+                }),
+            );
 
-            subCategories.forEach((subCategory) => {
-                const parentCaregoryId = (
-                    subCategory.category.value as Category
-                ).id;
-
-                // Insert subcategory into parent category
-                const index = extractedCategories.findIndex(
-                    (cat) => cat.id === parentCaregoryId,
-                );
-                if (index >= 0) {
-                    extractedCategories[index].SubCategories.push({
-                        name: subCategory.name,
-                        id: subCategory.id,
-                        initialIndex: subCategory.index,
-                        menuItems: [],
-                    });
-                }
-            });
-
-            menuItems.forEach((item) => {
-                if (item.Category.relationTo === "categories") {
+            const extractedSubCategories: Map<string, CategoryData> = new Map(
+                subCategories.map((subCat) => {
+                    const parentCaregoryId = (subCat.category.value as Category)
+                        .id;
                     extractedCategories
-                        .find((cat) => cat.id === item.Category.value)
-                        .menuItems.push({
-                            name: item.name,
-                            id: item.id,
-                            iniitalIndex: item.index,
-                            price: item.price,
-                            parentType: "category",
-                            parentId:
-                                (item.Category.value as Category).id ||
-                                (item.Category.value as string),
-                        });
-                } else {
-                    for (const cat of extractedCategories) {
-                        const subCat = cat.SubCategories.find(
-                            (cat) => cat.id === item.Category.value,
-                        );
-                        if (subCat) {
-                            subCat.menuItems.push({
-                                name: item.name,
-                                id: item.id,
-                                iniitalIndex: item.index,
-                                price: item.price,
-                                parentType: "sub_category",
-                                parentId: subCat.id,
-                            });
-                            break;
-                        }
+                        .get(parentCaregoryId)
+                        .SubCategoriesIds.push(subCat.id);
+                    return [
+                        subCat.id,
+                        {
+                            name: subCat.name,
+                            menuItemsIds: [],
+                            initialIndex: subCat.index,
+                        },
+                    ];
+                }),
+            );
+
+            const extractedMenuItem: Map<string, MenuItemData> = new Map(
+                menuItems.map((item) => {
+                    if (item.Category.relationTo === "categories") {
+                        const parentCategoryId = item.Category.value as string;
+                        extractedCategories
+                            .get(parentCategoryId)
+                            .menuItemsIds.push(item.id);
+                    } else {
+                        const parentSubCategoryId = item.Category
+                            .value as string;
+                        extractedSubCategories
+                            .get(parentSubCategoryId)
+                            .menuItemsIds.push(item.id);
                     }
-                }
+                    return [
+                        item.id,
+                        {
+                            name: item.name,
+                            price: item.price,
+                            initialIndex: item.index,
+                        },
+                    ];
+                }),
+            );
+
+            elements.sort((a, b) => {
+                return (
+                    extractedCategories.get(a).initialIndex -
+                    extractedCategories.get(b).initialIndex
+                );
             });
 
             extractedCategories.forEach((cat) => {
-                cat.SubCategories.sort(
-                    (a, b) => a.initialIndex - b.initialIndex,
-                );
+                cat.SubCategoriesIds.sort((a, b) => {
+                    return (
+                        extractedSubCategories.get(a).initialIndex -
+                        extractedSubCategories.get(b).initialIndex
+                    );
+                });
+                cat.menuItemsIds.sort((a, b) => {
+                    return (
+                        extractedMenuItem.get(a).initialIndex -
+                        extractedMenuItem.get(b).initialIndex
+                    );
+                });
+            });
+
+            extractedSubCategories.forEach((subCat) => {
+                subCat.menuItemsIds.sort((a, b) => {
+                    return (
+                        extractedMenuItem.get(a).initialIndex -
+                        extractedMenuItem.get(b).initialIndex
+                    );
+                });
             });
 
             return {
                 error: "",
                 loading: false,
                 categories: extractedCategories,
+                subCategories: extractedSubCategories,
+                menuItems: extractedMenuItem,
+                data: elements,
             };
         case categoryActionKind.SAVED:
             return {
@@ -147,147 +170,194 @@ export function CategoriesReducer(
         case categoryActionKind.MOVE_CATEGORY:
             return {
                 ...state,
-                categories: arrayMoveWithId(
-                    state.categories,
+                data: arrayMoveWithId(
+                    state.data,
                     action.activeId,
                     action.overId,
                 ),
             };
-        case categoryActionKind.MOVE_SUB_CATEGORY:
+        case categoryActionKind.MOVE_SUB_CATEGORY: {
             const { parentId, activeId, overId } = action;
+            const newCategories = MapSet(state.categories, parentId, (cat) => ({
+                ...cat,
+                SubCategoriesIds: arrayMoveWithId(
+                    cat.SubCategoriesIds,
+                    activeId,
+                    overId,
+                ),
+            }));
 
-            return updateCategory(parentId, state, (cat) => {
-                return {
-                    ...cat,
-                    SubCategories: arrayMoveWithId(
-                        cat.SubCategories,
-                        activeId,
-                        overId,
-                    ),
-                };
-            });
-
-        case categoryActionKind.CHANGE_SUB_CATEGORY_PARENT:
+            return {
+                ...state,
+                categories: newCategories,
+            };
+        }
+        case categoryActionKind.CHANGE_SUB_CATEGORY_PARENT: {
             const { currentParentId, newParentId, subCategoryId } = action;
-            const subCategory = state.categories
-                .find((cat) => cat.id === currentParentId)
-                .SubCategories.find((subCat) => subCat.id === subCategoryId);
 
-            if (!subCategory) {
-                return state;
-            }
             if (currentParentId === newParentId) {
                 return state;
             }
+
+            const currentParentCat = state.categories.get(currentParentId);
+            const newParentCat = state.categories.get(newParentId);
+            if (!currentParentCat || !newParentCat) {
+                return state;
+            }
+
+            const newCategories = MapSet(
+                state.categories,
+                currentParentId,
+                (cat) => ({
+                    ...cat,
+                    SubCategoriesIds: cat.SubCategoriesIds.filter(
+                        (subCat) => subCat !== subCategoryId,
+                    ),
+                }),
+            ).set(newParentId, {
+                ...newParentCat,
+                SubCategoriesIds: [
+                    ...newParentCat.SubCategoriesIds,
+                    subCategoryId,
+                ],
+            });
+
             return {
                 ...state,
-                categories: state.categories.map((cat) => {
-                    if (cat.id === currentParentId) {
-                        return {
-                            ...cat,
-                            SubCategories: cat.SubCategories.filter(
-                                (subCat) => subCat.id !== subCategoryId,
-                            ),
-                        };
-                    }
-                    if (cat.id === newParentId) {
-                        return {
-                            ...cat,
-                            SubCategories: [...cat.SubCategories, subCategory],
-                        };
-                    }
-                    return cat;
-                }),
+                categories: newCategories,
             };
+        }
 
         case categoryActionKind.RENAME_SUB_CATEGORY: {
-            const { parentId, id, newName } = action;
-            return updateSubCategoryWithParentId(
-                parentId,
+            const { id, newName } = action;
+            const newSubCategories = MapSet(
+                state.subCategories,
                 id,
-                state,
-                (subCat) => {
-                    return {
-                        ...subCat,
-                        name: newName,
-                    };
-                },
+                (subCat) => ({ ...subCat, name: newName }),
             );
+            return {
+                ...state,
+                subCategories: newSubCategories,
+            };
         }
 
         case categoryActionKind.RENAME_CATEGORY: {
             const { id, newName } = action;
-            return updateCategory(id, state, (cat) => {
-                return { ...cat, name: newName };
-            });
+            const newCategories = MapSet(state.categories, id, (cat) => ({
+                ...cat,
+                name: newName,
+            }));
+            return {
+                ...state,
+                categories: newCategories,
+            };
         }
 
         case categoryActionKind.ADD_SUB_CATEGORY: {
             const { parentId } = action;
-            return updateCategory(parentId, state, (cat) => {
-                return {
-                    ...cat,
-                    SubCategories: [
-                        ...cat.SubCategories,
-                        {
-                            name: "",
-                            id: Math.random().toString(),
-                            initialIndex: cat.SubCategories.length,
-                            menuItems: [],
-                        },
-                    ],
-                };
-            });
+            const parentCategory = state.categories.get(parentId);
+            const newId = uuidv4();
+
+            const newCategories = MapSet(state.categories, parentId, (cat) => ({
+                ...cat,
+                SubCategoriesIds: [...cat.SubCategoriesIds, newId],
+            }));
+
+            const newSubCategories = MapSet(state.subCategories, newId, () => ({
+                name: "",
+                initialIndex: parentCategory.SubCategoriesIds.length,
+                menuItemsIds: [],
+            }));
+
+            return {
+                ...state,
+                categories: newCategories,
+                subCategories: newSubCategories,
+            };
         }
 
         case categoryActionKind.ADD_CATEGORY: {
+            const newId = uuidv4(); // TODO: Add and then Get ID from server
+            const newData = [...state.data, newId];
+            const newIndex = newData.length - 1;
+            const newCategories = MapSet(state.categories, newId, () => ({
+                // TODO: Handle newly inputted category state
+                name: "",
+                initialIndex: newIndex,
+                SubCategoriesIds: [],
+                menuItemsIds: [],
+            }));
+
             return {
                 ...state,
-                categories: [
-                    ...state.categories,
-                    {
-                        name: "",
-                        id: Math.random().toString(), // TODO: Figure out something for the id
-                        initialIndex: state.categories.length,
-                        SubCategories: [],
-                        menuItems: [],
-                    },
-                ],
+                data: newData,
+                categories: newCategories,
             };
         }
 
         case categoryActionKind.MOVE_MENU_ITEM: {
-            const { activeId, overId, parentId, parentType } = action;
-            if (parentType === "category") {
-                return updateCategory(parentId, state, (cat) => {
-                    return {
+            const { activeId, overId, parentId } = action;
+            if (state.categories.has(parentId)) {
+                const newCategories = MapSet(
+                    state.categories,
+                    parentId,
+                    (cat) => ({
                         ...cat,
-                        menuItems: arrayMoveWithId(
-                            cat.menuItems,
+                        menuItemsIds: arrayMoveWithId(
+                            cat.menuItemsIds,
                             activeId,
                             overId,
                         ),
-                    };
-                });
+                    }),
+                );
+                return {
+                    ...state,
+                    categories: newCategories,
+                };
             } else {
-                // Find the subcategory
-                return updateSubCategory(parentId, state, (subCat) => {
-                    return {
-                        ...subCat,
-                        menuItems: arrayMoveWithId(
-                            subCat.menuItems,
+                const newSubCategories = MapSet(
+                    state.subCategories,
+                    parentId,
+                    (cat) => ({
+                        ...cat,
+                        menuItemsIds: arrayMoveWithId(
+                            cat.menuItemsIds,
                             activeId,
                             overId,
                         ),
-                    };
-                });
+                    }),
+                );
+                return {
+                    ...state,
+                    subCategories: newSubCategories,
+                };
             }
         }
         case categoryActionKind.DELETE_CATEGORY: {
             const { id } = action;
+            const category = state.categories.get(id);
+            const newMenuItems = new Map(state.menuItems);
+            const newSubCategories = new Map(state.subCategories);
+
+            category.menuItemsIds.forEach((itemId) => {
+                newMenuItems.delete(itemId);
+            });
+
+            category.SubCategoriesIds.forEach((subCatId) => {
+                deleteSubCategory(newSubCategories, newMenuItems, subCatId);
+            });
+
+            const newCategories = new Map(state.categories);
+            newCategories.delete(id);
+
+            const newData = state.data.filter((dataId) => dataId !== id);
+
             return {
                 ...state,
-                categories: state.categories.filter((cat) => cat.id !== id),
+                data: newData,
+                categories: newCategories,
+                subCategories: newSubCategories,
+                menuItems: newMenuItems,
             };
         }
         default:
@@ -329,7 +399,6 @@ type categoryAction =
     | {
           type: categoryActionKind.RENAME_SUB_CATEGORY;
           id: string;
-          parentId: string;
           newName: string;
       }
     | {
@@ -348,7 +417,6 @@ type categoryAction =
           type: categoryActionKind.MOVE_MENU_ITEM;
           activeId: string;
           overId: string;
-          parentType: "category" | "sub_category";
           parentId: string;
       }
     | {
@@ -364,78 +432,24 @@ export function useCategoriesDispatch() {
     return useContext(CategoriesDispatchContext);
 }
 
-function updateCategory(
-    id: string,
-    state: CategoriesState,
-    func: (cat: MyCategory) => MyCategory,
-): CategoriesState {
-    return {
-        ...state,
-        categories: state.categories.map((cat) => {
-            if (cat.id === id) {
-                return func(cat);
-            }
-            return cat;
-        }),
-    };
-}
-
-function updateSubCategoryWithParentId(
-    parentId: string,
-    id: string,
-    state: CategoriesState,
-    func: (subcat: CategoryData) => CategoryData,
-): CategoriesState {
-    return {
-        ...state,
-        categories: state.categories.map((cat) => {
-            if (cat.id === parentId) {
-                return {
-                    ...cat,
-                    SubCategories: cat.SubCategories.map((subCat) => {
-                        if (subCat.id === id) {
-                            return func(subCat);
-                        }
-                        return subCat;
-                    }),
-                };
-            }
-            return cat;
-        }),
-    };
-}
-
-function updateSubCategory(
-    id: string,
-    state: CategoriesState,
-    func: (subCat: CategoryData) => CategoryData,
-): CategoriesState {
-    return {
-        ...state,
-        categories: state.categories.map((cat) => {
-            return {
-                ...cat,
-                SubCategories: cat.SubCategories.map((subCat) => {
-                    if (subCat.id === id) {
-                        return func(subCat);
-                    }
-                    return subCat;
-                }),
-            };
-        }),
-    };
-}
-
-type ItemWithId = {
-    id: string;
-};
-
-function arrayMoveWithId<T extends ItemWithId>(
-    arr: Array<T>,
-    fromId: string,
-    toId: string,
-) {
-    const fromIndex = arr.findIndex((item) => item.id === fromId);
-    const toIndex = arr.findIndex((item) => item.id === toId);
+function arrayMoveWithId(arr: Array<string>, fromId: string, toId: string) {
+    const fromIndex = arr.findIndex((item) => item === fromId);
+    const toIndex = arr.findIndex((item) => item === toId);
     return arrayMove(arr, fromIndex, toIndex);
+}
+
+function MapSet<T, U>(map: Map<T, U>, key: T, updateFunc: (value: U) => U) {
+    return new Map(map).set(key, updateFunc(map.get(key)));
+}
+
+function deleteSubCategory(
+    subCategories: Map<string, CategoryData>,
+    menuItems: Map<string, MenuItemData>,
+    id: string,
+): void {
+    const subCat = subCategories.get(id);
+    subCat.menuItemsIds.forEach((itemId) => {
+        menuItems.delete(itemId);
+    });
+    subCategories.delete(id);
 }

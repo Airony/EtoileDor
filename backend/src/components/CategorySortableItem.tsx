@@ -22,7 +22,7 @@ interface CategorySortableItemProps {
 
 function CategorySortableItem({ id, sensors }: CategorySortableItemProps) {
     const { categories } = useCategories();
-    const { name, SubCategories } = categories.find((cat) => cat.id === id);
+    const { name, SubCategoriesIds: SubCategories } = categories.get(id);
     const dispatch = useCategoriesDispatch();
 
     const [collapsed, setCollapsed] = useState<boolean>(true);
@@ -122,11 +122,7 @@ function CategorySortableItem({ id, sensors }: CategorySortableItemProps) {
                 </div>
             </div>
             {!collapsed && (
-                <SubCategoriesNavList
-                    parentId={id}
-                    sensors={sensors}
-                    subCategories={SubCategories}
-                />
+                <SubCategoriesNavList parentId={id} sensors={sensors} />
             )}
 
             <DeleteModal

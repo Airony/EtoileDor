@@ -6,7 +6,7 @@ import { useEffect } from "react";
 import { Gutter, Button } from "payload/components/elements";
 import { LoadingOverlayToggle } from "payload/dist/admin/components/elements/Loading";
 import { Category, MenuItem, SubCategory } from "../payload-types";
-import { toast, ToastContainer } from "react-toastify";
+import { ToastContainer } from "react-toastify";
 import {
     CategoriesContext,
     CategoriesDispatchContext,
@@ -21,7 +21,10 @@ import CategoriesList from "../components/CategoriesList";
 const initialState: CategoriesState = {
     loading: true,
     error: "",
-    categories: [],
+    categories: new Map(),
+    subCategories: new Map(),
+    menuItems: new Map(),
+    data: [],
 };
 
 const categoryOrderView: AdminViewComponent = ({ user }) => {
@@ -96,59 +99,60 @@ const categoryOrderView: AdminViewComponent = ({ user }) => {
     }, []);
 
     async function onSave() {
-        dispatch({ type: categoryActionKind.LOADING });
+        return;
+        // dispatch({ type: categoryActionKind.LOADING });
 
         // Just update everything
         // Extract categories alone
-        const extractedCategories = state.categories.map((cat, index) => {
-            return {
-                id: cat.id,
-                index: index,
-            };
-        });
+        // const extractedCategories = state.categories.map((cat, index) => {
+        //     return {
+        //         id: cat.id,
+        //         index: index,
+        //     };
+        // });
 
-        const extractedSubCategories = state.categories.flatMap((cat) => {
-            return cat.SubCategories.map((subCat, index) => {
-                return {
-                    id: subCat.id,
-                    parentId: cat.id,
-                    index,
-                };
-            });
-        });
-        console.log(extractedCategories);
-        console.log(extractedSubCategories);
+        // const extractedSubCategories = state.categories.flatMap((cat) => {
+        //     return cat.SubCategoriesIds.map((subCat, index) => {
+        //         return {
+        //             id: subCat.id,
+        //             parentId: cat.id,
+        //             index,
+        //         };
+        //     });
+        // });
+        // console.log(extractedCategories);
+        // console.log(extractedSubCategories);
         // For now, just update everything
 
         // Do a bulk update
 
         // Custom endpoint
-        const response = await fetch("/api/categories/update_all", {
-            credentials: "include",
-            method: "PATCH",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                categories: extractedCategories,
-                subCategories: extractedSubCategories,
-            }),
-        });
+        // const response = await fetch("/api/categories/update_all", {
+        //     credentials: "include",
+        //     method: "PATCH",
+        //     headers: {
+        //         "Content-Type": "application/json",
+        //     },
+        //     body: JSON.stringify({
+        //         categories: extractedCategories,
+        //         subCategories: extractedSubCategories,
+        //     }),
+        // });
 
-        if (response.status !== 200) {
-            dispatch({
-                type: categoryActionKind.ERROR,
-                error: "",
-            });
-            toast.error("Failed to update order.", {
-                position: "bottom-center",
-            });
-        } else {
-            dispatch({ type: categoryActionKind.SAVED });
-            toast.success("Order updated successfully.", {
-                position: "bottom-center",
-            });
-        }
+        // if (response.status !== 200) {
+        //     dispatch({
+        //         type: categoryActionKind.ERROR,
+        //         error: "",
+        //     });
+        //     toast.error("Failed to update order.", {
+        //         position: "bottom-center",
+        //     });
+        // } else {
+        //     dispatch({ type: categoryActionKind.SAVED });
+        //     toast.success("Order updated successfully.", {
+        //         position: "bottom-center",
+        //     });
+        // }
     }
 
     return (

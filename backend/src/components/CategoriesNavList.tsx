@@ -24,7 +24,7 @@ import {
 } from "../contexts/CategoriesContext";
 
 function CategoriesNavList() {
-    const { categories, loading } = useContext(CategoriesContext);
+    const { data, loading } = useContext(CategoriesContext);
     const dispatch = useContext(CategoriesDispatchContext);
     const sensors = useSensors(useSensor(PointerSensor));
     return (
@@ -44,14 +44,14 @@ function CategoriesNavList() {
             modifiers={[restrictToVerticalAxis, restrictToParentElement]}
         >
             <SortableContext
-                items={categories}
+                items={data}
                 strategy={verticalListSortingStrategy}
                 disabled={loading}
             >
-                {categories.map((cat) => (
+                {data.map((catId) => (
                     <CategorySortableItem
-                        key={cat.id}
-                        id={cat.id}
+                        key={catId}
+                        id={catId}
                         sensors={sensors}
                     />
                 ))}

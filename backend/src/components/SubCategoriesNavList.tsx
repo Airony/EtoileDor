@@ -16,21 +16,19 @@ import {
 } from "@dnd-kit/modifiers";
 import {
     categoryActionKind,
-    CategoryData,
+    useCategories,
     useCategoriesDispatch,
 } from "../contexts/CategoriesContext";
 
 interface SubCategoriesListProps {
     sensors: SensorDescriptor<SensorOptions>[];
     parentId: string;
-    subCategories: CategoryData[];
 }
 
-function SubCategoriesNavList({
-    sensors,
-    parentId,
-    subCategories,
-}: SubCategoriesListProps) {
+function SubCategoriesNavList({ sensors, parentId }: SubCategoriesListProps) {
+    const { categories } = useCategories();
+    const { SubCategoriesIds } = categories.get(parentId);
+
     const dispatch = useCategoriesDispatch();
     return (
         <DndContext
@@ -47,14 +45,13 @@ function SubCategoriesNavList({
             modifiers={[restrictToVerticalAxis, restrictToParentElement]}
         >
             <SortableContext
-                items={subCategories}
+                items={SubCategoriesIds}
                 strategy={verticalListSortingStrategy}
             >
-                {subCategories.map((cat) => (
+                {SubCategoriesIds.map((id) => (
                     <SubCategorySortableItem
-                        key={cat.id}
-                        id={cat.id}
-                        name={cat.name}
+                        key={id}
+                        id={id}
                         parentId={parentId}
                     />
                 ))}

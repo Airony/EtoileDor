@@ -277,13 +277,12 @@ export function CategoriesReducer(
         }
 
         case categoryActionKind.ADD_CATEGORY: {
-            const newId = uuidv4(); // TODO: Add and then Get ID from server
-            const newData = [...state.data, newId];
-            const newIndex = newData.length - 1;
-            const newCategories = MapSet(state.categories, newId, () => ({
+            const { id, name, index } = action;
+            const newData = [...state.data, id];
+            const newCategories = MapSet(state.categories, id, () => ({
                 // TODO: Handle newly inputted category state
-                name: "",
-                initialIndex: newIndex,
+                name: name,
+                initialIndex: index,
                 SubCategoriesIds: [],
                 menuItemsIds: [],
             }));
@@ -412,6 +411,9 @@ type categoryAction =
       }
     | {
           type: categoryActionKind.ADD_CATEGORY;
+          id: string;
+          name: string;
+          index: number;
       }
     | {
           type: categoryActionKind.MOVE_MENU_ITEM;

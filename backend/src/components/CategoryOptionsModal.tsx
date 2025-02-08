@@ -37,6 +37,16 @@ function CategoryOptionsModal({ id, slug }: CategoryOptionsModalProps) {
         close();
     }
 
+    function handleKeyDown(e: React.KeyboardEvent) {
+        if (e.key === "Enter") {
+            e.preventDefault();
+            handleSavePress();
+        } else if (e.key === "Escape") {
+            e.preventDefault();
+            handleCancelPress();
+        }
+    }
+
     async function handleSavePress() {
         if (!inputtedName) {
             return;
@@ -77,6 +87,7 @@ function CategoryOptionsModal({ id, slug }: CategoryOptionsModalProps) {
             className="category-options-modal"
             closeOnBlur={false}
             focusTrapOptions={{ initialFocus: false }}
+            onKeyDown={handleKeyDown}
         >
             {loading && (
                 <div className="category-options-modal__loading-overlay"></div>

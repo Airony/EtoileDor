@@ -8,6 +8,7 @@ import {
 import { Button } from "payload/components/elements";
 import { TextInput } from "payload/components/forms";
 import DeleteModal from "./DeleteModal";
+import { toast } from "react-toastify";
 
 interface CategoryOptionsModalProps {
     id: string;
@@ -18,25 +19,50 @@ function CategoryOptionsModal({ id, slug }: CategoryOptionsModalProps) {
     const dispatch = useCategoriesDispatch();
     const { name } = categories.get(id);
     const [inputtedName, setInputtedName] = useState<string>(name);
+    const [loading, setLoading] = useState<boolean>(false);
     const { closeModal, openModal } = useModal();
 
     function close() {
+        if (loading) {
+            return;
+        }
+        setInputtedName(name);
+        setLoading(false);
         closeModal(slug);
     }
     function handleCancelPress() {
-        setInputtedName(name);
+        if (loading) {
+            return;
+        }
         close();
     }
 
-    function handleSavePress() {
+    async function handleSavePress() {
         if (!inputtedName) {
             return;
         }
-        dispatch({
-            type: categoryActionKind.RENAME_CATEGORY,
-            id,
-            newName: inputtedName,
-        });
+        setLoading(true);
+
+        try {
+            const response = await fetch(`/api/categories/${id}`, {
+                credentials: "include",
+                method: "PATCH",
+                body: JSON.stringify({ name: inputtedName }),
+                headers: { "Content-Type": "application/json" },
+            });
+            if (!response.ok) {
+                throw new Error();
+            }
+            dispatch({
+                type: categoryActionKind.RENAME_CATEGORY,
+                id,
+                newName: inputtedName,
+            });
+            close();
+        } catch (error) {
+            toast.error("Failed to update category name.");
+            setLoading(false);
+        }
     }
 
     function handleDelete() {
@@ -52,6 +78,9 @@ function CategoryOptionsModal({ id, slug }: CategoryOptionsModalProps) {
             closeOnBlur={false}
             focusTrapOptions={{ initialFocus: false }}
         >
+            {loading && (
+                <div className="category-options-modal__loading-overlay"></div>
+            )}
             <h2>Edit Category</h2>
             <TextInput
                 path="name"
@@ -72,14 +101,21 @@ function CategoryOptionsModal({ id, slug }: CategoryOptionsModalProps) {
                         close();
                         openModal(deleteModalSlug);
                     }}
+                    disabled={loading}
                 >
                     Delete
                 </Button>
                 <div className="category-options-modal__save-cancel-container">
-                    <Button buttonStyle="secondary" onClick={handleCancelPress}>
+                    <Button
+                        disabled={loading}
+                        buttonStyle="secondary"
+                        onClick={handleCancelPress}
+                    >
                         Cancel
                     </Button>
-                    <Button onClick={handleSavePress}>Save</Button>
+                    <Button disabled={loading} onClick={handleSavePress}>
+                        Save
+                    </Button>
                 </div>
             </div>
             <DeleteModal

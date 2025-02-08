@@ -84,14 +84,12 @@ function CategoryOptionsModal({ id, slug }: CategoryOptionsModalProps) {
     return (
         <Modal
             slug={slug}
-            className="category-options-modal"
+            className="options-modal"
             closeOnBlur={false}
             focusTrapOptions={{ initialFocus: false }}
             onKeyDown={handleKeyDown}
         >
-            {loading && (
-                <div className="category-options-modal__loading-overlay"></div>
-            )}
+            {loading && <div className="options-modal__loading-overlay"></div>}
             <h2>Edit Category</h2>
             <TextInput
                 path="name"
@@ -104,7 +102,7 @@ function CategoryOptionsModal({ id, slug }: CategoryOptionsModalProps) {
                 }}
             ></TextInput>
 
-            <div className="category-options-modal__actions">
+            <div className="options-modal__actions">
                 <Button
                     buttonStyle="transparent"
                     className="btn-error"
@@ -116,7 +114,7 @@ function CategoryOptionsModal({ id, slug }: CategoryOptionsModalProps) {
                 >
                     Delete
                 </Button>
-                <div className="category-options-modal__save-cancel-container">
+                <div className="options-modal__save-cancel-container">
                     <Button
                         disabled={loading}
                         buttonStyle="secondary"

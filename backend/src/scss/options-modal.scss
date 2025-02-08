@@ -1,6 +1,6 @@
 @import '~payload/scss';
 
-.category-options-modal {
+.options-modal {
     left: 50%;
     top: 50%;
     transform: translate(-50%, -50%);
@@ -33,6 +33,12 @@
 
     &__warning {
         color: var(--color-warning-300);
+    }
+
+    &__inputs {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
     }
 
     &__actions {

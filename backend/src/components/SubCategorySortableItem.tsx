@@ -1,80 +1,33 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import React, { useState } from "react";
+import React from "react";
 import DragHandle from "./DragHandle";
-import { Modal, useModal } from "@faceless-ui/modal";
+import { useModal } from "@faceless-ui/modal";
 import { Button } from "payload/components/elements";
 import MoreIcon from "payload/dist/admin/components/icons/More";
-import {
-    categoryActionKind,
-    useCategories,
-    useCategoriesDispatch,
-} from "../contexts/CategoriesContext";
-import { SelectInput } from "payload/components/forms";
-import EditableText from "./EditableText";
+import { useCategories } from "../contexts/CategoriesContext";
+import SubCategoryOptionsModal from "./SubCategoryOptionsModal";
 
 interface SubCategorySortableItemProps {
     id: string;
     parentId: string;
-    defaultIsEditing?: boolean;
 }
 
 function SubCategorySortableItem({
     id,
     parentId,
-    defaultIsEditing = false,
 }: SubCategorySortableItemProps) {
-    const { data, categories, subCategories } = useCategories();
+    const { subCategories } = useCategories();
     const { name } = subCategories.get(id);
 
-    const [isEditing, setIsEditing] = useState(defaultIsEditing);
-    const shouldEdit = isEditing || !name;
-    const [newName, setNewName] = useState(name);
-
-    const dispatch = useCategoriesDispatch();
-
-    const { openModal, closeModal } = useModal();
+    const { openModal } = useModal();
     const { attributes, listeners, setNodeRef, transform, transition } =
         useSortable({ id: id });
-    const [parentCategoryInput, setParentCategoryInput] =
-        useState<string>(parentId);
 
     const style = {
         transform: CSS.Translate.toString(transform),
         transition,
     };
-
-    function handleModalSave() {
-        dispatch({
-            type: categoryActionKind.CHANGE_SUB_CATEGORY_PARENT,
-            currentParentId: parentId,
-            newParentId: parentCategoryInput,
-            subCategoryId: id,
-        });
-        closeModal(modalId);
-    }
-
-    function handleModalCancel() {
-        setParentCategoryInput(parentId);
-        closeModal(modalId);
-    }
-
-    function handleSaveName() {
-        if (!newName) {
-            return;
-        }
-        setIsEditing(false);
-        dispatch({
-            type: categoryActionKind.RENAME_SUB_CATEGORY,
-            id: id,
-            newName: newName,
-        });
-    }
-
-    function handleCancelEdit() {
-        setIsEditing(false);
-        setNewName(name);
-    }
 
     const modalId = "sub-cat-" + id + "-modal";
     return (
@@ -86,17 +39,7 @@ function SubCategorySortableItem({
             >
                 <DragHandle listeners={listeners} attributes={attributes} />
 
-                <EditableText
-                    path="sub-category-name"
-                    name="name"
-                    isEditing={shouldEdit}
-                    editedValue={newName}
-                    value={name}
-                    onChange={(val) => setNewName(val)}
-                    handleStartEdit={() => setIsEditing(true)}
-                    handleSaveEdit={handleSaveName}
-                    handleCancelEdit={handleCancelEdit}
-                />
+                <p>{name}</p>
                 <div className="category-ordered-item__control-group">
                     <Button
                         icon={<MoreIcon />}
@@ -106,42 +49,12 @@ function SubCategorySortableItem({
                     />
                 </div>
             </div>
-            <Modal slug={modalId} closeOnBlur={false}>
-                <div className="category-order__modal">
-                    <h2>Sub Category Options</h2>
-                    <h3>{name}</h3>
-                    <SelectInput
-                        path="parent-category"
-                        name="parent-category"
-                        label="Parent Category"
-                        options={data.map((id) => {
-                            const cat = categories.get(id);
-                            return { label: cat.name, value: id };
-                        })}
-                        validate={null}
-                        onChange={(val) => {
-                            setParentCategoryInput(val.value as string);
-                        }}
-                        value={parentCategoryInput}
-                    ></SelectInput>
-                    <div className="category-order__modal__controls">
-                        <Button
-                            buttonStyle="primary"
-                            type="button"
-                            onClick={handleModalSave}
-                        >
-                            Save
-                        </Button>
-                        <Button
-                            buttonStyle="secondary"
-                            type="button"
-                            onClick={handleModalCancel}
-                        >
-                            Cancel
-                        </Button>
-                    </div>
-                </div>
-            </Modal>
+
+            <SubCategoryOptionsModal
+                slug={modalId}
+                id={id}
+                parentId={parentId}
+            />
         </>
     );
 }

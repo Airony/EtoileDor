@@ -1,0 +1,51 @@
+@import '~payload/scss';
+
+.category-options-modal {
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    height: auto;
+    width: fit-content;
+    min-width: min(100%, 500px);
+
+    margin: 0;
+    padding: 2.5rem 2rem;
+    position: fixed;
+    z-index: $z-modal;
+    @include shadow-lg;
+    background-color: var(--theme-elevation-50);
+
+    h2 {
+        margin-bottom: 4rem;
+    }
+
+
+    &__controls {
+        display: flex;
+        flex-direction: row;
+        gap: 1rem;
+    }
+
+    p {
+        margin-bottom: 0.5rem;
+        font-size: base(0.65);
+    }
+
+    &__warning {
+        color: var(--color-warning-300);
+    }
+
+    &__actions {
+        margin-top: 4.875rem;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        gap: 4rem;
+        align-items: center;
+    }
+
+    &__save-cancel-container {
+        display: flex;
+        gap: 1.5rem;
+    }
+}

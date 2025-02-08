@@ -11,11 +11,11 @@ import { SensorDescriptor, SensorOptions } from "@dnd-kit/core";
 import { Button } from "payload/components/elements";
 import { Chevron } from "payload/components/icons";
 import SubCategoriesNavList from "./SubCategoriesNavList";
-import EditableText from "./EditableText";
 import { useModal } from "@faceless-ui/modal";
-import DeleteModal from "./DeleteModal";
 import { toast } from "react-toastify";
 import CategoryInput from "./CategoryInput";
+import CategoryOptionsModal from "./CategoryOptionsModal";
+import MoreIcon from "payload/dist/admin/components/icons/More";
 
 interface CategorySortableItemProps {
     id: string;
@@ -39,10 +39,7 @@ function CategorySortableItem({ id, sensors }: CategorySortableItemProps) {
     });
 
     const [collapsed, setCollapsed] = useState<boolean>(true);
-    const [isEditing, setIsEditing] = useState<boolean>(false);
-    const [newName, setNewName] = useState<string>(name);
 
-    const shouldEdit = isEditing || !name;
     const { attributes, listeners, setNodeRef, transform, transition } =
         useSortable({ id: id });
 
@@ -51,25 +48,8 @@ function CategorySortableItem({ id, sensors }: CategorySortableItemProps) {
         transition,
     };
 
-    const modalId = id + "-modal";
+    const modalSlug = id + "-modal";
     const { openModal } = useModal();
-
-    function handleSaveName() {
-        if (!newName) {
-            return;
-        }
-        setIsEditing(false);
-        dispatch({
-            type: categoryActionKind.RENAME_CATEGORY,
-            id: id,
-            newName: newName,
-        });
-    }
-
-    function handleCancelEdit() {
-        setIsEditing(false);
-        setNewName(name);
-    }
 
     useEffect(() => {
         if (subCatInputState.inputting) {
@@ -150,17 +130,7 @@ function CategorySortableItem({ id, sensors }: CategorySortableItemProps) {
                 className={`category-ordered-item ${!collapsed ? "open" : ""}`}
             >
                 <DragHandle listeners={listeners} attributes={attributes} />
-                <EditableText
-                    path="category_name"
-                    name="category_name"
-                    editedValue={newName}
-                    handleCancelEdit={handleCancelEdit}
-                    handleSaveEdit={handleSaveName}
-                    isEditing={shouldEdit}
-                    value={name}
-                    onChange={(val) => setNewName(val)}
-                    handleStartEdit={() => setIsEditing(true)}
-                />
+                <p>{name}</p>
                 <div className="category-ordered-item__control-group">
                     <Button
                         buttonStyle="icon-label"
@@ -186,16 +156,17 @@ function CategorySortableItem({ id, sensors }: CategorySortableItemProps) {
                         ></Button>
                     )}
                     <Button
-                        icon="x"
+                        icon={<MoreIcon />}
                         buttonStyle="icon-label"
                         size="small"
                         aria-label="Delete category"
                         onClick={() => {
-                            openModal(modalId);
+                            openModal(modalSlug);
                         }}
                     />
                 </div>
             </div>
+            <CategoryOptionsModal id={id} slug={modalSlug} />
             {!collapsed && (
                 <div className="category-ordered-item__sub-categories-list">
                     <SubCategoriesNavList parentId={id} sensors={sensors} />
@@ -209,18 +180,6 @@ function CategorySortableItem({ id, sensors }: CategorySortableItemProps) {
                     )}
                 </div>
             )}
-
-            <DeleteModal
-                slug={modalId}
-                deletedName={"category " + name}
-                warning="All related sub categories and menu items will be deleted."
-                onDeletion={() => {
-                    dispatch({
-                        type: categoryActionKind.DELETE_CATEGORY,
-                        id: id,
-                    });
-                }}
-            />
         </div>
     );
 }

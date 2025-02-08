@@ -1,0 +1,15 @@
+.btn-error {
+    background-color: var(--color-error-300);
+    color: var(--color-error-950);
+
+    &:hover,
+    &:focus {
+        background-color: var(--color-error-400);
+    }
+
+    &:active {
+        background-color: var(--color-error-500);
+    }
+
+
+}

@@ -109,7 +109,7 @@ function CategoriesNavList() {
     }
 
     return (
-        <div>
+        <div className="category-nav">
             <Button
                 icon="plus"
                 size="medium"
@@ -121,35 +121,40 @@ function CategoriesNavList() {
                 Add Category
             </Button>
 
-            <DndContext
-                sensors={sensors}
-                collisionDetection={closestCenter}
-                onDragEnd={(e) => {
-                    if (!e.over) {
-                        return;
-                    }
-                    dispatch({
-                        type: categoryActionKind.MOVE_CATEGORY,
-                        activeId: e.active.id.toString(),
-                        overId: e.over.id.toString(),
-                    });
-                }}
-                modifiers={[restrictToVerticalAxis, restrictToParentElement]}
-            >
-                <SortableContext
-                    items={data}
-                    strategy={verticalListSortingStrategy}
-                    disabled={loading}
+            <div className="category-nav__list">
+                <DndContext
+                    sensors={sensors}
+                    collisionDetection={closestCenter}
+                    onDragEnd={(e) => {
+                        if (!e.over) {
+                            return;
+                        }
+                        dispatch({
+                            type: categoryActionKind.MOVE_CATEGORY,
+                            activeId: e.active.id.toString(),
+                            overId: e.over.id.toString(),
+                        });
+                    }}
+                    modifiers={[
+                        restrictToVerticalAxis,
+                        restrictToParentElement,
+                    ]}
                 >
-                    {data.map((catId) => (
-                        <CategorySortableItem
-                            key={catId}
-                            id={catId}
-                            sensors={sensors}
-                        />
-                    ))}
-                </SortableContext>
-            </DndContext>
+                    <SortableContext
+                        items={data}
+                        strategy={verticalListSortingStrategy}
+                        disabled={loading}
+                    >
+                        {data.map((catId) => (
+                            <CategorySortableItem
+                                key={catId}
+                                id={catId}
+                                sensors={sensors}
+                            />
+                        ))}
+                    </SortableContext>
+                </DndContext>
+            </div>
 
             {state.inputting && (
                 <CategoryInput

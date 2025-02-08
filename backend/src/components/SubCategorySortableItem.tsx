@@ -82,7 +82,7 @@ function SubCategorySortableItem({
             <div
                 ref={setNodeRef}
                 style={style}
-                className="category-order__sub-category"
+                className="category-ordered-item"
             >
                 <DragHandle listeners={listeners} attributes={attributes} />
 
@@ -97,7 +97,7 @@ function SubCategorySortableItem({
                     handleSaveEdit={handleSaveName}
                     handleCancelEdit={handleCancelEdit}
                 />
-                <div className="category-order__control-group">
+                <div className="category-ordered-item__control-group">
                     <Button
                         icon={<MoreIcon />}
                         buttonStyle="icon-label"

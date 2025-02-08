@@ -2,7 +2,6 @@ import { createContext, useContext } from "react";
 import { Category, MenuItem, SubCategory } from "../payload-types";
 import { arrayMove } from "@dnd-kit/sortable";
 import { Dispatch } from "react";
-import { v4 as uuidv4 } from "uuid";
 
 export const CategoriesContext = createContext<CategoriesState>(null);
 export const CategoriesDispatchContext =
@@ -254,18 +253,16 @@ export function CategoriesReducer(
         }
 
         case categoryActionKind.ADD_SUB_CATEGORY: {
-            const { parentId } = action;
-            const parentCategory = state.categories.get(parentId);
-            const newId = uuidv4();
+            const { parentId, id, index, name } = action;
 
             const newCategories = MapSet(state.categories, parentId, (cat) => ({
                 ...cat,
-                SubCategoriesIds: [...cat.SubCategoriesIds, newId],
+                SubCategoriesIds: [...cat.SubCategoriesIds, id],
             }));
 
-            const newSubCategories = MapSet(state.subCategories, newId, () => ({
-                name: "",
-                initialIndex: parentCategory.SubCategoriesIds.length,
+            const newSubCategories = MapSet(state.subCategories, id, () => ({
+                name: name,
+                initialIndex: index,
                 menuItemsIds: [],
             }));
 
@@ -408,6 +405,9 @@ type categoryAction =
     | {
           type: categoryActionKind.ADD_SUB_CATEGORY;
           parentId: string;
+          id: string;
+          index: number;
+          name: string;
       }
     | {
           type: categoryActionKind.ADD_CATEGORY;

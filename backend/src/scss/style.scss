@@ -8,6 +8,7 @@
 @import "./options-modal.scss";
 @import "./button.scss";
 @import "./categories-list.scss";
+@import "./menu-item.scss";
 
 .menu__container {
     display: flex;
@@ -121,18 +122,4 @@
     flex-direction: row;
     gap: 1rem;
     margin-top: 1rem;
-}
-
-.menu-item {
-    display: flex;
-    flex-direction: row;
-    background-color: var(--color-base-1000);
-    align-items: center;
-    padding: 0.5rem 0.75rem;
-    margin-bottom: 0.5rem;
-
-    p {
-        margin: 0;
-        margin-left: 1rem;
-    }
 }

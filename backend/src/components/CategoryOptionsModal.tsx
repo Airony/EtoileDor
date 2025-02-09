@@ -69,7 +69,7 @@ function CategoryOptionsModal({ id, slug }: CategoryOptionsModalProps) {
                 id,
                 newName: inputtedName,
             });
-            setInputtedName(name);
+            setInputtedName(inputtedName);
             setLoading(false);
             close();
         } catch (error) {

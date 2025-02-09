@@ -9,6 +9,7 @@ import { Button } from "payload/components/elements";
 import { SelectInput, TextInput } from "payload/components/forms";
 import DeleteModal from "./DeleteModal";
 import { toast } from "react-toastify";
+import { LoadingOverlay } from "payload/dist/admin/components/elements/Loading";
 
 interface SubCategoryOptionsModalProps {
     id: string;
@@ -150,7 +151,7 @@ function SubCategoryOptionsModal({
             focusTrapOptions={{ initialFocus: false }}
             onKeyDown={handleKeyDown}
         >
-            {loading && <div className="options-modal__loading-overlay"></div>}
+            <LoadingOverlay show={loading} animationDuration="0" />
             <h2>Edit Category</h2>
             <div className="options-modal__inputs">
                 <TextInput
@@ -158,9 +159,9 @@ function SubCategoryOptionsModal({
                     name="name"
                     label="Name"
                     value={inputtedName}
-                    onChange={(e) => setInputtedName(e.target.value)}
-                    validate={(value) => {
-                        return value;
+                    onChange={(e) => {
+                        if (loading) return;
+                        setInputtedName(e.target.value);
                     }}
                 ></TextInput>
 

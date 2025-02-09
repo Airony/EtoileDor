@@ -9,6 +9,7 @@ import { Button } from "payload/components/elements";
 import { TextInput } from "payload/components/forms";
 import DeleteModal from "./DeleteModal";
 import { toast } from "react-toastify";
+import { LoadingOverlay } from "payload/dist/admin/components/elements/Loading";
 
 interface CategoryOptionsModalProps {
     id: string;
@@ -68,6 +69,7 @@ function CategoryOptionsModal({ id, slug }: CategoryOptionsModalProps) {
                 id,
                 newName: inputtedName,
             });
+            setInputtedName(name);
             setLoading(false);
             close();
         } catch (error) {
@@ -107,15 +109,16 @@ function CategoryOptionsModal({ id, slug }: CategoryOptionsModalProps) {
             focusTrapOptions={{ initialFocus: false }}
             onKeyDown={handleKeyDown}
         >
+            <LoadingOverlay show={loading} animationDuration="0" />
             <h2>Edit Category</h2>
             <TextInput
                 path="name"
                 name="name"
                 label="Name"
                 value={inputtedName}
-                onChange={(e) => setInputtedName(e.target.value)}
-                validate={(value) => {
-                    return value;
+                onChange={(e) => {
+                    if (loading) return;
+                    setInputtedName(e.target.value);
                 }}
             ></TextInput>
 

@@ -21,6 +21,7 @@ export enum categoryActionKind {
     ADD_CATEGORY = "ADD_CATEGORY",
     MOVE_MENU_ITEM = "MOVE_MENU_ITEM",
     DELETE_CATEGORY = "DELETE_CATEGORY",
+    DELETE_SUB_CATEGORY = "DELETE_SUB_CATEGORY",
 }
 
 export type MenuItemData = {
@@ -356,6 +357,23 @@ export function CategoriesReducer(
                 menuItems: newMenuItems,
             };
         }
+        case categoryActionKind.DELETE_SUB_CATEGORY: {
+            const { id, parentId } = action;
+            const newMenuItems = new Map(state.menuItems);
+            deleteSubCategory(state.subCategories, newMenuItems, id);
+            const newCategories = MapSet(state.categories, parentId, (cat) => ({
+                ...cat,
+                SubCategoriesIds: cat.SubCategoriesIds.filter(
+                    (subCatId) => subCatId !== id,
+                ),
+            }));
+
+            return {
+                ...state,
+                categories: newCategories,
+                menuItems: newMenuItems,
+            };
+        }
         default:
             break;
     }
@@ -424,6 +442,11 @@ type categoryAction =
     | {
           type: categoryActionKind.DELETE_CATEGORY;
           id: string;
+      }
+    | {
+          type: categoryActionKind.DELETE_SUB_CATEGORY;
+          id: string;
+          parentId: string;
       };
 
 export function useCategories() {

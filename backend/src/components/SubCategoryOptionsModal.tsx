@@ -33,7 +33,6 @@ function SubCategoryOptionsModal({
         if (loading) {
             return;
         }
-        setLoading(false);
         closeModal(slug);
     }
     function handleCancelPress() {
@@ -128,6 +127,7 @@ function SubCategoryOptionsModal({
                 setInputtedParentId(newParentId);
             }
 
+            setLoading(false);
             close();
         } catch (error) {
             console.error(error);
@@ -136,10 +136,31 @@ function SubCategoryOptionsModal({
         }
     }
 
-    function handleDelete() {
-        // TODO: Implement handleDelete function
+    async function handleDelete() {
+        setLoading(true);
+        openModal(slug);
+        try {
+            const response = await fetch(`/api/sub_categories/${id}`, {
+                credentials: "include",
+                method: "DELETE",
+            });
 
-        close();
+            if (!response.ok) {
+                throw new Error(await response.text());
+            }
+
+            dispatch({
+                type: categoryActionKind.DELETE_SUB_CATEGORY,
+                id: id,
+                parentId: parentId,
+            });
+            setLoading(false);
+            closeModal(slug);
+        } catch (error) {
+            toast.error("Failed to delete sub category.");
+            setLoading(false);
+            openModal(slug);
+        }
     }
     const deleteModalSlug = `delete-modal-${id}`;
 

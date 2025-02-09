@@ -1,6 +1,6 @@
 import { CollectionConfig } from "payload/types";
 import { isAdmin } from "../accessControls";
-import onDeleteSubCategory from "../hooks/onDeleteSubCategory";
+import deleteSubCategoryHandler from "../endpointHandlers/deleteSubCategoryHandler";
 
 const SubCategories: CollectionConfig = {
     slug: "sub_categories",
@@ -34,9 +34,13 @@ const SubCategories: CollectionConfig = {
         useAsTitle: "name",
         group: "Menu",
     },
-    hooks: {
-        beforeDelete: [onDeleteSubCategory],
-    },
+    endpoints: [
+        {
+            path: "/:id",
+            method: "delete",
+            handler: deleteSubCategoryHandler,
+        },
+    ],
     access: {
         read: () => true,
         update: isAdmin,

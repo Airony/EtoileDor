@@ -1,7 +1,7 @@
 import { CollectionConfig } from "payload/types";
 import { isAdmin } from "../accessControls";
-import onDeleteCategory from "../hooks/onDeleteCategory";
 import updateCategoriesHandler from "../endpointHandlers/updateCategoriesHandler";
+import deleteCategoryHandler from "../endpointHandlers/deleteCategoryHandler";
 
 const Categories: CollectionConfig = {
     slug: "categories",
@@ -19,9 +19,6 @@ const Categories: CollectionConfig = {
             required: true,
         },
     ],
-    hooks: {
-        beforeDelete: [onDeleteCategory],
-    },
     admin: {
         useAsTitle: "name",
         group: "Menu",
@@ -39,6 +36,11 @@ const Categories: CollectionConfig = {
             path: "/update_all",
             method: "patch",
             handler: updateCategoriesHandler,
+        },
+        {
+            path: "/:id",
+            method: "delete",
+            handler: deleteCategoryHandler,
         },
     ],
 };

@@ -36,8 +36,8 @@ function DeleteModal({
                         buttonStyle="primary"
                         type="button"
                         onClick={() => {
-                            onDeletion();
                             closeModal(slug);
+                            onDeletion();
                         }}
                         className="delete-modal__delete-btn"
                     >

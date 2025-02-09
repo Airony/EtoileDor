@@ -26,15 +26,15 @@ function CategoryOptionsModal({ id, slug }: CategoryOptionsModalProps) {
         if (loading) {
             return;
         }
-        setInputtedName(name);
-        setLoading(false);
         closeModal(slug);
     }
+
     function handleCancelPress() {
         if (loading) {
             return;
         }
         close();
+        setInputtedName(name);
     }
 
     function handleKeyDown(e: React.KeyboardEvent) {
@@ -68,6 +68,7 @@ function CategoryOptionsModal({ id, slug }: CategoryOptionsModalProps) {
                 id,
                 newName: inputtedName,
             });
+            setLoading(false);
             close();
         } catch (error) {
             toast.error("Failed to update category name.");
@@ -75,9 +76,26 @@ function CategoryOptionsModal({ id, slug }: CategoryOptionsModalProps) {
         }
     }
 
-    function handleDelete() {
-        dispatch({ type: categoryActionKind.DELETE_CATEGORY, id });
-        close();
+    async function handleDelete() {
+        setLoading(true);
+        openModal(slug);
+        try {
+            const response = await fetch(`/api/categories/${id}`, {
+                credentials: "include",
+                method: "DELETE",
+            });
+            if (!response.ok) {
+                throw new Error(await response.text());
+            }
+
+            dispatch({ type: categoryActionKind.DELETE_CATEGORY, id });
+            setLoading(false);
+            closeModal(slug);
+        } catch (error) {
+            toast.error("Failed to delete category.");
+            setLoading(false);
+            openModal(slug);
+        }
     }
     const deleteModalSlug = `delete-modal-${id}`;
 
@@ -89,7 +107,6 @@ function CategoryOptionsModal({ id, slug }: CategoryOptionsModalProps) {
             focusTrapOptions={{ initialFocus: false }}
             onKeyDown={handleKeyDown}
         >
-            {loading && <div className="options-modal__loading-overlay"></div>}
             <h2>Edit Category</h2>
             <TextInput
                 path="name"

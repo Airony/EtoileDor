@@ -28,6 +28,10 @@ function MenuItemList({ list, parentId }: MenuItemListProps) {
     const sensors = useSensors(useSensor(PointerSensor));
     const dispatch = useCategoriesDispatch();
 
+    if (list.length === 0) {
+        return <></>;
+    }
+
     return (
         <div>
             <DndContext

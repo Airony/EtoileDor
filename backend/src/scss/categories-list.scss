@@ -28,6 +28,12 @@
         border-left: 1px solid var(--theme-elevation-150);
         display: flex;
         flex-direction: column;
-        gap: 2rem;
+        gap: 4rem;
+    }
+
+    &__sub-categories {
+        display: flex;
+        gap: 4rem;
+        flex-direction: column;
     }
 }

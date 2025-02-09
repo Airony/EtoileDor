@@ -27,6 +27,9 @@ function MenuItemInput({
 
     function handlePriceChange(e: React.ChangeEvent<HTMLInputElement>) {
         // Only allow digits, no decimals, no negative numbers
+        if (loading) {
+            return;
+        }
         setPrice(e.target.value.replace(/\D/g, ""));
     }
 

@@ -64,7 +64,7 @@ function MenuItemInput({
     }
 
     return (
-        <div className="menu-item" onKeyDown={handleKeyDown}>
+        <div className="menu-item">
             {loading && <div className="menu-item__loading-overlay" />}
             <div className="menu-item__left-items">
                 <TextInput
@@ -75,6 +75,7 @@ function MenuItemInput({
                     value={name}
                     onChange={handleNameChange}
                     inputRef={inputRef}
+                    onKeyDown={handleKeyDown}
                 ></TextInput>
             </div>
             <div className="menu-item__right-items">
@@ -85,6 +86,7 @@ function MenuItemInput({
                     placeholder={"Price"}
                     value={price}
                     onChange={handlePriceChange}
+                    onKeyDown={handleKeyDown}
                 ></TextInput>
                 <Button
                     className="menu-item__save-button"

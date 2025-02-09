@@ -8,15 +8,19 @@ interface MenuItemInputProps {
     onSave: (name: string, price: number) => void;
     inputRef: React.MutableRefObject<HTMLInputElement>;
     loading: boolean;
+    defaultName?: string;
+    defaultPrice?: number;
 }
 function MenuItemInput({
     onCancel,
     onSave,
     inputRef,
     loading,
+    defaultName = "",
+    defaultPrice = 0,
 }: MenuItemInputProps) {
-    const [name, setName] = useState<string>("");
-    const [price, setPrice] = useState<string>("");
+    const [name, setName] = useState<string>(defaultName);
+    const [price, setPrice] = useState<string>(defaultPrice.toString());
 
     function handleNameChange(e: React.ChangeEvent<HTMLInputElement>) {
         if (loading) {

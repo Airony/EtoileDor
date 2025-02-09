@@ -23,6 +23,7 @@ export enum categoryActionKind {
     DELETE_CATEGORY = "DELETE_CATEGORY",
     DELETE_SUB_CATEGORY = "DELETE_SUB_CATEGORY",
     ADD_MENU_ITEM = "ADD_MENU_ITEM",
+    UPDATE_MENU_ITEM = "UPDATE_MENU_ITEM",
 }
 
 export type MenuItemData = {
@@ -413,6 +414,21 @@ export function CategoriesReducer(
                 };
             }
         }
+        case categoryActionKind.UPDATE_MENU_ITEM: {
+            const { id } = action;
+            const obj = {
+                name: action.name,
+                price: action.price,
+            };
+            const newMenuItems = MapSet(state.menuItems, id, (item) => ({
+                ...item,
+                ...obj,
+            }));
+            return {
+                ...state,
+                menuItems: newMenuItems,
+            };
+        }
         default:
             break;
     }
@@ -495,6 +511,12 @@ type categoryAction =
           name: string;
           price: number;
           parentType: "categories" | "sub_categories";
+      }
+    | {
+          type: categoryActionKind.UPDATE_MENU_ITEM;
+          id: string;
+          name?: string;
+          price?: number;
       };
 
 export function useCategories() {

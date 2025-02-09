@@ -22,6 +22,7 @@ export enum categoryActionKind {
     MOVE_MENU_ITEM = "MOVE_MENU_ITEM",
     DELETE_CATEGORY = "DELETE_CATEGORY",
     DELETE_SUB_CATEGORY = "DELETE_SUB_CATEGORY",
+    ADD_MENU_ITEM = "ADD_MENU_ITEM",
 }
 
 export type MenuItemData = {
@@ -374,6 +375,44 @@ export function CategoriesReducer(
                 menuItems: newMenuItems,
             };
         }
+        case categoryActionKind.ADD_MENU_ITEM: {
+            const { id, parentId, name, price, index, parentType } = action;
+            const newMenuItems = MapSet(state.menuItems, id, () => ({
+                name: name,
+                price: price,
+                initialIndex: index,
+            }));
+
+            if (parentType === "categories") {
+                const newCategories = MapSet(
+                    state.categories,
+                    parentId,
+                    (cat) => ({
+                        ...cat,
+                        menuItemsIds: [...cat.menuItemsIds, id],
+                    }),
+                );
+                return {
+                    ...state,
+                    categories: newCategories,
+                    menuItems: newMenuItems,
+                };
+            } else {
+                const newSubCategories = MapSet(
+                    state.subCategories,
+                    parentId,
+                    (cat) => ({
+                        ...cat,
+                        menuItemsIds: [...cat.menuItemsIds, id],
+                    }),
+                );
+                return {
+                    ...state,
+                    subCategories: newSubCategories,
+                    menuItems: newMenuItems,
+                };
+            }
+        }
         default:
             break;
     }
@@ -447,6 +486,15 @@ type categoryAction =
           type: categoryActionKind.DELETE_SUB_CATEGORY;
           id: string;
           parentId: string;
+      }
+    | {
+          type: categoryActionKind.ADD_MENU_ITEM;
+          id: string;
+          parentId: string;
+          index: number;
+          name: string;
+          price: number;
+          parentType: "categories" | "sub_categories";
       };
 
 export function useCategories() {

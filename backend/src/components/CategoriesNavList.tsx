@@ -5,9 +5,11 @@ import {
     PointerSensor,
     useSensor,
     useSensors,
+    DragEndEvent,
 } from "@dnd-kit/core";
 
 import {
+    arrayMove,
     SortableContext,
     verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
@@ -25,6 +27,7 @@ import {
 import { Button } from "payload/components/elements";
 import CategoryInput from "./CategoryInput";
 import { toast } from "react-toastify";
+import { useDebouncedCallback } from "../reactHooks/useDebounceCallback";
 
 interface State {
     loading: boolean;
@@ -32,13 +35,51 @@ interface State {
 }
 
 function CategoriesNavList() {
-    const { data, loading } = useContext(CategoriesContext);
+    const { data } = useContext(CategoriesContext);
     const dispatch = useContext(CategoriesDispatchContext);
     const sensors = useSensors(useSensor(PointerSensor));
     const [state, setState] = useState<State>({
         loading: false,
         inputting: false,
     });
+
+    const [updateOrder, flushUpdateOrder] = useDebouncedCallback(
+        async (newOrder: string[]) => {
+            try {
+                const response = await fetch("/api/categories/order", {
+                    credentials: "include",
+                    method: "PATCH",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        categoryIds: newOrder,
+                    }),
+                });
+                await new Promise((resolve) => setTimeout(resolve, 5000));
+                if (!response.ok) {
+                    throw new Error(await response.text());
+                }
+                toast.success("Category order updated successfully", {
+                    position: "bottom-center",
+                });
+                // Dispatch
+            } catch (error) {
+                console.error(error);
+                toast.error("Failed to update category order", {
+                    position: "bottom-center",
+                });
+                setOrder(data);
+            }
+        },
+        1000,
+    );
+
+    const [order, setOrder] = useState<string[]>(data);
+
+    useEffect(() => {
+        setOrder(data);
+    }, [data]);
 
     const inputRef = useRef<HTMLInputElement>(null);
 
@@ -66,6 +107,7 @@ function CategoriesNavList() {
     }
 
     async function handleSaveCategory(name: string) {
+        flushUpdateOrder();
         setState({ loading: true, inputting: true });
         try {
             const index = data.length;
@@ -108,6 +150,17 @@ function CategoriesNavList() {
         }
     }
 
+    function handleReorder(e: DragEndEvent) {
+        if (!e.over) {
+            return;
+        }
+        const oldIndex = order.indexOf(e.active.id as string);
+        const newIndex = order.indexOf(e.over.id as string);
+        const newOrder = arrayMove(order, oldIndex, newIndex);
+        setOrder(newOrder);
+        updateOrder(newOrder);
+    }
+
     return (
         <div className="category-nav">
             <Button
@@ -116,7 +169,7 @@ function CategoriesNavList() {
                 aria-label="Add Category"
                 buttonStyle="secondary"
                 onClick={handleAddBtnPress}
-                disabled={loading}
+                disabled={state.loading}
             >
                 Add Category
             </Button>
@@ -125,27 +178,18 @@ function CategoriesNavList() {
                 <DndContext
                     sensors={sensors}
                     collisionDetection={closestCenter}
-                    onDragEnd={(e) => {
-                        if (!e.over) {
-                            return;
-                        }
-                        dispatch({
-                            type: categoryActionKind.MOVE_CATEGORY,
-                            activeId: e.active.id.toString(),
-                            overId: e.over.id.toString(),
-                        });
-                    }}
+                    onDragEnd={handleReorder}
                     modifiers={[
                         restrictToVerticalAxis,
                         restrictToParentElement,
                     ]}
                 >
                     <SortableContext
-                        items={data}
+                        items={order}
                         strategy={verticalListSortingStrategy}
-                        disabled={loading}
+                        disabled={state.loading}
                     >
-                        {data.map((catId) => (
+                        {order.map((catId) => (
                             <CategorySortableItem
                                 key={catId}
                                 id={catId}

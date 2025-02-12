@@ -24,6 +24,7 @@ export enum categoryActionKind {
     DELETE_SUB_CATEGORY = "DELETE_SUB_CATEGORY",
     ADD_MENU_ITEM = "ADD_MENU_ITEM",
     UPDATE_MENU_ITEM = "UPDATE_MENU_ITEM",
+    CHANGE_MENU_ITEM_PARENT = "CHANGE_MENU_ITEM_PARENT",
 }
 
 export type MenuItemData = {
@@ -415,18 +416,69 @@ export function CategoriesReducer(
             }
         }
         case categoryActionKind.UPDATE_MENU_ITEM: {
-            const { id } = action;
-            const obj = {
-                name: action.name,
-                price: action.price,
-            };
+            const { id, name, price } = action;
             const newMenuItems = MapSet(state.menuItems, id, (item) => ({
                 ...item,
-                ...obj,
+                name: name,
+                price: price,
             }));
             return {
                 ...state,
                 menuItems: newMenuItems,
+            };
+        }
+        case categoryActionKind.CHANGE_MENU_ITEM_PARENT: {
+            const { currentParentId, newParentId, id } = action;
+            // So currentParent can either be a category or a subcategory
+            // new Parent can either be a category or a subcategory
+            // First
+            if (currentParentId === newParentId) {
+                return state;
+            }
+
+            // Remove the item from the current parent
+            const newCategories = new Map(state.categories);
+            const newSubCategories = new Map(state.subCategories);
+
+            if (newCategories.has(currentParentId)) {
+                newCategories.set(currentParentId, {
+                    ...newCategories.get(currentParentId),
+                    menuItemsIds: newCategories
+                        .get(currentParentId)
+                        .menuItemsIds.filter((itemId) => itemId !== id),
+                });
+            } else {
+                newSubCategories.set(currentParentId, {
+                    ...newSubCategories.get(currentParentId),
+                    menuItemsIds: newSubCategories
+                        .get(currentParentId)
+                        .menuItemsIds.filter((itemId) => itemId !== id),
+                });
+            }
+
+            // Add the item to the new parent
+            if (newCategories.has(newParentId)) {
+                newCategories.set(newParentId, {
+                    ...newCategories.get(newParentId),
+                    menuItemsIds: [
+                        ...newCategories.get(newParentId).menuItemsIds,
+                        id,
+                    ],
+                });
+            } else {
+                newSubCategories.set(newParentId, {
+                    ...newSubCategories.get(newParentId),
+                    menuItemsIds: [
+                        ...newSubCategories.get(newParentId).menuItemsIds,
+                        id,
+                    ],
+                });
+            }
+
+            return {
+                ...state,
+                categories: newCategories,
+                subCategories: newSubCategories,
             };
         }
         default:
@@ -515,8 +567,14 @@ type categoryAction =
     | {
           type: categoryActionKind.UPDATE_MENU_ITEM;
           id: string;
-          name?: string;
-          price?: number;
+          name: string;
+          price: number;
+      }
+    | {
+          type: categoryActionKind.CHANGE_MENU_ITEM_PARENT;
+          currentParentId: string;
+          newParentId: string;
+          id: string;
       };
 
 export function useCategories() {

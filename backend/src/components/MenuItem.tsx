@@ -11,9 +11,12 @@ import { Button } from "payload/components/elements";
 import MoreIcon from "payload/dist/admin/components/icons/More";
 import MenuItemInput from "./MenuItemInput";
 import { toast } from "react-toastify";
+import MenuItemOptionsModal from "./MenuItemOptionsModal";
+import { useModal } from "@faceless-ui/modal";
 
 interface MenuItemProps {
     id: string;
+    parentId: string;
 }
 
 interface MenuItemState {
@@ -21,7 +24,7 @@ interface MenuItemState {
     editing: boolean;
 }
 
-function MenuItem({ id }: MenuItemProps) {
+function MenuItem({ id, parentId }: MenuItemProps) {
     const { menuItems } = useCategories();
     const dispatch = useCategoriesDispatch();
     const { name, price } = menuItems.get(id);
@@ -32,6 +35,7 @@ function MenuItem({ id }: MenuItemProps) {
         editing: false,
     });
     const inputRef = React.useRef<HTMLInputElement>(null);
+    const { openModal } = useModal();
 
     useEffect(() => {
         if (state.editing) {
@@ -86,6 +90,8 @@ function MenuItem({ id }: MenuItemProps) {
         transition,
     };
 
+    const modalSlug = `options-modal-${id}`;
+
     return state.editing ? (
         <MenuItemInput
             loading={state.loading}
@@ -117,8 +123,14 @@ function MenuItem({ id }: MenuItemProps) {
                     icon={<MoreIcon />}
                     size="small"
                     buttonStyle="icon-label"
+                    onClick={() => openModal(modalSlug)}
                 />
             </div>
+            <MenuItemOptionsModal
+                id={id}
+                parentId={parentId}
+                slug={modalSlug}
+            />
         </div>
     );
 }

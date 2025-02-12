@@ -52,7 +52,7 @@ function MenuItemList({ list, parentId }: MenuItemListProps) {
                     strategy={verticalListSortingStrategy}
                 >
                     {list.map((id) => (
-                        <MenuItem key={id} id={id} />
+                        <MenuItem key={id} id={id} parentId={parentId} />
                     ))}
                 </SortableContext>
             </DndContext>

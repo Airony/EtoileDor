@@ -1,4 +1,10 @@
-import React, { useContext, useEffect, useRef, useState } from "react";
+import React, {
+    useCallback,
+    useContext,
+    useEffect,
+    useRef,
+    useState,
+} from "react";
 import {
     DndContext,
     closestCenter,
@@ -27,90 +33,69 @@ import {
 import { Button } from "payload/components/elements";
 import CategoryInput from "./CategoryInput";
 import { toast } from "react-toastify";
-import { useDebouncedCallback } from "../reactHooks/useDebounceCallback";
-
-interface State {
-    loading: boolean;
-    inputting: boolean;
-}
+import { useMutation } from "@tanstack/react-query";
+import { debouncePromise } from "../utils/debouncePromise";
 
 function CategoriesNavList() {
     const { data } = useContext(CategoriesContext);
     const dispatch = useContext(CategoriesDispatchContext);
     const sensors = useSensors(useSensor(PointerSensor));
-    const [state, setState] = useState<State>({
-        loading: false,
-        inputting: false,
-    });
+    const [inputting, setInputting] = useState<boolean>(false);
 
-    const [updateOrder, flushUpdateOrder] = useDebouncedCallback(
-        async (newOrder: string[]) => {
-            try {
-                const response = await fetch("/api/categories/order", {
-                    credentials: "include",
-                    method: "PATCH",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                        categoryIds: newOrder,
-                    }),
-                });
-                await new Promise((resolve) => setTimeout(resolve, 5000));
-                if (!response.ok) {
-                    throw new Error(await response.text());
-                }
-                toast.success("Category order updated successfully", {
-                    position: "bottom-center",
-                });
-                // Dispatch
-            } catch (error) {
-                console.error(error);
-                toast.error("Failed to update category order", {
-                    position: "bottom-center",
-                });
-                setOrder(data);
+    const debouncedOrderUpdate = useCallback(
+        debouncePromise(async (newOrder: string[]) => {
+            const response = await fetch("/api/categories/order", {
+                credentials: "include",
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    categoryIds: newOrder,
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error(await response.text());
             }
-        },
-        1000,
+        }, 10000),
+        [],
     );
 
-    const [order, setOrder] = useState<string[]>(data);
+    // TODO : Function not debouncing, just delayed
+    const orderMutation = useMutation({
+        mutationFn: debouncedOrderUpdate,
+        onMutate: async (newOrder: string[]) => {
+            const previousOrder = data;
+            dispatch({
+                type: categoryActionKind.UPDATE_CATEGORIES,
+                categoryIds: newOrder,
+            });
 
-    useEffect(() => {
-        setOrder(data);
-    }, [data]);
+            return { previousOrder };
+        },
+        onSuccess: () => {
+            toast.success("Category order updated successfully", {
+                position: "bottom-center",
+            });
+        },
+        onError: (err, __, context) => {
+            console.error(err);
+            toast.error("Failed to update category order", {
+                position: "bottom-center",
+            });
+            dispatch({
+                type: categoryActionKind.UPDATE_CATEGORIES,
+                categoryIds: context.previousOrder,
+            });
+        },
+        scope: {
+            id: `categories-scope`,
+        },
+    });
 
-    const inputRef = useRef<HTMLInputElement>(null);
-
-    useEffect(() => {
-        if (state.inputting) {
-            inputRef.current?.focus();
-        }
-        return () => {};
-    }, [state.inputting]);
-
-    function handleAddBtnPress() {
-        if (state.loading) {
-            return;
-        }
-
-        if (state.inputting) {
-            inputRef.current?.focus();
-            return;
-        }
-        setState({ loading: false, inputting: true });
-    }
-
-    function handleCancel() {
-        setState({ loading: false, inputting: false });
-    }
-
-    async function handleSaveCategory(name: string) {
-        flushUpdateOrder();
-        setState({ loading: true, inputting: true });
-        try {
-            const index = data.length;
+    const addMutation = useMutation({
+        mutationFn: async (name: string) => {
             const response = await fetch("/api/categories", {
                 credentials: "include",
                 method: "POST",
@@ -119,46 +104,79 @@ function CategoriesNavList() {
                 },
                 body: JSON.stringify({
                     name: name,
-                    index: index,
+                    index: data.length,
                 }),
             });
-
-            if (response.status !== 201) {
-                console.error(await response.text());
-                throw new Error();
-            }
-            const responseData = await response.json();
-            if (!responseData.doc?.id) {
-                throw new Error();
+            if (!response.ok) {
+                throw new Error(await response.text());
             }
 
+            return response.json();
+        },
+
+        onSuccess: async (responseData) => {
             dispatch({
                 type: categoryActionKind.ADD_CATEGORY,
                 id: responseData.doc.id,
-                name: name,
-                index: index,
+                name: responseData.doc.name,
+                index: responseData.doc.index,
             });
+
             toast.success("Category created successfully", {
                 position: "bottom-center",
             });
-            setState({ loading: false, inputting: false });
-        } catch (error) {
+        },
+        onError: (err) => {
+            console.error(err);
             toast.error("Failed to create category", {
                 position: "bottom-center",
             });
-            setState({ loading: false, inputting: false });
+        },
+        onSettled: () => {
+            setInputting(false);
+        },
+        scope: {
+            id: `categories-scope`,
+        },
+    });
+
+    function handleSavePress(name: string) {
+        addMutation.mutate(name);
+    }
+
+    const inputRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+        if (inputting) {
+            inputRef.current?.focus();
         }
+        return () => {};
+    }, [inputting]);
+
+    function handleAddBtnPress() {
+        if (addMutation.isPending) {
+            return;
+        }
+
+        if (inputting) {
+            inputRef.current?.focus();
+            return;
+        }
+        setInputting(true);
+    }
+
+    function handleCancel() {
+        setInputting(false);
     }
 
     function handleReorder(e: DragEndEvent) {
         if (!e.over) {
             return;
         }
-        const oldIndex = order.indexOf(e.active.id as string);
-        const newIndex = order.indexOf(e.over.id as string);
-        const newOrder = arrayMove(order, oldIndex, newIndex);
-        setOrder(newOrder);
-        updateOrder(newOrder);
+        const oldIndex = data.indexOf(e.active.id as string);
+        const newIndex = data.indexOf(e.over.id as string);
+        const newOrder = arrayMove(data, oldIndex, newIndex);
+        orderMutation.mutate(newOrder);
     }
 
     return (
@@ -169,7 +187,7 @@ function CategoriesNavList() {
                 aria-label="Add Category"
                 buttonStyle="secondary"
                 onClick={handleAddBtnPress}
-                disabled={state.loading}
+                disabled={addMutation.isPending}
             >
                 Add Category
             </Button>
@@ -185,11 +203,11 @@ function CategoriesNavList() {
                     ]}
                 >
                     <SortableContext
-                        items={order}
+                        items={data}
                         strategy={verticalListSortingStrategy}
-                        disabled={state.loading}
+                        disabled={addMutation.isPending}
                     >
-                        {order.map((catId) => (
+                        {data.map((catId) => (
                             <CategorySortableItem
                                 key={catId}
                                 id={catId}
@@ -200,12 +218,12 @@ function CategoriesNavList() {
                 </DndContext>
             </div>
 
-            {state.inputting && (
+            {inputting && (
                 <CategoryInput
                     onCancel={handleCancel}
-                    onSave={handleSaveCategory}
+                    onSave={handleSavePress}
                     inputRef={inputRef}
-                    loading={state.loading}
+                    loading={addMutation.isPending}
                 />
             )}
         </div>

@@ -17,6 +17,7 @@ import {
 import MenuSideBar from "../components/MenuSideBar";
 import { ModalContainer, ModalProvider } from "@faceless-ui/modal";
 import CategoriesList from "../components/CategoriesList";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 const initialState: CategoriesState = {
     loading: true,
@@ -41,6 +42,7 @@ const categoryOrderView: AdminViewComponent = ({ user }) => {
     }
 
     const [state, dispatch] = useReducer(CategoriesReducer, initialState);
+    const queryClient = new QueryClient();
 
     useEffect(() => {
         const fetchCategories = async () => {
@@ -156,33 +158,38 @@ const categoryOrderView: AdminViewComponent = ({ user }) => {
     }
 
     return (
-        <CategoriesContext.Provider value={state}>
-            <CategoriesDispatchContext.Provider value={dispatch}>
-                <LoadingOverlayToggle
-                    name="category-order"
-                    show={state.loading}
-                    type="withoutNav"
-                />
-                <DefaultTemplate>
-                    <ModalProvider transTime={0}>
-                        <ModalContainer />
-                        <Gutter>
-                            <h1>Menu</h1>
+        <QueryClientProvider client={queryClient}>
+            <CategoriesContext.Provider value={state}>
+                <CategoriesDispatchContext.Provider value={dispatch}>
+                    <LoadingOverlayToggle
+                        name="category-order"
+                        show={state.loading}
+                        type="withoutNav"
+                    />
+                    <DefaultTemplate>
+                        <ModalProvider transTime={0}>
+                            <ModalContainer />
+                            <Gutter>
+                                <h1>Menu</h1>
 
-                            {state.error && <p>{state.error}</p>}
-                            <div className="menu__container">
-                                <MenuSideBar />
-                                <CategoriesList />
-                            </div>
-                            <Button onClick={onSave} disabled={state.loading}>
-                                Save
-                            </Button>
-                            <ToastContainer />
-                        </Gutter>
-                    </ModalProvider>
-                </DefaultTemplate>
-            </CategoriesDispatchContext.Provider>
-        </CategoriesContext.Provider>
+                                {state.error && <p>{state.error}</p>}
+                                <div className="menu__container">
+                                    <MenuSideBar />
+                                    <CategoriesList />
+                                </div>
+                                <Button
+                                    onClick={onSave}
+                                    disabled={state.loading}
+                                >
+                                    Save
+                                </Button>
+                                <ToastContainer />
+                            </Gutter>
+                        </ModalProvider>
+                    </DefaultTemplate>
+                </CategoriesDispatchContext.Provider>
+            </CategoriesContext.Provider>
+        </QueryClientProvider>
     );
 };
 

@@ -11,7 +11,7 @@ export enum categoryActionKind {
     LOADING = "LOADING",
     ERROR = "ERROR",
     FETCHED = "FETCHED",
-    MOVE_CATEGORY = "MOVE_CATEGORY",
+    UPDATE_CATEGORIES = "MOVE_CATEGORY",
     MOVE_SUB_CATEGORY = "MOVE_SUB_CATEGORY",
     SAVED = "SAVED",
     CHANGE_SUB_CATEGORY_PARENT = "CHANGE_SUB_CATEGORY_PARENT",
@@ -171,14 +171,11 @@ export function CategoriesReducer(
                 loading: false,
                 error: "",
             };
-        case categoryActionKind.MOVE_CATEGORY:
+        case categoryActionKind.UPDATE_CATEGORIES:
+            const { categoryIds: data } = action;
             return {
                 ...state,
-                data: arrayMoveWithId(
-                    state.data,
-                    action.activeId,
-                    action.overId,
-                ),
+                data,
             };
         case categoryActionKind.MOVE_SUB_CATEGORY: {
             const { parentId, activeId, overId } = action;
@@ -541,9 +538,8 @@ type categoryAction =
           menuItems: MenuItem[];
       }
     | {
-          type: categoryActionKind.MOVE_CATEGORY;
-          activeId: string;
-          overId: string;
+          type: categoryActionKind.UPDATE_CATEGORIES;
+          categoryIds: string[];
       }
     | {
           type: categoryActionKind.MOVE_SUB_CATEGORY;

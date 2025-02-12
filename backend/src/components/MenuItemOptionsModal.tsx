@@ -172,24 +172,28 @@ function MenuItemOptionsModal({
     }
 
     async function handleDelete() {
-        // TODO :
-        // setState((state) => ({ ...state, loading: true }));
-        // openModal(slug);
-        // try {
-        //     const response = await fetch(`/api/menu_Items/${id}`, {
-        //         credentials: "include",
-        //         method: "DELETE",
-        //     });
-        //     if (!response.ok) {
-        //         throw new Error(await response.text());
-        //     }
-        //     setState((state) => ({ ...state, loading: false }));
-        //     closeModal(slug);
-        // } catch (error) {
-        //     toast.error("Failed to delete menu item.");
-        //     setState((state) => ({ ...state, loading: false }));
-        //     openModal(slug);
-        // }
+        setState((state) => ({ ...state, loading: true }));
+        openModal(slug);
+        try {
+            const response = await fetch(`/api/menu_Items/${id}`, {
+                credentials: "include",
+                method: "DELETE",
+            });
+            if (!response.ok) {
+                throw new Error(await response.text());
+            }
+            dispatch({
+                type: categoryActionKind.DELETE_MENU_ITEM,
+                id,
+                parentId,
+            });
+            setState((state) => ({ ...state, loading: false }));
+            closeModal(slug);
+        } catch (error) {
+            toast.error("Failed to delete menu item.");
+            setState((state) => ({ ...state, loading: false }));
+            openModal(slug);
+        }
     }
 
     function handleUpdateName(e: React.ChangeEvent<HTMLInputElement>) {

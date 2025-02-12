@@ -25,6 +25,7 @@ export enum categoryActionKind {
     ADD_MENU_ITEM = "ADD_MENU_ITEM",
     UPDATE_MENU_ITEM = "UPDATE_MENU_ITEM",
     CHANGE_MENU_ITEM_PARENT = "CHANGE_MENU_ITEM_PARENT",
+    DELETE_MENU_ITEM = "DELETE_MENU_ITEM",
 }
 
 export type MenuItemData = {
@@ -481,6 +482,45 @@ export function CategoriesReducer(
                 subCategories: newSubCategories,
             };
         }
+        case categoryActionKind.DELETE_MENU_ITEM: {
+            const { id, parentId } = action;
+            const newMenuItems = new Map(state.menuItems);
+            newMenuItems.delete(id);
+
+            if (state.categories.has(parentId)) {
+                const newCategories = MapSet(
+                    state.categories,
+                    parentId,
+                    (cat) => ({
+                        ...cat,
+                        menuItemsIds: cat.menuItemsIds.filter(
+                            (itemId) => itemId !== id,
+                        ),
+                    }),
+                );
+                return {
+                    ...state,
+                    categories: newCategories,
+                    menuItems: newMenuItems,
+                };
+            } else {
+                const newSubCategories = MapSet(
+                    state.subCategories,
+                    parentId,
+                    (cat) => ({
+                        ...cat,
+                        menuItemsIds: cat.menuItemsIds.filter(
+                            (itemId) => itemId !== id,
+                        ),
+                    }),
+                );
+                return {
+                    ...state,
+                    subCategories: newSubCategories,
+                    menuItems: newMenuItems,
+                };
+            }
+        }
         default:
             break;
     }
@@ -575,6 +615,11 @@ type categoryAction =
           currentParentId: string;
           newParentId: string;
           id: string;
+      }
+    | {
+          type: categoryActionKind.DELETE_MENU_ITEM;
+          id: string;
+          parentId: string;
       };
 
 export function useCategories() {

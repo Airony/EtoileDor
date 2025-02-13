@@ -19,6 +19,22 @@ const Categories: CollectionConfig = {
             defaultValue: -1,
             required: true,
         },
+        {
+            name: "sub_categories",
+            label: "Sub Categories",
+            type: "relationship",
+            relationTo: "sub_categories",
+            hasMany: true,
+            required: true,
+        },
+        {
+            name: "menu_items",
+            label: "Menu Items",
+            type: "relationship",
+            relationTo: "menu_items",
+            hasMany: true,
+            required: true,
+        },
     ],
     admin: {
         useAsTitle: "name",

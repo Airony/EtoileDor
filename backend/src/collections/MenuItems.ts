@@ -22,14 +22,6 @@ const MenuItems: CollectionConfig = {
             required: true,
         },
         {
-            name: "Category",
-            label: "Category",
-            type: "relationship",
-            relationTo: ["sub_categories", "categories"],
-            required: true,
-            hasMany: false,
-        },
-        {
             name: "index",
             required: true,
             type: "number",

@@ -16,10 +16,11 @@ const SubCategories: CollectionConfig = {
             required: true,
         },
         {
-            name: "category",
-            label: "Parent Category",
+            name: "menu_items",
+            label: "Menu Items",
             type: "relationship",
-            relationTo: ["categories"],
+            relationTo: "menu_items",
+            hasMany: true,
             required: true,
         },
         {

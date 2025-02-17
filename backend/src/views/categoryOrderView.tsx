@@ -1,4 +1,4 @@
-import React, { useReducer } from "react";
+import React, { useReducer, useRef } from "react";
 import { AdminViewComponent } from "payload/config";
 import { DefaultTemplate } from "payload/components/templates";
 import { Redirect } from "react-router-dom";
@@ -42,7 +42,8 @@ const categoryOrderView: AdminViewComponent = ({ user }) => {
     }
 
     const [state, dispatch] = useReducer(CategoriesReducer, initialState);
-    const queryClient = new QueryClient();
+
+    const queryClientRef = useRef<QueryClient>(new QueryClient());
 
     useEffect(() => {
         const fetchCategories = async () => {
@@ -158,7 +159,7 @@ const categoryOrderView: AdminViewComponent = ({ user }) => {
     }
 
     return (
-        <QueryClientProvider client={queryClient}>
+        <QueryClientProvider client={queryClientRef.current}>
             <CategoriesContext.Provider value={state}>
                 <CategoriesDispatchContext.Provider value={dispatch}>
                     <LoadingOverlayToggle

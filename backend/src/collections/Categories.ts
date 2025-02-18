@@ -25,7 +25,6 @@ const Categories: CollectionConfig = {
             type: "relationship",
             relationTo: "sub_categories",
             hasMany: true,
-            required: true,
         },
         {
             name: "menu_items",
@@ -33,7 +32,6 @@ const Categories: CollectionConfig = {
             type: "relationship",
             relationTo: "menu_items",
             hasMany: true,
-            required: true,
         },
     ],
     admin: {

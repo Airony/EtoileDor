@@ -21,7 +21,6 @@ const SubCategories: CollectionConfig = {
             type: "relationship",
             relationTo: "menu_items",
             hasMany: true,
-            required: true,
         },
         {
             name: "index",

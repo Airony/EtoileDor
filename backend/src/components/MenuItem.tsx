@@ -2,17 +2,13 @@ import { useSortable } from "@dnd-kit/sortable";
 import React, { useEffect } from "react";
 import DragHandle from "./DragHandle";
 import { CSS } from "@dnd-kit/utilities";
-import {
-    categoryActionKind,
-    useCategories,
-    useCategoriesDispatch,
-} from "../contexts/CategoriesContext";
 import { Button } from "payload/components/elements";
 import MoreIcon from "payload/dist/admin/components/icons/More";
 import MenuItemInput from "./MenuItemInput";
 import { toast } from "react-toastify";
 import MenuItemOptionsModal from "./MenuItemOptionsModal";
 import { useModal } from "@faceless-ui/modal";
+import { useMenuQuery } from "../views/fetches";
 
 interface MenuItemProps {
     id: string;
@@ -25,8 +21,8 @@ interface MenuItemState {
 }
 
 function MenuItem({ id, parentId }: MenuItemProps) {
-    const { menuItems } = useCategories();
-    const dispatch = useCategoriesDispatch();
+    const { data } = useMenuQuery();
+    const { menuItems } = data;
     const { name, price } = menuItems.get(id);
     const { attributes, listeners, setNodeRef, transform, transition } =
         useSortable({ id: id });
@@ -72,12 +68,12 @@ function MenuItem({ id, parentId }: MenuItemProps) {
                 throw new Error(await response.text());
             }
             setState({ ...state, loading: false, editing: false });
-            dispatch({
-                type: categoryActionKind.UPDATE_MENU_ITEM,
-                id,
-                name,
-                price,
-            });
+            // dispatch({
+            //     type: categoryActionKind.UPDATE_MENU_ITEM,
+            //     id,
+            //     name,
+            //     price,
+            // });
         } catch (error) {
             console.error(error);
             setState({ ...state, loading: false });

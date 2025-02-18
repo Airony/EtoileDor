@@ -1,9 +1,9 @@
 import React, { useEffect } from "react";
 import MenuItemList from "./MenuItemList";
 import { Button } from "payload/components/elements";
-import { useCategories } from "../contexts/CategoriesContext";
 import MenuItemInput from "./MenuItemInput";
 import { useInputMenuItem } from "../reactHooks/useInputMenuItem";
+import { useMenuQuery } from "../views/fetches";
 
 interface SubCategoryProps {
     id: string;
@@ -11,8 +11,9 @@ interface SubCategoryProps {
 }
 
 function SubCategory({ id }: SubCategoryProps) {
-    const { subCategories } = useCategories();
-    const { name, menuItemsIds } = subCategories.get(id);
+    const { data } = useMenuQuery();
+    const { subCategories } = data;
+    const { name, menuItems } = subCategories.get(id);
     const inputRef = React.useRef<HTMLInputElement>(null);
 
     const { state, handleSave, handleAddBtnPress, handleCancel } =
@@ -40,7 +41,7 @@ function SubCategory({ id }: SubCategoryProps) {
                 </Button>
             </div>
             <div className="sub-category__menu-items">
-                <MenuItemList list={menuItemsIds} parentId={id} />
+                <MenuItemList list={menuItems} parentId={id} />
                 {state.inputting && (
                     <MenuItemInput
                         inputRef={inputRef}

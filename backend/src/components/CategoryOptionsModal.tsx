@@ -1,24 +1,20 @@
 import React, { useState } from "react";
 import { Modal, useModal } from "@faceless-ui/modal";
-import {
-    categoryActionKind,
-    useCategories,
-    useCategoriesDispatch,
-} from "../contexts/CategoriesContext";
 import { Button } from "payload/components/elements";
 import { TextInput } from "payload/components/forms";
 import DeleteModal from "./DeleteModal";
 import { toast } from "react-toastify";
 import { LoadingOverlay } from "payload/dist/admin/components/elements/Loading";
+import { useMenuQuery } from "../views/fetches";
 
 interface CategoryOptionsModalProps {
     id: string;
     slug: string;
 }
 function CategoryOptionsModal({ id, slug }: CategoryOptionsModalProps) {
-    const { categories } = useCategories();
-    const dispatch = useCategoriesDispatch();
-    const { name } = categories.get(id);
+    const { data } = useMenuQuery();
+    const { categories } = data;
+    const { name } = categories.categoriesMap.get(id);
     const [inputtedName, setInputtedName] = useState<string>(name);
     const [loading, setLoading] = useState<boolean>(false);
     const { closeModal, openModal } = useModal();
@@ -64,11 +60,11 @@ function CategoryOptionsModal({ id, slug }: CategoryOptionsModalProps) {
             if (!response.ok) {
                 throw new Error();
             }
-            dispatch({
-                type: categoryActionKind.RENAME_CATEGORY,
-                id,
-                newName: inputtedName,
-            });
+            // dispatch({
+            //     type: categoryActionKind.RENAME_CATEGORY,
+            //     id,
+            //     newName: inputtedName,
+            // });
             setInputtedName(inputtedName);
             setLoading(false);
             close();
@@ -90,7 +86,7 @@ function CategoryOptionsModal({ id, slug }: CategoryOptionsModalProps) {
                 throw new Error(await response.text());
             }
 
-            dispatch({ type: categoryActionKind.DELETE_CATEGORY, id });
+            // dispatch({ type: categoryActionKind.DELETE_CATEGORY, id });
             setLoading(false);
             closeModal(slug);
         } catch (error) {

@@ -1,10 +1,4 @@
-import React, {
-    useCallback,
-    useContext,
-    useEffect,
-    useRef,
-    useState,
-} from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
     DndContext,
     closestCenter,
@@ -25,20 +19,16 @@ import {
 } from "@dnd-kit/modifiers";
 
 import CategorySortableItem from "./CategorySortableItem";
-import {
-    CategoriesContext,
-    CategoriesDispatchContext,
-    categoryActionKind,
-} from "../contexts/CategoriesContext";
 import { Button } from "payload/components/elements";
 import CategoryInput from "./CategoryInput";
 import { toast } from "react-toastify";
 import { useMutation } from "@tanstack/react-query";
 import { debouncePromise } from "../utils/debouncePromise";
+import { useMenuQuery } from "../views/fetches";
 
 function CategoriesNavList() {
-    const { data } = useContext(CategoriesContext);
-    const dispatch = useContext(CategoriesDispatchContext);
+    const { data } = useMenuQuery();
+    const { categories } = data;
     const sensors = useSensors(useSensor(PointerSensor));
     const [inputting, setInputting] = useState<boolean>(false);
 
@@ -66,11 +56,11 @@ function CategoriesNavList() {
     const orderMutation = useMutation({
         mutationFn: debouncedOrderUpdate,
         onMutate: async (newOrder: string[]) => {
-            const previousOrder = data;
-            dispatch({
-                type: categoryActionKind.UPDATE_CATEGORIES,
-                categoryIds: newOrder,
-            });
+            const previousOrder = categories.orderedIds;
+            // dispatch({
+            //     type: categoryActionKind.UPDATE_CATEGORIES,
+            //     categoryIds: newOrder,
+            // });
 
             return { previousOrder };
         },
@@ -84,10 +74,10 @@ function CategoriesNavList() {
             toast.error("Failed to update category order", {
                 position: "bottom-center",
             });
-            dispatch({
-                type: categoryActionKind.UPDATE_CATEGORIES,
-                categoryIds: context.previousOrder,
-            });
+            // dispatch({
+            //     type: categoryActionKind.UPDATE_CATEGORIES,
+            //     categoryIds: context.previousOrder,
+            // });
         },
         scope: {
             id: `categories-scope`,
@@ -104,7 +94,7 @@ function CategoriesNavList() {
                 },
                 body: JSON.stringify({
                     name: name,
-                    index: data.length,
+                    index: categories.orderedIds.length, // TODO :Use largest index
                 }),
             });
             if (!response.ok) {
@@ -115,12 +105,12 @@ function CategoriesNavList() {
         },
 
         onSuccess: async (responseData) => {
-            dispatch({
-                type: categoryActionKind.ADD_CATEGORY,
-                id: responseData.doc.id,
-                name: responseData.doc.name,
-                index: responseData.doc.index,
-            });
+            // dispatch({
+            //     type: categoryActionKind.ADD_CATEGORY,
+            //     id: responsecategories.orderedIds.doc.id,
+            //     name: responsecategories.orderedIds.doc.name,
+            //     index: responsecategories.orderedIds.doc.index,
+            // });
 
             toast.success("Category created successfully", {
                 position: "bottom-center",
@@ -173,9 +163,9 @@ function CategoriesNavList() {
         if (!e.over) {
             return;
         }
-        const oldIndex = data.indexOf(e.active.id as string);
-        const newIndex = data.indexOf(e.over.id as string);
-        const newOrder = arrayMove(data, oldIndex, newIndex);
+        const oldIndex = categories.orderedIds.indexOf(e.active.id as string);
+        const newIndex = categories.orderedIds.indexOf(e.over.id as string);
+        const newOrder = arrayMove(categories.orderedIds, oldIndex, newIndex);
         orderMutation.mutate(newOrder);
     }
 
@@ -203,11 +193,11 @@ function CategoriesNavList() {
                     ]}
                 >
                     <SortableContext
-                        items={data}
+                        items={categories.orderedIds}
                         strategy={verticalListSortingStrategy}
                         disabled={addMutation.isPending}
                     >
-                        {data.map((catId) => (
+                        {categories.orderedIds.map((catId) => (
                             <CategorySortableItem
                                 key={catId}
                                 id={catId}

@@ -1,18 +1,12 @@
 import React, { useState } from "react";
 import { Modal, useModal } from "@faceless-ui/modal";
-import {
-    categoryActionKind,
-    CategoryData,
-    MyCategory,
-    useCategories,
-    useCategoriesDispatch,
-} from "../contexts/CategoriesContext";
 import { Button } from "payload/components/elements";
 import { SelectInput, TextInput } from "payload/components/forms";
 import DeleteModal from "./DeleteModal";
 import { toast } from "react-toastify";
 import { LoadingOverlay } from "payload/dist/admin/components/elements/Loading";
 import type { Option } from "payload/dist/admin/components/elements/ReactSelect/types";
+import { CategoryData, SubCategoryData, useMenuQuery } from "../views/fetches";
 
 interface MenuItemOptionsModalProps {
     id: string;
@@ -32,8 +26,8 @@ function MenuItemOptionsModal({
     slug,
     parentId,
 }: MenuItemOptionsModalProps) {
-    const { menuItems, categories, subCategories } = useCategories();
-    const dispatch = useCategoriesDispatch();
+    const { data } = useMenuQuery();
+    const { menuItems, categories, subCategories } = data;
     const { name, price } = menuItems.get(id);
     const [state, setState] = useState<State>({
         loading: false,
@@ -110,16 +104,16 @@ function MenuItemOptionsModal({
             if (newPrice) body.price = newPrice;
 
             if (newParentId) {
-                let parent: MyCategory | CategoryData;
+                let parent: CategoryData | SubCategoryData;
                 let parentType = "categories";
-                if (categories.has(newParentId)) {
-                    parent = categories.get(newParentId);
+                if (categories.categoriesMap.has(newParentId)) {
+                    parent = categories.categoriesMap.get(newParentId);
                 } else {
                     parent = subCategories.get(newParentId);
                     parentType = "sub_categories";
                 }
 
-                body.index = parent.menuItemsIds.length;
+                body.index = parent.menuItems.length;
                 body.Category = {
                     relationTo: parentType,
                     value: newParentId,
@@ -137,23 +131,23 @@ function MenuItemOptionsModal({
                 throw new Error(await response.text());
             }
 
-            if (newName || newPrice) {
-                dispatch({
-                    type: categoryActionKind.UPDATE_MENU_ITEM,
-                    id,
-                    name: newName || name,
-                    price: newPrice || price,
-                });
-            }
+            // if (newName || newPrice) {
+            //     dispatch({
+            //         type: categoryActionKind.UPDATE_MENU_ITEM,
+            //         id,
+            //         name: newName || name,
+            //         price: newPrice || price,
+            //     });
+            // }
 
-            if (newParentId) {
-                dispatch({
-                    type: categoryActionKind.CHANGE_MENU_ITEM_PARENT,
-                    currentParentId: parentId,
-                    newParentId: newParentId,
-                    id: id,
-                });
-            }
+            // if (newParentId) {
+            //     dispatch({
+            //         type: categoryActionKind.CHANGE_MENU_ITEM_PARENT,
+            //         currentParentId: parentId,
+            //         newParentId: newParentId,
+            //         id: id,
+            //     });
+            // }
 
             setState((state) => ({
                 ...state,
@@ -182,11 +176,11 @@ function MenuItemOptionsModal({
             if (!response.ok) {
                 throw new Error(await response.text());
             }
-            dispatch({
-                type: categoryActionKind.DELETE_MENU_ITEM,
-                id,
-                parentId,
-            });
+            // dispatch({
+            //     type: categoryActionKind.DELETE_MENU_ITEM,
+            //     id,
+            //     parentId,
+            // });
             setState((state) => ({ ...state, loading: false }));
             closeModal(slug);
         } catch (error) {
@@ -227,7 +221,7 @@ function MenuItemOptionsModal({
     const deleteModalSlug = `delete-modal-${id}`;
 
     // Select option could either be a category or a sub-category
-    const selectOptions = Array.from(categories.entries())
+    const selectOptions = Array.from(categories.categoriesMap.entries())
         .map(([catId, cat]) => ({
             label: cat.name,
             value: catId,

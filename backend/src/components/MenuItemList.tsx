@@ -1,7 +1,3 @@
-import {
-    categoryActionKind,
-    useCategoriesDispatch,
-} from "../contexts/CategoriesContext";
 import React from "react";
 import MenuItem from "./MenuItem";
 import {
@@ -26,7 +22,6 @@ interface MenuItemListProps {
 }
 function MenuItemList({ list, parentId }: MenuItemListProps) {
     const sensors = useSensors(useSensor(PointerSensor));
-    const dispatch = useCategoriesDispatch();
 
     if (list.length === 0) {
         return <></>;
@@ -37,14 +32,14 @@ function MenuItemList({ list, parentId }: MenuItemListProps) {
             <DndContext
                 sensors={sensors}
                 collisionDetection={closestCenter}
-                onDragEnd={(event) => {
-                    dispatch({
-                        type: categoryActionKind.MOVE_MENU_ITEM,
-                        activeId: event.active.id.toString(),
-                        overId: event.over.id.toString(),
-                        parentId,
-                    });
-                }}
+                // onDragEnd={(event) => {
+                // dispatch({
+                //     type: categoryActionKind.MOVE_MENU_ITEM,
+                //     activeId: event.active.id.toString(),
+                //     overId: event.over.id.toString(),
+                //     parentId,
+                // });
+                // }}
                 modifiers={[restrictToVerticalAxis, restrictToParentElement]}
             >
                 <SortableContext

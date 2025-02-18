@@ -1,10 +1,6 @@
 import { useState } from "react";
 import { toast } from "react-toastify";
-import {
-    categoryActionKind,
-    useCategories,
-    useCategoriesDispatch,
-} from "../contexts/CategoriesContext";
+import { useMenuQuery } from "../views/fetches";
 
 interface SaveMenuItemProps {
     parentId: string;
@@ -17,8 +13,8 @@ interface SaveMenuItemState {
 }
 
 export function useInputMenuItem({ parentId, parentType }: SaveMenuItemProps) {
-    const { categories, subCategories } = useCategories();
-    const dispatch = useCategoriesDispatch();
+    const { data } = useMenuQuery();
+    const { categories, subCategories } = data;
     const [state, setState] = useState<SaveMenuItemState>({
         loading: false,
         inputting: false,
@@ -29,8 +25,8 @@ export function useInputMenuItem({ parentId, parentType }: SaveMenuItemProps) {
 
         const index =
             parentType === "categories"
-                ? categories.get(parentId).menuItemsIds.length
-                : subCategories.get(parentId).menuItemsIds.length;
+                ? categories.categoriesMap.get(parentId).menuItems.length
+                : subCategories.get(parentId).menuItems.length;
 
         try {
             const response = await fetch("/api/menu_items", {
@@ -58,15 +54,15 @@ export function useInputMenuItem({ parentId, parentType }: SaveMenuItemProps) {
                 throw new Error();
             }
 
-            dispatch({
-                type: categoryActionKind.ADD_MENU_ITEM,
-                id: responseData.doc.id,
-                parentId: parentId,
-                parentType: parentType,
-                index,
-                name: name,
-                price: price,
-            });
+            // dispatch({
+            //     type: categoryActionKind.ADD_MENU_ITEM,
+            //     id: responseData.doc.id,
+            //     parentId: parentId,
+            //     parentType: parentType,
+            //     index,
+            //     name: name,
+            //     price: price,
+            // });
 
             setState({ ...state, inputting: false, loading: false });
         } catch (error) {

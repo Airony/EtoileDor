@@ -1,8 +1,3 @@
-import {
-    categoryActionKind,
-    useCategories,
-    useCategoriesDispatch,
-} from "../contexts/CategoriesContext";
 import React, { useEffect, useRef, useState } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -16,6 +11,7 @@ import { toast } from "react-toastify";
 import CategoryInput from "./CategoryInput";
 import CategoryOptionsModal from "./CategoryOptionsModal";
 import MoreIcon from "payload/dist/admin/components/icons/More";
+import { useMenuQuery } from "../views/fetches";
 
 interface CategorySortableItemProps {
     id: string;
@@ -28,9 +24,10 @@ interface State {
 }
 
 function CategorySortableItem({ id, sensors }: CategorySortableItemProps) {
-    const { categories } = useCategories();
-    const { name, SubCategoriesIds: SubCategories } = categories.get(id);
-    const dispatch = useCategoriesDispatch();
+    const { data } = useMenuQuery();
+    const { categories } = data;
+    const { name, subCategories: SubCategories } =
+        categories.categoriesMap.get(id);
 
     const subCatInputRef = useRef<HTMLInputElement>(null);
     const [subCatInputState, setSubCatInputState] = useState<State>({
@@ -104,13 +101,13 @@ function CategorySortableItem({ id, sensors }: CategorySortableItemProps) {
                 throw new Error();
             }
 
-            dispatch({
-                type: categoryActionKind.ADD_SUB_CATEGORY,
-                parentId: id,
-                id: responseData.doc.id,
-                name: name,
-                index: index,
-            });
+            // dispatch({
+            //     type: categoryActionKind.ADD_SUB_CATEGORY,
+            //     parentId: id,
+            //     id: responseData.doc.id,
+            //     name: name,
+            //     index: index,
+            // });
             setCollapsed(false);
             toast.success("Sub Category created successfully", {
                 position: "bottom-center",

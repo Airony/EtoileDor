@@ -1,15 +1,11 @@
 import React, { useState } from "react";
 import { Modal, useModal } from "@faceless-ui/modal";
-import {
-    categoryActionKind,
-    useCategories,
-    useCategoriesDispatch,
-} from "../contexts/CategoriesContext";
 import { Button } from "payload/components/elements";
 import { SelectInput, TextInput } from "payload/components/forms";
 import DeleteModal from "./DeleteModal";
 import { toast } from "react-toastify";
 import { LoadingOverlay } from "payload/dist/admin/components/elements/Loading";
+import { useMenuQuery } from "../views/fetches";
 
 interface SubCategoryOptionsModalProps {
     id: string;
@@ -21,8 +17,8 @@ function SubCategoryOptionsModal({
     slug,
     parentId,
 }: SubCategoryOptionsModalProps) {
-    const { data, categories, subCategories } = useCategories();
-    const dispatch = useCategoriesDispatch();
+    const { data } = useMenuQuery();
+    const { categories, subCategories } = data;
     const { name } = subCategories.get(id);
     const [inputtedName, setInputtedName] = useState<string>(name);
     const [inputtedParentId, setInputtedParentId] = useState<string>(parentId);
@@ -90,7 +86,9 @@ function SubCategoryOptionsModal({
             if (name) body.name = newName;
             if (newParentId) {
                 body.index =
-                    categories.get(newParentId).SubCategoriesIds.length;
+                    categories.categoriesMap.get(
+                        newParentId,
+                    ).subCategories.length;
                 body.category = {
                     relationTo: "categories",
                     value: newParentId,
@@ -108,24 +106,24 @@ function SubCategoryOptionsModal({
                 throw new Error(await response.text());
             }
 
-            if (newName) {
-                dispatch({
-                    type: categoryActionKind.RENAME_SUB_CATEGORY,
-                    id,
-                    newName: newName,
-                });
-                setInputtedName(newName);
-            }
+            // if (newName) {
+            //     dispatch({
+            //         type: categoryActionKind.RENAME_SUB_CATEGORY,
+            //         id,
+            //         newName: newName,
+            //     });
+            //     setInputtedName(newName);
+            // }
 
-            if (newParentId) {
-                dispatch({
-                    type: categoryActionKind.CHANGE_SUB_CATEGORY_PARENT,
-                    currentParentId: parentId,
-                    newParentId: newParentId,
-                    subCategoryId: id,
-                });
-                setInputtedParentId(newParentId);
-            }
+            // if (newParentId) {
+            //     dispatch({
+            //         type: categoryActionKind.CHANGE_SUB_CATEGORY_PARENT,
+            //         currentParentId: parentId,
+            //         newParentId: newParentId,
+            //         subCategoryId: id,
+            //     });
+            //     setInputtedParentId(newParentId);
+            // }
 
             setLoading(false);
             close();
@@ -149,11 +147,11 @@ function SubCategoryOptionsModal({
                 throw new Error(await response.text());
             }
 
-            dispatch({
-                type: categoryActionKind.DELETE_SUB_CATEGORY,
-                id: id,
-                parentId: parentId,
-            });
+            // dispatch({
+            //     type: categoryActionKind.DELETE_SUB_CATEGORY,
+            //     id: id,
+            //     parentId: parentId,
+            // });
             setLoading(false);
             closeModal(slug);
         } catch (error) {
@@ -191,8 +189,8 @@ function SubCategoryOptionsModal({
                     name="parent"
                     label="Parent"
                     value={inputtedParentId}
-                    options={data.map((catId) => ({
-                        label: categories.get(catId).name,
+                    options={categories.orderedIds.map((catId) => ({
+                        label: categories.categoriesMap.get(catId).name,
                         value: catId,
                     }))}
                     onChange={(val) => setInputtedParentId(val.value as string)}

@@ -1,7 +1,7 @@
 import { useQueries, UseQueryResult } from "@tanstack/react-query";
 import { Category, SubCategory, MenuItem } from "../payload-types";
 
-interface CategoryData {
+export interface CategoryData {
     name: string;
     id: string;
     index: number;
@@ -9,13 +9,13 @@ interface CategoryData {
     subCategories: string[];
 }
 
-interface SubCategoryData {
+export interface SubCategoryData {
     name: string;
     id: string;
     index: number;
     menuItems: string[];
 }
-interface MenuItemData {
+export interface MenuItemData {
     name: string;
     price: number;
     id: string;
@@ -52,7 +52,7 @@ async function fetchCategories() {
 }
 
 async function fetchSubCategories() {
-    const response = await fetch("/api/sub_categories?limit=0&depth=1", {
+    const response = await fetch("/api/sub_categories?limit=0&depth=0", {
         credentials: "include",
     });
 
@@ -124,9 +124,10 @@ function combineQueries(
 ): combinedQuery {
     const [categories, subCategories, menuItems] = results;
     if (!categories.data || !subCategories.data || !menuItems.data) {
+        console.log("no data");
         return {
             data: undefined,
-            isLoading: false,
+            isLoading: true,
             isError:
                 categories.isError ||
                 subCategories.isError ||

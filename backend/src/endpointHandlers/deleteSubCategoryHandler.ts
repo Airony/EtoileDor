@@ -17,26 +17,17 @@ const deleteSubCategoryHandler: PayloadHandler = async (req, res) => {
         const subCategory = await req.payload.findByID({
             collection: "sub_categories",
             id: id,
+            depth: 0,
         });
         if (!subCategory) {
             res.status(404).end("Category not found");
             return;
         }
 
-        // Find all menu items that have the category as a parent, or a subcategory as a parent
-        const menuItems = await req.payload.find({
-            collection: "menu_items",
-            limit: 0,
-            where: {
-                "Category.value": {
-                    equals: id,
-                },
-            },
-        });
+        const menuItemsIds = subCategory.menu_items as string[];
 
         // Delete all menu items
         // Should use a transaction here
-        const menuItemsIds = menuItems.docs.map((menuItem) => menuItem.id);
         const menuItemsDelete = await req.payload.delete({
             collection: "menu_items",
             where: {
@@ -48,7 +39,6 @@ const deleteSubCategoryHandler: PayloadHandler = async (req, res) => {
         if (menuItemsDelete.errors.length > 0) {
             console.error(menuItemsDelete.errors);
             throw new Error("Failed to delete menu items");
-            return;
         }
 
         // Delete the category
@@ -59,7 +49,6 @@ const deleteSubCategoryHandler: PayloadHandler = async (req, res) => {
 
         if (!subCategoryDelete) {
             throw new Error("Failed to delete sub category");
-            return;
         }
 
         res.status(200).end();

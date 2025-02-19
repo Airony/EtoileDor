@@ -1,6 +1,5 @@
 import { CollectionConfig } from "payload/types";
 import { isAdmin } from "../accessControls";
-import updateCategoriesHandler from "../endpointHandlers/updateCategoriesHandler";
 import deleteCategoryHandler from "../endpointHandlers/deleteCategoryHandler";
 import orderCategoriesHandler from "../endpointHandlers/orderCategoriesHandler";
 
@@ -47,11 +46,6 @@ const Categories: CollectionConfig = {
         unlock: isAdmin,
     },
     endpoints: [
-        {
-            path: "/update_all",
-            method: "patch",
-            handler: updateCategoriesHandler,
-        },
         {
             path: "/:id",
             method: "delete",

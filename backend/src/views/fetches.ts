@@ -156,14 +156,17 @@ export const useMenuQuery = () => {
             {
                 queryKey: ["categories"],
                 queryFn: fetchCategories,
+                refetchOnMount: false,
             },
             {
                 queryKey: ["subCategories"],
                 queryFn: fetchSubCategories,
+                refetchOnMount: false,
             },
             {
                 queryKey: ["menuItems"],
                 queryFn: fetchMenuItems,
+                refetchOnMount: false,
             },
         ],
         combine: combineQueries,

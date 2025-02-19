@@ -33,22 +33,26 @@ interface SubCategoriesListProps {
     parentId: string;
 }
 
-const debouncedOrderUpdate = debouncePromise(async (newOrder: string[]) => {
-    const response = await fetch("/api/sub_categories/order", {
-        credentials: "include",
-        method: "PATCH",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-            subCategoriesIds: newOrder,
-        }),
-    });
+const debouncedOrderUpdate = debouncePromise(
+    async (newOrder: string[]) => {
+        const response = await fetch("/api/sub_categories/order", {
+            credentials: "include",
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                subCategoriesIds: newOrder,
+            }),
+        });
 
-    if (!response.ok) {
-        throw new Error(await response.text());
-    }
-}, 2500);
+        if (!response.ok) {
+            throw new Error(await response.text());
+        }
+    },
+    2500,
+    new CancelledError(),
+);
 
 function SubCategoriesNavList({ sensors, parentId }: SubCategoriesListProps) {
     const { data } = useMenuQuery();

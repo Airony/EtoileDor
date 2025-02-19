@@ -58,9 +58,6 @@ const debouncedOrderUpdate = debouncePromise(
 function MenuItemList({ list, parentId, parentType }: MenuItemListProps) {
     const sensors = useSensors(useSensor(PointerSensor));
 
-    if (list.length === 0) {
-        return <></>;
-    }
     const queryClient = useQueryClient();
     const mutationKey = [`update_menu_item_order_${parentId}`];
 
@@ -146,6 +143,9 @@ function MenuItemList({ list, parentId, parentType }: MenuItemListProps) {
         orderMutation.mutate(newOrder);
     }
 
+    if (list.length === 0) {
+        return <></>;
+    }
     return (
         <div>
             <DndContext

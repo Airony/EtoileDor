@@ -2,6 +2,7 @@ import { CollectionConfig } from "payload/types";
 import { isAdmin } from "../accessControls";
 import deleteSubCategoryHandler from "../endpointHandlers/deleteSubCategoryHandler";
 import orderSubCategoriesHandler from "../endpointHandlers/orderSubCategoriesHandler";
+import addSubCategoryHandler from "../endpointHandlers/addSubCategoryHandler";
 
 const SubCategories: CollectionConfig = {
     slug: "sub_categories",
@@ -45,6 +46,11 @@ const SubCategories: CollectionConfig = {
             path: "/order",
             method: "patch",
             handler: orderSubCategoriesHandler,
+        },
+        {
+            path: "/",
+            method: "post",
+            handler: addSubCategoryHandler,
         },
     ],
     access: {

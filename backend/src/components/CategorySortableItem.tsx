@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import DragHandle from "./DragHandle";
@@ -11,16 +11,17 @@ import { toast } from "react-toastify";
 import CategoryInput from "./CategoryInput";
 import CategoryOptionsModal from "./CategoryOptionsModal";
 import MoreIcon from "payload/dist/admin/components/icons/More";
-import { useMenuQuery } from "../views/fetches";
+import {
+    CategoriesQueryData,
+    SubCategoriesQueryData,
+    useMenuQuery,
+} from "../views/fetches";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import mapSet from "../utils/mapSet";
 
 interface CategorySortableItemProps {
     id: string;
     sensors: SensorDescriptor<SensorOptions>[];
-}
-
-interface State {
-    loading: boolean;
-    inputting: boolean;
 }
 
 function CategorySortableItem({ id, sensors }: CategorySortableItemProps) {
@@ -30,15 +31,89 @@ function CategorySortableItem({ id, sensors }: CategorySortableItemProps) {
         categories.categoriesMap.get(id);
 
     const subCatInputRef = useRef<HTMLInputElement>(null);
-    const [subCatInputState, setSubCatInputState] = useState<State>({
-        inputting: false,
-        loading: false,
-    });
+    const [isInputting, setIsInputting] = useState(false);
 
     const [collapsed, setCollapsed] = useState<boolean>(true);
 
     const { attributes, listeners, setNodeRef, transform, transition } =
         useSortable({ id: id });
+
+    const queryClient = useQueryClient();
+
+    const handleAddSubCategory = useCallback(
+        async (name: string) => {
+            const response = await fetch("/api/sub_categories", {
+                credentials: "include",
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    name: name,
+                    categoryId: id,
+                }),
+            });
+
+            if (response.status !== 201) {
+                console.error(await response.text());
+                throw new Error();
+            }
+            return response.json();
+        },
+        [id],
+    );
+
+    const addMutation = useMutation({
+        mutationFn: handleAddSubCategory,
+        onError: (err) => {
+            console.error(err);
+            toast.error("Failed to create sub category", {
+                position: "bottom-center",
+            });
+        },
+        onSuccess: (data: { id: string; index: number; name: string }) => {
+            queryClient.setQueryData(
+                ["categories"],
+                (oldData: CategoriesQueryData): CategoriesQueryData => {
+                    const newMap = mapSet(
+                        oldData.categoriesMap,
+                        id,
+                        (category) => ({
+                            ...category,
+                            subCategories: [...category.subCategories, data.id],
+                        }),
+                    );
+
+                    return {
+                        ...oldData,
+                        categoriesMap: newMap,
+                    };
+                },
+            );
+
+            queryClient.setQueryData(
+                ["subCategories"],
+                (oldData: SubCategoriesQueryData): SubCategoriesQueryData => {
+                    console.log(oldData);
+                    const newMap = mapSet(oldData, data.id, () => ({
+                        id: data.id,
+                        index: data.index,
+                        name: data.name,
+                        menuItems: [],
+                    }));
+
+                    return newMap;
+                },
+            );
+
+            toast.success("Sub-category created successfully", {
+                position: "bottom-center",
+            });
+        },
+        onSettled: () => {
+            setIsInputting(false);
+        },
+    });
 
     const style = {
         transform: CSS.Translate.toString(transform),
@@ -49,76 +124,30 @@ function CategorySortableItem({ id, sensors }: CategorySortableItemProps) {
     const { openModal } = useModal();
 
     useEffect(() => {
-        if (subCatInputState.inputting) {
+        if (isInputting) {
             subCatInputRef.current?.focus();
         }
         return () => {};
-    }, [subCatInputState.inputting]);
+    }, [isInputting]);
 
     function handleAddBtnPress() {
         setCollapsed(false);
-        if (subCatInputState.loading) {
+        if (addMutation.isPending) {
             return;
         }
 
-        if (subCatInputState.inputting) {
+        if (isInputting) {
             subCatInputRef.current?.focus();
             return;
         }
-        setSubCatInputState({ loading: false, inputting: true });
+        setIsInputting(true);
     }
 
     function handleCancel() {
-        setSubCatInputState({ loading: false, inputting: false });
-    }
-
-    async function handleSaveCategory(name: string) {
-        setSubCatInputState({ loading: true, inputting: true });
-        try {
-            const index = SubCategories.length;
-            const response = await fetch("/api/sub_categories", {
-                credentials: "include",
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    name: name,
-                    index: index,
-                    category: {
-                        relationTo: "categories",
-                        value: id,
-                    },
-                }),
-            });
-
-            if (response.status !== 201) {
-                console.error(await response.text());
-                throw new Error();
-            }
-            const responseData = await response.json();
-            if (!responseData.doc?.id) {
-                throw new Error();
-            }
-
-            // dispatch({
-            //     type: categoryActionKind.ADD_SUB_CATEGORY,
-            //     parentId: id,
-            //     id: responseData.doc.id,
-            //     name: name,
-            //     index: index,
-            // });
-            setCollapsed(false);
-            toast.success("Sub Category created successfully", {
-                position: "bottom-center",
-            });
-            setSubCatInputState({ loading: false, inputting: false });
-        } catch (error) {
-            toast.error("Failed to create sub category", {
-                position: "bottom-center",
-            });
-            setSubCatInputState({ loading: false, inputting: false });
+        if (addMutation.isPending) {
+            return;
         }
+        setIsInputting(false);
     }
 
     return (
@@ -134,7 +163,7 @@ function CategorySortableItem({ id, sensors }: CategorySortableItemProps) {
                         icon="plus"
                         size="small"
                         onClick={handleAddBtnPress}
-                        disabled={subCatInputState.loading}
+                        disabled={addMutation.isPending}
                     />
                     {SubCategories.length > 0 && (
                         <Button
@@ -167,11 +196,11 @@ function CategorySortableItem({ id, sensors }: CategorySortableItemProps) {
             {!collapsed && (
                 <div className="category-ordered-item__sub-categories-list">
                     <SubCategoriesNavList parentId={id} sensors={sensors} />
-                    {subCatInputState.inputting && (
+                    {isInputting && (
                         <CategoryInput
                             inputRef={subCatInputRef}
-                            loading={subCatInputState.loading}
-                            onSave={handleSaveCategory}
+                            loading={addMutation.isPending}
+                            onSave={(name: string) => addMutation.mutate(name)}
                             onCancel={handleCancel}
                         />
                     )}

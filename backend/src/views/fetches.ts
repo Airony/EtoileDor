@@ -100,13 +100,19 @@ async function fetchMenuItems() {
     return menuItemsMap;
 }
 
-type CategoriesQueryResult = Awaited<ReturnType<typeof fetchCategories>>;
-type SubCategoriesQueryResult = Awaited<ReturnType<typeof fetchSubCategories>>;
-type MenuItemsQueryResult = Awaited<ReturnType<typeof fetchMenuItems>>;
+export type CategoriesQueryData = Awaited<ReturnType<typeof fetchCategories>>;
+export type SubCategoriesQueryData = Awaited<
+    ReturnType<typeof fetchSubCategories>
+>;
+export type MenuItemsQueryData = Awaited<ReturnType<typeof fetchMenuItems>>;
+
+export type CategoriesQueryResult = UseQueryResult<CategoriesQueryData>;
+export type SubCategoriesQueryResult = UseQueryResult<SubCategoriesQueryData>;
+export type MenuItemsQueryResult = UseQueryResult<MenuItemsQueryData>;
 type CombinedQueryResult = {
-    categories: CategoriesQueryResult;
-    subCategories: SubCategoriesQueryResult;
-    menuItems: MenuItemsQueryResult;
+    categories: CategoriesQueryData;
+    subCategories: SubCategoriesQueryData;
+    menuItems: MenuItemsQueryData;
 };
 
 type combinedQuery = {
@@ -117,14 +123,13 @@ type combinedQuery = {
 
 function combineQueries(
     results: [
-        UseQueryResult<CategoriesQueryResult>,
-        UseQueryResult<SubCategoriesQueryResult>,
-        UseQueryResult<MenuItemsQueryResult>,
+        CategoriesQueryResult,
+        SubCategoriesQueryResult,
+        MenuItemsQueryResult,
     ],
 ): combinedQuery {
     const [categories, subCategories, menuItems] = results;
     if (!categories.data || !subCategories.data || !menuItems.data) {
-        console.log("no data");
         return {
             data: undefined,
             isLoading: true,

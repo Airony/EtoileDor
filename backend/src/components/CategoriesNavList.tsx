@@ -131,11 +131,31 @@ function CategoriesNavList() {
             return response.json();
         },
 
-        onSuccess: async () => {
+        onSuccess: async (responseData) => {
             toast.success("Category created successfully", {
                 position: "bottom-center",
             });
-            await queryClient.invalidateQueries({ queryKey: "categories" });
+            await queryClient.setQueryData(
+                ["categories"],
+                (oldData: CategoriesQueryData): CategoriesQueryData => {
+                    const newMap = new Map(oldData.categoriesMap);
+                    newMap.set(responseData.doc.id, {
+                        id: responseData.doc.id,
+                        index: responseData.doc.index,
+                        name: responseData.doc.name,
+                        subCategories: [],
+                        menuItems: [],
+                    });
+                    const newOrder = [
+                        ...oldData.orderedIds,
+                        responseData.doc.id,
+                    ];
+                    return {
+                        categoriesMap: newMap,
+                        orderedIds: newOrder,
+                    };
+                },
+            );
         },
         onError: (err) => {
             console.error(err);

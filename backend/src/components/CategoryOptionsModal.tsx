@@ -82,7 +82,7 @@ function CategoryOptionsModal({ id, slug }: CategoryOptionsModalProps) {
             queryClient.setQueryData(
                 ["categories"],
                 (oldData: CategoriesQueryData): CategoriesQueryData => {
-                    const newCategoriesMap = oldData.categoriesMap;
+                    const newCategoriesMap = new Map(oldData.categoriesMap);
                     newCategoriesMap.delete(id);
                     return {
                         ...oldData,

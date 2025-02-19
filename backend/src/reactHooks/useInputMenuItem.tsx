@@ -132,7 +132,7 @@ export function useInputMenuItem({ parentId, parentType }: SaveMenuItemProps) {
         if (addMutation.isPending) {
             return;
         }
-        setIsInputting(true);
+        setIsInputting(false);
     }
 
     return {

@@ -5,7 +5,8 @@ import { TextInput } from "payload/components/forms";
 import DeleteModal from "./DeleteModal";
 import { toast } from "react-toastify";
 import { LoadingOverlay } from "payload/dist/admin/components/elements/Loading";
-import { useMenuQuery } from "../views/fetches";
+import { CategoriesQueryData, useMenuQuery } from "../views/fetches";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 interface CategoryOptionsModalProps {
     id: string;
@@ -44,6 +45,61 @@ function CategoryOptionsModal({ id, slug }: CategoryOptionsModalProps) {
         }
     }
 
+    const queryClient = useQueryClient();
+
+    const deleteMutation = useMutation({
+        mutationFn: async () => {
+            const response = await fetch(`/api/categories/${id}`, {
+                credentials: "include",
+                method: "DELETE",
+            });
+            if (!response.ok) {
+                throw new Error(await response.text());
+            }
+        },
+        onMutate: async () => {
+            await queryClient.cancelQueries({ queryKey: "categories" });
+            queryClient.setQueryData(
+                ["categories"],
+                (oldData: CategoriesQueryData): CategoriesQueryData => {
+                    const newOrderedIds = oldData.orderedIds.filter(
+                        (categoryId) => categoryId !== id,
+                    );
+                    return {
+                        ...oldData,
+                        orderedIds: newOrderedIds,
+                    };
+                },
+            );
+        },
+
+        onSuccess: () => {
+            toast.success("Category deleted successfully.", {
+                position: "bottom-center",
+            });
+
+            // Remove from the map
+            queryClient.setQueryData(
+                ["categories"],
+                (oldData: CategoriesQueryData): CategoriesQueryData => {
+                    const newCategoriesMap = oldData.categoriesMap;
+                    newCategoriesMap.delete(id);
+                    return {
+                        ...oldData,
+                        categoriesMap: newCategoriesMap,
+                    };
+                },
+            );
+        },
+        onError: async (err) => {
+            toast.error("Failed to delete category.", {
+                position: "bottom-center",
+            });
+            console.error(err);
+            await queryClient.invalidateQueries({ queryKey: "categories" });
+        },
+    });
+
     async function handleSavePress() {
         if (!inputtedName) {
             return;
@@ -74,28 +130,12 @@ function CategoryOptionsModal({ id, slug }: CategoryOptionsModalProps) {
         }
     }
 
-    async function handleDelete() {
-        setLoading(true);
-        openModal(slug);
-        try {
-            const response = await fetch(`/api/categories/${id}`, {
-                credentials: "include",
-                method: "DELETE",
-            });
-            if (!response.ok) {
-                throw new Error(await response.text());
-            }
-
-            // dispatch({ type: categoryActionKind.DELETE_CATEGORY, id });
-            setLoading(false);
-            closeModal(slug);
-        } catch (error) {
-            toast.error("Failed to delete category.");
-            setLoading(false);
-            openModal(slug);
-        }
-    }
     const deleteModalSlug = `delete-modal-${id}`;
+
+    function handleDeletePress() {
+        close();
+        openModal(deleteModalSlug);
+    }
 
     return (
         <Modal
@@ -122,11 +162,8 @@ function CategoryOptionsModal({ id, slug }: CategoryOptionsModalProps) {
                 <Button
                     buttonStyle="transparent"
                     className="btn-error"
-                    onClick={() => {
-                        close();
-                        openModal(deleteModalSlug);
-                    }}
-                    disabled={loading}
+                    onClick={handleDeletePress}
+                    disabled={deleteMutation.isPending}
                 >
                     Delete
                 </Button>
@@ -146,7 +183,7 @@ function CategoryOptionsModal({ id, slug }: CategoryOptionsModalProps) {
             <DeleteModal
                 slug={deleteModalSlug}
                 deletedName="category"
-                onDeletion={handleDelete}
+                onDeletion={() => deleteMutation.mutate()}
                 warning="All related sub categories and menu items will be deleted."
             />
         </Modal>

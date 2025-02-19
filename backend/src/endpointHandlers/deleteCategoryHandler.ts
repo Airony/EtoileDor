@@ -25,8 +25,8 @@ const deleteCategoryHandler: PayloadHandler = async (req, res) => {
             return;
         }
 
-        const subCategories = category.sub_categories as SubCategory[];
-        const menuItems = category.menu_items as MenuItem[];
+        const subCategories = (category.sub_categories as SubCategory[]) || [];
+        const menuItems = (category.menu_items as MenuItem[]) || [];
 
         const menuItemsIds: string[] = [];
         const subCategoriesIds: string[] = [];
@@ -84,6 +84,7 @@ const deleteCategoryHandler: PayloadHandler = async (req, res) => {
 
         res.status(200).end();
     } catch (error) {
+        console.error(error);
         res.status(500).end("Failed to delete category");
     }
 };

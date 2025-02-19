@@ -46,7 +46,11 @@ function SubCategory({ id }: SubCategoryProps) {
                 </Button>
             </div>
             <div className="sub-category__menu-items">
-                <MenuItemList list={menuItems} parentId={id} />
+                <MenuItemList
+                    list={menuItems}
+                    parentId={id}
+                    parentType="subCategories"
+                />
                 {isInputting && (
                     <MenuItemInput
                         inputRef={inputRef}

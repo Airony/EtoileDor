@@ -2,6 +2,7 @@ import { CollectionConfig } from "payload/types";
 import onDeleteMenuItem from "../hooks/onDeleteMenuItem";
 import { isAdmin } from "../accessControls";
 import addMenuItemHandler from "../endpointHandlers/addMenuItemHandler";
+import orderMenuItemsHandler from "../endpointHandlers/orderMenuItemsHandler";
 
 const MenuItems: CollectionConfig = {
     slug: "menu_items",
@@ -38,6 +39,11 @@ const MenuItems: CollectionConfig = {
         group: "Menu",
     },
     endpoints: [
+        {
+            path: "/order",
+            method: "patch",
+            handler: orderMenuItemsHandler,
+        },
         {
             path: "/",
             method: "post",

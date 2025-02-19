@@ -47,7 +47,11 @@ function Category({ id }: CategoryProps) {
             </div>
             <div className="categories-list__category-content">
                 <div className="categories-list__items-container">
-                    <MenuItemList list={menuItems} parentId={id} />
+                    <MenuItemList
+                        list={menuItems}
+                        parentId={id}
+                        parentType="categories"
+                    />
                     {isInputting && (
                         <MenuItemInput
                             inputRef={inputRef}

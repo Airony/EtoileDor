@@ -16,15 +16,20 @@ function SubCategory({ id }: SubCategoryProps) {
     const { name, menuItems } = subCategories.get(id);
     const inputRef = React.useRef<HTMLInputElement>(null);
 
-    const { state, handleSave, handleAddBtnPress, handleCancel } =
-        useInputMenuItem({ parentId: id, parentType: "sub_categories" });
+    const {
+        isInputting,
+        isPending,
+        handleSave,
+        handleAddBtnPress,
+        handleCancel,
+    } = useInputMenuItem({ parentId: id, parentType: "sub_categories" });
 
     useEffect(() => {
-        if (state.inputting) {
+        if (isInputting) {
             inputRef.current?.focus();
         }
         return () => {};
-    }, [state.inputting]);
+    }, [isInputting]);
 
     return (
         <div className="sub-category">
@@ -42,10 +47,10 @@ function SubCategory({ id }: SubCategoryProps) {
             </div>
             <div className="sub-category__menu-items">
                 <MenuItemList list={menuItems} parentId={id} />
-                {state.inputting && (
+                {isInputting && (
                     <MenuItemInput
                         inputRef={inputRef}
-                        loading={state.loading}
+                        loading={isPending}
                         onCancel={handleCancel}
                         onSave={handleSave}
                     />

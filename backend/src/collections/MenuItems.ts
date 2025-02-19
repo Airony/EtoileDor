@@ -1,6 +1,7 @@
 import { CollectionConfig } from "payload/types";
 import onDeleteMenuItem from "../hooks/onDeleteMenuItem";
 import { isAdmin } from "../accessControls";
+import addMenuItemHandler from "../endpointHandlers/addMenuItemHandler";
 
 const MenuItems: CollectionConfig = {
     slug: "menu_items",
@@ -36,6 +37,13 @@ const MenuItems: CollectionConfig = {
         useAsTitle: "name",
         group: "Menu",
     },
+    endpoints: [
+        {
+            path: "/",
+            method: "post",
+            handler: addMenuItemHandler,
+        },
+    ],
     access: {
         read: () => true,
         create: isAdmin,

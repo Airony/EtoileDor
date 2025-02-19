@@ -16,15 +16,20 @@ function Category({ id }: CategoryProps) {
     const { name, subCategories, menuItems } = categories.categoriesMap.get(id);
     const inputRef = React.useRef<HTMLInputElement>(null);
 
-    const { state, handleSave, handleAddBtnPress, handleCancel } =
-        useInputMenuItem({ parentId: id, parentType: "categories" });
+    const {
+        isInputting,
+        isPending,
+        handleSave,
+        handleAddBtnPress,
+        handleCancel,
+    } = useInputMenuItem({ parentId: id, parentType: "categories" });
 
     useEffect(() => {
-        if (state.inputting) {
+        if (isInputting) {
             inputRef.current?.focus();
         }
         return () => {};
-    }, [state.inputting]);
+    }, [isInputting]);
 
     return (
         <div key={id} className="categories-list__category">
@@ -43,10 +48,10 @@ function Category({ id }: CategoryProps) {
             <div className="categories-list__category-content">
                 <div className="categories-list__items-container">
                     <MenuItemList list={menuItems} parentId={id} />
-                    {state.inputting && (
+                    {isInputting && (
                         <MenuItemInput
                             inputRef={inputRef}
-                            loading={state.loading}
+                            loading={isPending}
                             onCancel={handleCancel}
                             onSave={handleSave}
                         />

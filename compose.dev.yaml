@@ -11,6 +11,7 @@ services:
             - PAYLOAD_SECRET=secret
             - MONGO_URL=mongodb://root:root@database:27017
             - PAYLOAD_INIT_ROOT_PASSWORD=root
+            - ENVIRONMENT=development
         volumes:
             - ./backend:/app/backend
             - ./shared:/app/shared

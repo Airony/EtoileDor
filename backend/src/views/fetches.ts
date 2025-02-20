@@ -4,7 +4,6 @@ import { Category, SubCategory, MenuItem } from "../payload-types";
 export interface CategoryData {
     name: string;
     id: string;
-    index: number;
     menuItems: string[];
     subCategories: string[];
 }
@@ -12,18 +11,16 @@ export interface CategoryData {
 export interface SubCategoryData {
     name: string;
     id: string;
-    index: number;
     menuItems: string[];
 }
 export interface MenuItemData {
     name: string;
     price: number;
     id: string;
-    index: number;
 }
 
 async function fetchCategories() {
-    const response = await fetch("/api/categories?limit=0&depth=0", {
+    const response = await fetch("/api/categories/get_all", {
         credentials: "include",
     });
 
@@ -31,7 +28,7 @@ async function fetchCategories() {
         throw new Error("Failed to fetch categories");
     }
 
-    const data = (await response.json()).docs as Category[];
+    const data = (await response.json()) as Category[];
     const orderedIds = data
         .sort((a, b) => a.index - b.index)
         .map((category) => category.id);
@@ -41,7 +38,6 @@ async function fetchCategories() {
             {
                 name: category.name,
                 id: category.id,
-                index: category.index,
                 menuItems: (category.menu_items as string[]) || [],
                 subCategories: (category.sub_categories as string[]) || [],
             },
@@ -52,7 +48,7 @@ async function fetchCategories() {
 }
 
 async function fetchSubCategories() {
-    const response = await fetch("/api/sub_categories?limit=0&depth=0", {
+    const response = await fetch("/api/sub_categories/get_all", {
         credentials: "include",
     });
 
@@ -60,14 +56,13 @@ async function fetchSubCategories() {
         throw new Error("Failed to fetch sub categories");
     }
 
-    const data = (await response.json()).docs as SubCategory[];
+    const data = (await response.json()) as SubCategory[];
     const subCategoriesMap: Map<string, SubCategoryData> = new Map(
         data.map((subCategory) => [
             subCategory.id,
             {
                 name: subCategory.name,
                 id: subCategory.id,
-                index: subCategory.index,
                 menuItems: (subCategory.menu_items as string[]) || [],
             },
         ]),
@@ -93,7 +88,6 @@ async function fetchMenuItems() {
                 name: menuItem.name,
                 price: menuItem.price,
                 id: menuItem.id,
-                index: menuItem.index,
             },
         ]),
     );

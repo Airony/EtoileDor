@@ -2,6 +2,7 @@ import { CollectionConfig } from "payload/types";
 import { isAdmin } from "../accessControls";
 import deleteCategoryHandler from "../endpointHandlers/deleteCategoryHandler";
 import orderCategoriesHandler from "../endpointHandlers/orderCategoriesHandler";
+import getCategoriesHandler from "../endpointHandlers/getCategoriesHandler";
 
 const Categories: CollectionConfig = {
     slug: "categories",
@@ -55,6 +56,11 @@ const Categories: CollectionConfig = {
             path: "/order",
             method: "patch",
             handler: orderCategoriesHandler,
+        },
+        {
+            path: "/get_all",
+            method: "get",
+            handler: getCategoriesHandler,
         },
     ],
 };

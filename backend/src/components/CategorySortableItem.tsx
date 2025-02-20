@@ -73,6 +73,20 @@ function CategorySortableItem({ id, sensors }: CategorySortableItemProps) {
         },
         onSuccess: (data: { id: string; index: number; name: string }) => {
             queryClient.setQueryData(
+                ["subCategories"],
+                (oldData: SubCategoriesQueryData): SubCategoriesQueryData => {
+                    const newMap = mapSet(oldData, data.id, () => ({
+                        id: data.id,
+                        index: data.index,
+                        name: data.name,
+                        menuItems: [],
+                    }));
+
+                    return newMap;
+                },
+            );
+
+            queryClient.setQueryData(
                 ["categories"],
                 (oldData: CategoriesQueryData): CategoriesQueryData => {
                     const newMap = mapSet(
@@ -88,21 +102,6 @@ function CategorySortableItem({ id, sensors }: CategorySortableItemProps) {
                         ...oldData,
                         categoriesMap: newMap,
                     };
-                },
-            );
-
-            queryClient.setQueryData(
-                ["subCategories"],
-                (oldData: SubCategoriesQueryData): SubCategoriesQueryData => {
-                    console.log(oldData);
-                    const newMap = mapSet(oldData, data.id, () => ({
-                        id: data.id,
-                        index: data.index,
-                        name: data.name,
-                        menuItems: [],
-                    }));
-
-                    return newMap;
                 },
             );
 

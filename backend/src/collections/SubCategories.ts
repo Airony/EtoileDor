@@ -3,6 +3,7 @@ import { isAdmin } from "../accessControls";
 import deleteSubCategoryHandler from "../endpointHandlers/deleteSubCategoryHandler";
 import orderSubCategoriesHandler from "../endpointHandlers/orderSubCategoriesHandler";
 import addSubCategoryHandler from "../endpointHandlers/addSubCategoryHandler";
+import getSubCategoriesHandler from "../endpointHandlers/getSubCategoriesHandler";
 
 const SubCategories: CollectionConfig = {
     slug: "sub_categories",
@@ -37,6 +38,11 @@ const SubCategories: CollectionConfig = {
         group: "Menu",
     },
     endpoints: [
+        {
+            path: "/get_all",
+            method: "get",
+            handler: getSubCategoriesHandler,
+        },
         {
             path: "/:id",
             method: "delete",

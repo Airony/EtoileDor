@@ -4,7 +4,6 @@ import { Button } from "payload/components/elements";
 import { SelectInput, TextInput } from "payload/components/forms";
 import DeleteModal from "./DeleteModal";
 import { toast } from "react-toastify";
-import { LoadingOverlay } from "payload/dist/admin/components/elements/Loading";
 import {
     CategoriesQueryData,
     SubCategoriesQueryData,
@@ -12,6 +11,8 @@ import {
 } from "../views/fetches";
 import mapSet from "../utils/mapSet";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { nanoid } from "nanoid";
+import checkForFutureMutation from "../utils/checkForFutureMutation";
 
 interface SubCategoryOptionsModalProps {
     id: string;
@@ -28,19 +29,13 @@ function SubCategoryOptionsModal({
     const { name } = subCategories.get(id);
     const [inputtedName, setInputtedName] = useState<string>(name);
     const [inputtedParentId, setInputtedParentId] = useState<string>(parentId);
-    const [loading, setLoading] = useState<boolean>(false);
+    const queryClient = useQueryClient();
     const { closeModal, openModal } = useModal();
 
     function close() {
-        if (loading) {
-            return;
-        }
         closeModal(slug);
     }
     function handleCancelPress() {
-        if (loading) {
-            return;
-        }
         setInputtedName(name);
         setInputtedParentId(parentId);
         close();
@@ -55,91 +50,134 @@ function SubCategoryOptionsModal({
             handleCancelPress();
         }
     }
-
-    async function handleSavePress() {
-        if (loading) {
-            return;
-        }
-
-        if (inputtedName === name && inputtedParentId === parentId) {
-            close();
-            return;
-        }
-
-        if (inputtedName === name) {
-            await updateSubCategory({ newParentId: inputtedParentId });
-        } else if (inputtedParentId === parentId) {
-            await updateSubCategory({ newName: inputtedName });
-        } else {
-            await updateSubCategory({
-                newName: inputtedName,
-                newParentId: inputtedParentId,
-            });
-        }
-    }
-
-    async function updateSubCategory({
-        newName,
-        newParentId,
-    }: {
-        newName?: string;
-        newParentId?: string;
-    }) {
-        setLoading(true);
-        try {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const body: any = {};
-            if (name) body.name = newName;
-            if (newParentId) {
-                body.index =
-                    categories.categoriesMap.get(
-                        newParentId,
-                    ).subCategories.length;
-                body.category = {
-                    relationTo: "categories",
-                    value: newParentId,
-                };
-            }
-
+    const mutationKey = `rename-sub-category-${id}`;
+    const renameMutation = useMutation({
+        mutationFn: async (newName: string) => {
             const response = await fetch(`/api/sub_categories/${id}`, {
                 credentials: "include",
                 method: "PATCH",
-                body: JSON.stringify(body),
+                body: JSON.stringify({ name: newName }),
                 headers: { "Content-Type": "application/json" },
             });
-
             if (!response.ok) {
                 throw new Error(await response.text());
             }
+        },
 
-            // if (newName) {
-            //     dispatch({
-            //         type: categoryActionKind.RENAME_SUB_CATEGORY,
-            //         id,
-            //         newName: newName,
-            //     });
-            //     setInputtedName(newName);
-            // }
-
-            // if (newParentId) {
-            //     dispatch({
-            //         type: categoryActionKind.CHANGE_SUB_CATEGORY_PARENT,
-            //         currentParentId: parentId,
-            //         newParentId: newParentId,
-            //         subCategoryId: id,
-            //     });
-            //     setInputtedParentId(newParentId);
-            // }
-
-            setLoading(false);
+        onMutate: async () => {
+            await queryClient.cancelQueries({ queryKey: ["subCategories"] });
+            queryClient.setQueryData(
+                ["subCategories"],
+                (oldData: SubCategoriesQueryData): SubCategoriesQueryData => {
+                    const newMap = mapSet(oldData, id, (subCat) => {
+                        return {
+                            ...subCat,
+                            name: inputtedName,
+                        };
+                    });
+                    return newMap;
+                },
+            );
             close();
-        } catch (error) {
-            console.error(error);
-            toast.error("Failed to update sub-category.");
-            setLoading(false);
+
+            return { id: nanoid() };
+        },
+        onSuccess: (_, __, context) => {
+            if (
+                checkForFutureMutation(queryClient, [mutationKey], context.id)
+            ) {
+                return;
+            }
+            toast.success("Sub-category renamed successfully.", {
+                position: "bottom-center",
+            });
+        },
+        onError: async (err, _, context) => {
+            if (
+                checkForFutureMutation(queryClient, [mutationKey], context.id)
+            ) {
+                return;
+            }
+            toast.error("Failed to rename sub-ategory.", {
+                position: "bottom-center",
+            });
+            console.error(err);
+            await queryClient.invalidateQueries({
+                queryKey: ["subCategories"],
+            });
+        },
+        mutationKey: [mutationKey],
+    });
+
+    async function handleSavePress() {
+        if (inputtedName !== name) {
+            renameMutation.mutate(inputtedName);
         }
+
+        close();
     }
-    const queryClient = useQueryClient();
+
+    // async function updateSubCategory({
+    //     newName,
+    //     newParentId,
+    // }: {
+    //     newName?: string;
+    //     newParentId?: string;
+    // }) {
+    //     setLoading(true);
+    //     try {
+    //         // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    //         const body: any = {};
+    //         if (name) body.name = newName;
+    //         if (newParentId) {
+    //             body.index =
+    //                 categories.categoriesMap.get(
+    //                     newParentId,
+    //                 ).subCategories.length;
+    //             body.category = {
+    //                 relationTo: "categories",
+    //                 value: newParentId,
+    //             };
+    //         }
+
+    //         const response = await fetch(`/api/sub_categories/${id}`, {
+    //             credentials: "include",
+    //             method: "PATCH",
+    //             body: JSON.stringify(body),
+    //             headers: { "Content-Type": "application/json" },
+    //         });
+
+    //         if (!response.ok) {
+    //             throw new Error(await response.text());
+    //         }
+
+    //         // if (newName) {
+    //         //     dispatch({
+    //         //         type: categoryActionKind.RENAME_SUB_CATEGORY,
+    //         //         id,
+    //         //         newName: newName,
+    //         //     });
+    //         //     setInputtedName(newName);
+    //         // }
+
+    //         // if (newParentId) {
+    //         //     dispatch({
+    //         //         type: categoryActionKind.CHANGE_SUB_CATEGORY_PARENT,
+    //         //         currentParentId: parentId,
+    //         //         newParentId: newParentId,
+    //         //         subCategoryId: id,
+    //         //     });
+    //         //     setInputtedParentId(newParentId);
+    //         // }
+
+    //         setLoading(false);
+    //         close();
+    //     } catch (error) {
+    //         console.error(error);
+    //         toast.error("Failed to update sub-category.");
+    //         setLoading(false);
+    //     }
+    // }
 
     const deleteMutation = useMutation({
         mutationFn: async () => {
@@ -222,7 +260,6 @@ function SubCategoryOptionsModal({
             focusTrapOptions={{ initialFocus: false }}
             onKeyDown={handleKeyDown}
         >
-            <LoadingOverlay show={loading} animationDuration="0" />
             <h2>Edit Category</h2>
             <div className="options-modal__inputs">
                 <TextInput
@@ -230,10 +267,7 @@ function SubCategoryOptionsModal({
                     name="name"
                     label="Name"
                     value={inputtedName}
-                    onChange={(e) => {
-                        if (loading) return;
-                        setInputtedName(e.target.value);
-                    }}
+                    onChange={(e) => setInputtedName(e.target.value)}
                 ></TextInput>
 
                 <SelectInput
@@ -259,16 +293,10 @@ function SubCategoryOptionsModal({
                     Delete
                 </Button>
                 <div className="options-modal__save-cancel-container">
-                    <Button
-                        disabled={loading}
-                        buttonStyle="secondary"
-                        onClick={handleCancelPress}
-                    >
+                    <Button buttonStyle="secondary" onClick={handleCancelPress}>
                         Cancel
                     </Button>
-                    <Button disabled={loading} onClick={handleSavePress}>
-                        Save
-                    </Button>
+                    <Button onClick={handleSavePress}>Save</Button>
                 </div>
             </div>
             <DeleteModal

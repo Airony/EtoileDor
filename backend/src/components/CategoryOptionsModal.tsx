@@ -4,9 +4,11 @@ import { Button } from "payload/components/elements";
 import { TextInput } from "payload/components/forms";
 import DeleteModal from "./DeleteModal";
 import { toast } from "react-toastify";
-import { LoadingOverlay } from "payload/dist/admin/components/elements/Loading";
 import { CategoriesQueryData, useMenuQuery } from "../views/fetches";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import mapSet from "../utils/mapSet";
+import checkForFutureMutation from "../utils/checkForFutureMutation";
+import { nanoid } from "nanoid";
 
 interface CategoryOptionsModalProps {
     id: string;
@@ -17,20 +19,13 @@ function CategoryOptionsModal({ id, slug }: CategoryOptionsModalProps) {
     const { categories } = data;
     const { name } = categories.categoriesMap.get(id);
     const [inputtedName, setInputtedName] = useState<string>(name);
-    const [loading, setLoading] = useState<boolean>(false);
     const { closeModal, openModal } = useModal();
 
     function close() {
-        if (loading) {
-            return;
-        }
         closeModal(slug);
     }
 
     function handleCancelPress() {
-        if (loading) {
-            return;
-        }
         close();
         setInputtedName(name);
     }
@@ -100,36 +95,78 @@ function CategoryOptionsModal({ id, slug }: CategoryOptionsModalProps) {
         },
     });
 
-    async function handleSavePress() {
-        if (!inputtedName) {
-            return;
-        }
-        setLoading(true);
-
-        try {
+    const mutationKey = `rename-category-${id}`;
+    const renameMutation = useMutation({
+        mutationFn: async (newName: string) => {
             const response = await fetch(`/api/categories/${id}`, {
                 credentials: "include",
                 method: "PATCH",
-                body: JSON.stringify({ name: inputtedName }),
+                body: JSON.stringify({ name: newName }),
                 headers: { "Content-Type": "application/json" },
             });
             if (!response.ok) {
-                throw new Error();
+                throw new Error(await response.text());
             }
-            // dispatch({
-            //     type: categoryActionKind.RENAME_CATEGORY,
-            //     id,
-            //     newName: inputtedName,
-            // });
-            setInputtedName(inputtedName);
-            setLoading(false);
-            close();
-        } catch (error) {
-            toast.error("Failed to update category name.");
-            setLoading(false);
-        }
-    }
+        },
 
+        onMutate: async () => {
+            await queryClient.cancelQueries({ queryKey: ["categories"] });
+            queryClient.setQueryData(
+                ["categories"],
+                (oldData: CategoriesQueryData): CategoriesQueryData => {
+                    const newMap = mapSet(
+                        oldData.categoriesMap,
+                        id,
+                        (category) => {
+                            return {
+                                ...category,
+                                name: inputtedName,
+                            };
+                        },
+                    );
+                    return {
+                        ...oldData,
+                        categoriesMap: newMap,
+                    };
+                },
+            );
+            close();
+
+            return { id: nanoid() };
+        },
+        onSuccess: (_, __, context) => {
+            if (
+                checkForFutureMutation(queryClient, [mutationKey], context.id)
+            ) {
+                return;
+            }
+            toast.success("Category renamed successfully.", {
+                position: "bottom-center",
+            });
+        },
+        onError: async (err, _, context) => {
+            if (
+                checkForFutureMutation(queryClient, [mutationKey], context.id)
+            ) {
+                return;
+            }
+            toast.error("Failed to rename category.", {
+                position: "bottom-center",
+            });
+            console.error(err);
+            await queryClient.invalidateQueries({ queryKey: ["categories"] });
+        },
+        mutationKey: [mutationKey],
+    });
+
+    function handleSavePress() {
+        if (inputtedName === name) {
+            close();
+            return;
+        }
+
+        renameMutation.mutate(inputtedName);
+    }
     const deleteModalSlug = `delete-modal-${id}`;
 
     function handleDeletePress() {
@@ -145,17 +182,13 @@ function CategoryOptionsModal({ id, slug }: CategoryOptionsModalProps) {
             focusTrapOptions={{ initialFocus: false }}
             onKeyDown={handleKeyDown}
         >
-            <LoadingOverlay show={loading} animationDuration="0" />
             <h2>Edit Category</h2>
             <TextInput
                 path="name"
                 name="name"
                 label="Name"
                 value={inputtedName}
-                onChange={(e) => {
-                    if (loading) return;
-                    setInputtedName(e.target.value);
-                }}
+                onChange={(e) => setInputtedName(e.target.value)}
             ></TextInput>
 
             <div className="options-modal__actions">
@@ -168,16 +201,10 @@ function CategoryOptionsModal({ id, slug }: CategoryOptionsModalProps) {
                     Delete
                 </Button>
                 <div className="options-modal__save-cancel-container">
-                    <Button
-                        disabled={loading}
-                        buttonStyle="secondary"
-                        onClick={handleCancelPress}
-                    >
+                    <Button buttonStyle="secondary" onClick={handleCancelPress}>
                         Cancel
                     </Button>
-                    <Button disabled={loading} onClick={handleSavePress}>
-                        Save
-                    </Button>
+                    <Button onClick={handleSavePress}>Save</Button>
                 </div>
             </div>
             <DeleteModal

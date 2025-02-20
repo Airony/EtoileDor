@@ -8,15 +8,14 @@ import { LoadingOverlay } from "payload/dist/admin/components/elements/Loading";
 import type { Option } from "payload/dist/admin/components/elements/ReactSelect/types";
 import {
     CategoriesQueryData,
-    CategoryData,
     MenuItemsQueryData,
     SubCategoriesQueryData,
-    SubCategoryData,
     useMenuQuery,
 } from "../views/fetches";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import mapSet from "../utils/mapSet";
 import { MenuItemListContext } from "./MenuItemList";
+import useEditMenuItem from "../reactHooks/useEditMenuItem";
 
 interface MenuItemOptionsModalProps {
     id: string;
@@ -47,6 +46,8 @@ function MenuItemOptionsModal({
         inputtedPrice: price?.toString() || "Error",
     });
 
+    const editMutation = useEditMenuItem(id);
+
     const { closeModal, openModal } = useModal();
 
     function close() {
@@ -68,11 +69,6 @@ function MenuItemOptionsModal({
         close();
     }
 
-    interface temp {
-        newName?: string;
-        newPrice?: number;
-        newParentId?: string;
-    }
     function handleKeyDown(e: React.KeyboardEvent) {
         if (e.key === "Enter") {
             e.preventDefault();
@@ -84,97 +80,85 @@ function MenuItemOptionsModal({
     }
 
     async function handleSavePress() {
-        if (state.loading) {
-            return;
-        }
-        const newData: temp = {};
-
-        if (state.inputtedName !== name) {
-            newData.newName = state.inputtedName;
-        }
-        if (state.inputtedParentId !== parentId) {
-            newData.newParentId = state.inputtedParentId;
-        }
-        if (state.inputtedPrice !== price.toString()) {
-            newData.newPrice = parseInt(state.inputtedPrice);
-        }
-        if (Object.keys(newData).length === 0) {
-            close();
-            return;
-        }
-
-        await updateSubCategory(newData);
-    }
-
-    async function updateSubCategory({ newName, newPrice, newParentId }: temp) {
-        setState((state) => ({ ...state, loading: true }));
-        try {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const body: any = {};
-            if (name) body.name = newName;
-            if (newPrice) body.price = newPrice;
-
-            if (newParentId) {
-                let parent: CategoryData | SubCategoryData;
-                let parentType = "categories";
-                if (categories.categoriesMap.has(newParentId)) {
-                    parent = categories.categoriesMap.get(newParentId);
-                } else {
-                    parent = subCategories.get(newParentId);
-                    parentType = "sub_categories";
-                }
-
-                body.index = parent.menuItems.length;
-                body.Category = {
-                    relationTo: parentType,
-                    value: newParentId,
-                };
-            }
-
-            const response = await fetch(`/api/menu_items/${id}`, {
-                credentials: "include",
-                method: "PATCH",
-                body: JSON.stringify(body),
-                headers: { "Content-Type": "application/json" },
+        const parsedPrice = parseInt(state.inputtedPrice);
+        if (name !== state.inputtedName || price !== parsedPrice) {
+            editMutation.mutate({
+                name: state.inputtedName,
+                price: parsedPrice,
             });
-
-            if (!response.ok) {
-                throw new Error(await response.text());
-            }
-
-            // if (newName || newPrice) {
-            //     dispatch({
-            //         type: categoryActionKind.UPDATE_MENU_ITEM,
-            //         id,
-            //         name: newName || name,
-            //         price: newPrice || price,
-            //     });
-            // }
-
-            // if (newParentId) {
-            //     dispatch({
-            //         type: categoryActionKind.CHANGE_MENU_ITEM_PARENT,
-            //         currentParentId: parentId,
-            //         newParentId: newParentId,
-            //         id: id,
-            //     });
-            // }
-
-            setState((state) => ({
-                ...state,
-                inputtedName: newName || name,
-                inputtedParentId: newParentId || parentId,
-                inputtedPrice: newPrice?.toString() || price.toString(),
-            }));
-
-            setState((state) => ({ ...state, loading: false }));
-            close();
-        } catch (error) {
-            console.error(error);
-            toast.error("Failed to update menu item.");
-            setState((state) => ({ ...state, loading: false }));
         }
+        close();
     }
+
+    // async function updateSubCategory({ newName, newPrice, newParentId }: temp) {
+    //     setState((state) => ({ ...state, loading: true }));
+    //     try {
+    //         // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    //         const body: any = {};
+    //         if (name) body.name = newName;
+    //         if (newPrice) body.price = newPrice;
+
+    //         if (newParentId) {
+    //             let parent: CategoryData | SubCategoryData;
+    //             let parentType = "categories";
+    //             if (categories.categoriesMap.has(newParentId)) {
+    //                 parent = categories.categoriesMap.get(newParentId);
+    //             } else {
+    //                 parent = subCategories.get(newParentId);
+    //                 parentType = "sub_categories";
+    //             }
+
+    //             body.index = parent.menuItems.length;
+    //             body.Category = {
+    //                 relationTo: parentType,
+    //                 value: newParentId,
+    //             };
+    //         }
+
+    //         const response = await fetch(`/api/menu_items/${id}`, {
+    //             credentials: "include",
+    //             method: "PATCH",
+    //             body: JSON.stringify(body),
+    //             headers: { "Content-Type": "application/json" },
+    //         });
+
+    //         if (!response.ok) {
+    //             throw new Error(await response.text());
+    //         }
+
+    //         // if (newName || newPrice) {
+    //         //     dispatch({
+    //         //         type: categoryActionKind.UPDATE_MENU_ITEM,
+    //         //         id,
+    //         //         name: newName || name,
+    //         //         price: newPrice || price,
+    //         //     });
+    //         // }
+
+    //         // if (newParentId) {
+    //         //     dispatch({
+    //         //         type: categoryActionKind.CHANGE_MENU_ITEM_PARENT,
+    //         //         currentParentId: parentId,
+    //         //         newParentId: newParentId,
+    //         //         id: id,
+    //         //     });
+    //         // }
+
+    //         setState((state) => ({
+    //             ...state,
+    //             inputtedName: newName || name,
+    //             inputtedParentId: newParentId || parentId,
+    //             inputtedPrice: newPrice?.toString() || price.toString(),
+    //         }));
+
+    //         setState((state) => ({ ...state, loading: false }));
+    //         close();
+    //     } catch (error) {
+    //         console.error(error);
+    //         toast.error("Failed to update menu item.");
+    //         setState((state) => ({ ...state, loading: false }));
+    //     }
+    // }
 
     function handleUpdateName(e: React.ChangeEvent<HTMLInputElement>) {
         if (state.loading) {

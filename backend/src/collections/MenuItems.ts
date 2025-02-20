@@ -1,5 +1,4 @@
 import { CollectionConfig } from "payload/types";
-import onDeleteMenuItem from "../hooks/onDeleteMenuItem";
 import { isAdmin } from "../accessControls";
 import addMenuItemHandler from "../endpointHandlers/addMenuItemHandler";
 import orderMenuItemsHandler from "../endpointHandlers/orderMenuItemsHandler";
@@ -32,10 +31,6 @@ const MenuItems: CollectionConfig = {
             defaultValue: -1,
         },
     ],
-
-    hooks: {
-        beforeDelete: [onDeleteMenuItem],
-    },
     admin: {
         useAsTitle: "name",
         group: "Menu",

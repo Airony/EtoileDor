@@ -46,7 +46,14 @@ export function useInputMenuItem({ parentId, parentType }: SaveMenuItemProps) {
         mutationFn: addMenuItem,
         onMutate: async () => {
             await queryClient.cancelQueries({
-                queryKey: [parentType, "menu_items"],
+                queryKey: ["menu_items"],
+            });
+            await queryClient.cancelQueries({
+                queryKey: [
+                    parentType === "categories"
+                        ? "categories"
+                        : "subCategories",
+                ],
             });
         },
         onSuccess: (data: {

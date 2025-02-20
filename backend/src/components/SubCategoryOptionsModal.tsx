@@ -156,7 +156,7 @@ function SubCategoryOptionsModal({
             }
         },
         onMutate: async () => {
-            await queryClient.cancelQueries({ queryKey: "categories" });
+            await queryClient.cancelQueries({ queryKey: ["categories"] });
             queryClient.setQueryData(
                 ["categories"],
                 (oldData: CategoriesQueryData): CategoriesQueryData => {

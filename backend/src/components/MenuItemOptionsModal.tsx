@@ -228,7 +228,7 @@ function MenuItemOptionsModal({
         },
         onMutate: async () => {
             if (parentType === "categories") {
-                await queryClient.cancelQueries({ queryKey: "categories" });
+                await queryClient.cancelQueries({ queryKey: ["categories"] });
                 queryClient.setQueryData(
                     ["categories"],
                     (oldData: CategoriesQueryData): CategoriesQueryData => {
@@ -251,7 +251,9 @@ function MenuItemOptionsModal({
                     },
                 );
             } else {
-                await queryClient.cancelQueries({ queryKey: "subCategories" });
+                await queryClient.cancelQueries({
+                    queryKey: ["subCategories"],
+                });
                 queryClient.setQueryData(
                     ["subCategories"],
                     (

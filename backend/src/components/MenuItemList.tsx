@@ -65,7 +65,7 @@ function MenuItemList({ list, parentId, parentType }: MenuItemListProps) {
         mutationFn: debouncedOrderUpdate,
         onMutate: async (newOrder: string[]) => {
             if (parentType === "categories") {
-                await queryClient.cancelQueries({ queryKey: "categories" });
+                await queryClient.cancelQueries({ queryKey: ["categories"] });
                 queryClient.setQueryData(
                     ["categories"],
                     (oldData: CategoriesQueryData) => {
@@ -86,7 +86,9 @@ function MenuItemList({ list, parentId, parentType }: MenuItemListProps) {
                     },
                 );
             } else {
-                await queryClient.cancelQueries({ queryKey: "subCategories" });
+                await queryClient.cancelQueries({
+                    queryKey: ["subCategories"],
+                });
                 queryClient.setQueryData(
                     ["subCategories"],
                     (oldData: SubCategoriesQueryData) => {

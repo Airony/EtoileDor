@@ -64,7 +64,7 @@ function SubCategoriesNavList({ sensors, parentId }: SubCategoriesListProps) {
     const orderMutation = useMutation({
         mutationFn: debouncedOrderUpdate,
         onMutate: async (newOrder: string[]) => {
-            await queryClient.cancelQueries({ queryKey: "categories" });
+            await queryClient.cancelQueries({ queryKey: ["categories"] });
             queryClient.setQueryData(
                 ["categories"],
                 (oldData: CategoriesQueryData) => {

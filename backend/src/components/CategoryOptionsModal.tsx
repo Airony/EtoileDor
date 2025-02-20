@@ -96,7 +96,7 @@ function CategoryOptionsModal({ id, slug }: CategoryOptionsModalProps) {
                 position: "bottom-center",
             });
             console.error(err);
-            await queryClient.invalidateQueries({ queryKey: "categories" });
+            await queryClient.invalidateQueries({ queryKey: ["categories"] });
         },
     });
 

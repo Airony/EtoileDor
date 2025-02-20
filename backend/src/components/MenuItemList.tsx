@@ -1,4 +1,4 @@
-import React from "react";
+import React, { createContext } from "react";
 import MenuItem from "./MenuItem";
 import {
     closestCenter,
@@ -32,7 +32,7 @@ import { CategoriesQueryData, SubCategoriesQueryData } from "../views/fetches";
 interface MenuItemListProps {
     list: string[];
     parentId: string;
-    parentType: "categories" | "subCategories";
+    parentType: context["parentType"];
 }
 
 const debouncedOrderUpdate = debouncePromise(
@@ -128,7 +128,7 @@ function MenuItemList({ list, parentId, parentType }: MenuItemListProps) {
             });
             const queryKey =
                 parentType === "categories" ? "categories" : "subCategories";
-            queryClient.invalidateQueries({ queryKey: queryKey });
+            queryClient.invalidateQueries({ queryKey: [queryKey] });
         },
         mutationKey: mutationKey,
     });
@@ -146,6 +146,7 @@ function MenuItemList({ list, parentId, parentType }: MenuItemListProps) {
     if (list.length === 0) {
         return <></>;
     }
+
     return (
         <div>
             <DndContext
@@ -158,13 +159,24 @@ function MenuItemList({ list, parentId, parentType }: MenuItemListProps) {
                     items={list}
                     strategy={verticalListSortingStrategy}
                 >
-                    {list.map((id) => (
-                        <MenuItem key={id} id={id} parentId={parentId} />
-                    ))}
+                    <MenuItemListContext.Provider
+                        value={{ parentType: parentType }}
+                    >
+                        {list.map((id) => (
+                            <MenuItem key={id} id={id} parentId={parentId} />
+                        ))}
+                    </MenuItemListContext.Provider>
                 </SortableContext>
             </DndContext>
         </div>
     );
 }
 
+interface context {
+    parentType: "categories" | "subCategories";
+}
+
+export const MenuItemListContext = createContext<context>({
+    parentType: "categories",
+});
 export default MenuItemList;

@@ -106,7 +106,7 @@ function CategoriesNavList() {
             toast.error("Failed to update category order", {
                 position: "bottom-center",
             });
-            queryClient.invalidateQueries({ queryKey: "categories" });
+            queryClient.invalidateQueries({ queryKey: ["categories"] });
         },
         mutationKey: ["update_order"],
     });
@@ -141,7 +141,6 @@ function CategoriesNavList() {
                     const newMap = new Map(oldData.categoriesMap);
                     newMap.set(responseData.doc.id, {
                         id: responseData.doc.id,
-                        index: responseData.doc.index,
                         name: responseData.doc.name,
                         subCategories: [],
                         menuItems: [],

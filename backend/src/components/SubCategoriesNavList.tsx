@@ -118,7 +118,7 @@ function SubCategoriesNavList({ sensors, parentId }: SubCategoriesListProps) {
             toast.error("Failed to update sub-category order", {
                 position: "bottom-center",
             });
-            queryClient.invalidateQueries({ queryKey: "categories" });
+            queryClient.invalidateQueries({ queryKey: ["categories"] });
         },
         mutationKey: ["update_subcat_order"],
     });

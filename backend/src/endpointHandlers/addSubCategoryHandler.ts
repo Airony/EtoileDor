@@ -32,7 +32,7 @@ const addSubCategoryHandler: PayloadHandler = async (req, res) => {
         }
         const subCategories = (category.sub_categories as SubCategory[]) || [];
         let index = 0;
-        if (subCategories) {
+        if (subCategories && subCategories.length > 0) {
             index =
                 Math.max(
                     ...subCategories.map((subCategory) => subCategory.index),

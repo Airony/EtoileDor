@@ -25,7 +25,7 @@ const addMenuItemHandler: PayloadHandler = async (req, res) => {
         }
         let index = 0;
         const menuItems = (parent.menu_items as MenuItem[]) || [];
-        if (menuItems) {
+        if (menuItems && menuItems.length > 0) {
             index =
                 Math.max(...menuItems.map((menuItem) => menuItem.index)) + 1;
         }

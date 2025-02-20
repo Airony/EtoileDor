@@ -109,15 +109,11 @@ export function useInputMenuItem({ parentId, parentType }: SaveMenuItemProps) {
                 );
             }
 
-            toast.success("Menu item added successfully", {
-                position: "bottom-center",
-            });
+            toast.success("Menu item added successfully");
         },
         onError: (error) => {
             console.error(error);
-            toast.error("Failed to add menu item", {
-                position: "bottom-center",
-            });
+            toast.error("Failed to add menu item");
         },
         onSettled: () => {
             setIsInputting(false);

@@ -67,16 +67,12 @@ function MenuItemOptionsModal({
             }
         },
         onSuccess: () => {
-            toast.success("Menu item parent updated successfully.", {
-                position: "bottom-center",
-            });
+            toast.success("Menu item parent updated successfully.");
             close();
         },
         onError: (err) => {
             console.error(err);
-            toast.error("Failed to update menu item parent.", {
-                position: "bottom-center",
-            });
+            toast.error("Failed to update menu item parent.");
         },
         onSettled: (_, __, { newParentType }) => {
             if (
@@ -190,9 +186,7 @@ function MenuItemOptionsModal({
         },
 
         onSuccess: () => {
-            toast.success("Menu item deleted successfully.", {
-                position: "bottom-center",
-            });
+            toast.success("Menu item deleted successfully.");
 
             // Remove from the map
             queryClient.setQueryData(
@@ -205,9 +199,7 @@ function MenuItemOptionsModal({
             );
         },
         onError: async (err) => {
-            toast.error("Failed to delete menu item.", {
-                position: "bottom-center",
-            });
+            toast.error("Failed to delete menu item.");
             console.error(err);
             await queryClient.invalidateQueries({
                 queryKey: ["menuItems"],

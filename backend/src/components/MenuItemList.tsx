@@ -113,9 +113,7 @@ function MenuItemList({ list, parentId, parentType }: MenuItemListProps) {
             if (checkForFutureMutation(queryClient, mutationKey, context.id)) {
                 return;
             }
-            toast.success("Category order updated successfully", {
-                position: "bottom-center",
-            });
+            toast.success("Category order updated successfully");
         },
         onError: (err, _, context) => {
             if (err instanceof CancelledError) {
@@ -125,9 +123,7 @@ function MenuItemList({ list, parentId, parentType }: MenuItemListProps) {
                 return;
             }
 
-            toast.error("Failed to update menu items order", {
-                position: "bottom-center",
-            });
+            toast.error("Failed to update menu items order");
             const queryKey =
                 parentType === "categories" ? "categories" : "subCategories";
             queryClient.invalidateQueries({ queryKey: [queryKey] });

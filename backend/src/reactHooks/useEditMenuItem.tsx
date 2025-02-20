@@ -55,9 +55,7 @@ export default function useEditMenuItem(id: string) {
                 return;
             }
 
-            toast.success("Successfully edited menu item.", {
-                position: "bottom-center",
-            });
+            toast.success("Successfully edited menu item.");
         },
         onError: async (err, _, context) => {
             console.error(err);
@@ -72,9 +70,7 @@ export default function useEditMenuItem(id: string) {
                 return;
             }
 
-            toast.error("Failed to edit menu item.", {
-                position: "bottom-center",
-            });
+            toast.error("Failed to edit menu item.");
 
             await queryClient.invalidateQueries({
                 queryKey: ["menuItems"],

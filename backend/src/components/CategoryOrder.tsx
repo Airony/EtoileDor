@@ -33,7 +33,7 @@ function CategoryOrder() {
                             <MenuSideBar />
                             <CategoriesList />
                         </div>
-                        <ToastContainer />
+                        <ToastContainer position="top-center" limit={3} />
                     </Gutter>
                 </ModalProvider>
             </DefaultTemplate>

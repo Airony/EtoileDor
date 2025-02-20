@@ -69,9 +69,7 @@ function CategoryOptionsModal({ id, slug }: CategoryOptionsModalProps) {
         },
 
         onSuccess: () => {
-            toast.success("Category deleted successfully.", {
-                position: "bottom-center",
-            });
+            toast.success("Category deleted successfully.");
 
             // Remove from the map
             queryClient.setQueryData(
@@ -87,9 +85,7 @@ function CategoryOptionsModal({ id, slug }: CategoryOptionsModalProps) {
             );
         },
         onError: async (err) => {
-            toast.error("Failed to delete category.", {
-                position: "bottom-center",
-            });
+            toast.error("Failed to delete category.");
             console.error(err);
             await queryClient.invalidateQueries({ queryKey: ["categories"] });
         },
@@ -140,9 +136,7 @@ function CategoryOptionsModal({ id, slug }: CategoryOptionsModalProps) {
             ) {
                 return;
             }
-            toast.success("Category renamed successfully.", {
-                position: "bottom-center",
-            });
+            toast.success("Category renamed successfully.");
         },
         onError: async (err, _, context) => {
             if (
@@ -150,9 +144,7 @@ function CategoryOptionsModal({ id, slug }: CategoryOptionsModalProps) {
             ) {
                 return;
             }
-            toast.error("Failed to rename category.", {
-                position: "bottom-center",
-            });
+            toast.error("Failed to rename category.");
             console.error(err);
             await queryClient.invalidateQueries({ queryKey: ["categories"] });
         },

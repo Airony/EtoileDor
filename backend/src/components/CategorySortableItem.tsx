@@ -67,9 +67,7 @@ function CategorySortableItem({ id, sensors }: CategorySortableItemProps) {
         mutationFn: handleAddSubCategory,
         onError: (err) => {
             console.error(err);
-            toast.error("Failed to create sub category", {
-                position: "bottom-center",
-            });
+            toast.error("Failed to create sub category");
         },
         onSuccess: (data: { id: string; index: number; name: string }) => {
             queryClient.setQueryData(
@@ -105,9 +103,7 @@ function CategorySortableItem({ id, sensors }: CategorySortableItemProps) {
                 },
             );
 
-            toast.success("Sub-category created successfully", {
-                position: "bottom-center",
-            });
+            toast.success("Sub-category created successfully");
         },
         onSettled: () => {
             setIsInputting(false);

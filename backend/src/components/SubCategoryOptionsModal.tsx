@@ -90,9 +90,7 @@ function SubCategoryOptionsModal({
             ) {
                 return;
             }
-            toast.success("Sub-category renamed successfully.", {
-                position: "bottom-center",
-            });
+            toast.success("Sub-category renamed successfully.");
         },
         onError: async (err, _, context) => {
             if (
@@ -100,9 +98,7 @@ function SubCategoryOptionsModal({
             ) {
                 return;
             }
-            toast.error("Failed to rename sub-ategory.", {
-                position: "bottom-center",
-            });
+            toast.error("Failed to rename sub-ategory.");
             console.error(err);
             await queryClient.invalidateQueries({
                 queryKey: ["subCategories"],
@@ -127,16 +123,12 @@ function SubCategoryOptionsModal({
             }
         },
         onSuccess: () => {
-            toast.success("Sub-category parent updated successfully.", {
-                position: "bottom-center",
-            });
+            toast.success("Sub-category parent updated successfully.");
             close();
         },
         onError: (err) => {
             console.error(err);
-            toast.error("Failed to update sub-category parent.", {
-                position: "bottom-center",
-            });
+            toast.error("Failed to update sub-category parent.");
         },
         onSettled: () => {
             queryClient.invalidateQueries({ queryKey: ["categories"] });
@@ -183,9 +175,7 @@ function SubCategoryOptionsModal({
         },
 
         onSuccess: () => {
-            toast.success("Sub-category deleted successfully.", {
-                position: "bottom-center",
-            });
+            toast.success("Sub-category deleted successfully.");
 
             // Remove from the map
             queryClient.setQueryData(
@@ -198,9 +188,7 @@ function SubCategoryOptionsModal({
             );
         },
         onError: async (err) => {
-            toast.error("Failed to delete sub-category.", {
-                position: "bottom-center",
-            });
+            toast.error("Failed to delete sub-category.");
             console.error(err);
             await queryClient.invalidateQueries({
                 queryKey: ["subCategories"],

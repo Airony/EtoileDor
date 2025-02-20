@@ -97,9 +97,7 @@ function SubCategoriesNavList({ sensors, parentId }: SubCategoriesListProps) {
             ) {
                 return;
             }
-            toast.success("Category order updated successfully", {
-                position: "bottom-center",
-            });
+            toast.success("Category order updated successfully");
         },
         onError: (err, _, context) => {
             if (err instanceof CancelledError) {
@@ -115,9 +113,7 @@ function SubCategoriesNavList({ sensors, parentId }: SubCategoriesListProps) {
                 return;
             }
 
-            toast.error("Failed to update sub-category order", {
-                position: "bottom-center",
-            });
+            toast.error("Failed to update sub-category order");
             queryClient.invalidateQueries({ queryKey: ["categories"] });
         },
         mutationKey: ["update_subcat_order"],

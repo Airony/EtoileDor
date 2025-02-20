@@ -85,9 +85,7 @@ function CategoriesNavList() {
             ) {
                 return;
             }
-            toast.success("Category order updated successfully", {
-                position: "bottom-center",
-            });
+            toast.success("Category order updated successfully");
         },
         onError: (err, _, context) => {
             if (err instanceof CancelledError) {
@@ -103,9 +101,7 @@ function CategoriesNavList() {
                 return;
             }
 
-            toast.error("Failed to update category order", {
-                position: "bottom-center",
-            });
+            toast.error("Failed to update category order");
             queryClient.invalidateQueries({ queryKey: ["categories"] });
         },
         mutationKey: ["update_order"],
@@ -132,9 +128,7 @@ function CategoriesNavList() {
         },
 
         onSuccess: async (responseData) => {
-            toast.success("Category created successfully", {
-                position: "bottom-center",
-            });
+            toast.success("Category created successfully");
             await queryClient.setQueryData(
                 ["categories"],
                 (oldData: CategoriesQueryData): CategoriesQueryData => {
@@ -158,9 +152,7 @@ function CategoriesNavList() {
         },
         onError: (err) => {
             console.error(err);
-            toast.error("Failed to create category", {
-                position: "bottom-center",
-            });
+            toast.error("Failed to create category");
         },
         onSettled: () => {
             setInputting(false);

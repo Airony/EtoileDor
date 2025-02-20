@@ -38,6 +38,7 @@ export default buildConfig({
     },
     rateLimit: {
         trustProxy: true,
+        skip: () => process.env?.ENVIROMENT === "development",
     },
     editor: slateEditor({}),
     db: mongooseAdapter({

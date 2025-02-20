@@ -2,87 +2,47 @@ import { useSortable } from "@dnd-kit/sortable";
 import React, { useEffect } from "react";
 import DragHandle from "./DragHandle";
 import { CSS } from "@dnd-kit/utilities";
-import {
-    categoryActionKind,
-    useCategories,
-    useCategoriesDispatch,
-} from "../contexts/CategoriesContext";
 import { Button } from "payload/components/elements";
 import MoreIcon from "payload/dist/admin/components/icons/More";
 import MenuItemInput from "./MenuItemInput";
-import { toast } from "react-toastify";
 import MenuItemOptionsModal from "./MenuItemOptionsModal";
 import { useModal } from "@faceless-ui/modal";
+import { useMenuQuery } from "../views/fetches";
+import useEditMenuItem from "../reactHooks/useEditMenuItem";
 
 interface MenuItemProps {
     id: string;
     parentId: string;
 }
 
-interface MenuItemState {
-    loading: boolean;
-    editing: boolean;
-}
-
 function MenuItem({ id, parentId }: MenuItemProps) {
-    const { menuItems } = useCategories();
-    const dispatch = useCategoriesDispatch();
+    const { data } = useMenuQuery();
+    const { menuItems } = data;
     const { name, price } = menuItems.get(id);
     const { attributes, listeners, setNodeRef, transform, transition } =
         useSortable({ id: id });
-    const [state, setState] = React.useState<MenuItemState>({
-        loading: false,
-        editing: false,
-    });
+    const [isEditing, setIsEditing] = React.useState<boolean>(false);
     const inputRef = React.useRef<HTMLInputElement>(null);
     const { openModal } = useModal();
+    const editMutation = useEditMenuItem(id);
 
     useEffect(() => {
-        if (state.editing) {
+        if (isEditing) {
             inputRef.current?.focus();
         }
         return () => {};
-    }, [state.editing]);
+    }, [isEditing]);
 
     function onCancel() {
-        if (state.loading) {
-            return;
-        }
-        setState({ ...state, editing: false });
+        setIsEditing(false);
     }
 
-    async function onSave(name: string, price: number) {
-        if (state.loading) {
+    function onSave(newName: string, newPrice: number) {
+        setIsEditing(false);
+        if (newName === name && newPrice === price) {
             return;
         }
-        setState({ ...state, loading: true });
-        try {
-            const response = await fetch(`/api/menu_items/${id}`, {
-                method: "PATCH",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    name,
-                    price,
-                }),
-            });
-
-            if (!response.ok) {
-                throw new Error(await response.text());
-            }
-            setState({ ...state, loading: false, editing: false });
-            dispatch({
-                type: categoryActionKind.UPDATE_MENU_ITEM,
-                id,
-                name,
-                price,
-            });
-        } catch (error) {
-            console.error(error);
-            setState({ ...state, loading: false });
-            toast.error("Failed to update menu item");
-        }
+        editMutation.mutate({ name: newName, price: newPrice });
     }
 
     const style = {
@@ -92,9 +52,9 @@ function MenuItem({ id, parentId }: MenuItemProps) {
 
     const modalSlug = `options-modal-${id}`;
 
-    return state.editing ? (
+    return isEditing ? (
         <MenuItemInput
-            loading={state.loading}
+            loading={false}
             onCancel={onCancel}
             onSave={onSave}
             inputRef={inputRef}
@@ -114,9 +74,7 @@ function MenuItem({ id, parentId }: MenuItemProps) {
                     icon="edit"
                     size="small"
                     buttonStyle="icon-label"
-                    onClick={() =>
-                        setState((state) => ({ ...state, editing: true }))
-                    }
+                    onClick={() => setIsEditing(true)}
                 />
                 <Button
                     className="menu-item__more-button"

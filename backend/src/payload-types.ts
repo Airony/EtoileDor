@@ -91,6 +91,8 @@ export interface Category {
     id: string;
     name: string;
     index: number;
+    sub_categories: (string | SubCategory)[];
+    menu_items: (string | MenuItem)[];
     updatedAt: string;
     createdAt: string;
 }
@@ -101,10 +103,7 @@ export interface Category {
 export interface SubCategory {
     id: string;
     name: string;
-    category: {
-        relationTo: "categories";
-        value: string | Category;
-    };
+    menu_items: (string | MenuItem)[];
     index: number;
     updatedAt: string;
     createdAt: string;
@@ -117,15 +116,6 @@ export interface MenuItem {
     id: string;
     name: string;
     price: number;
-    Category:
-        | {
-              relationTo: "sub_categories";
-              value: string | SubCategory;
-          }
-        | {
-              relationTo: "categories";
-              value: string | Category;
-          };
     index: number;
     updatedAt: string;
     createdAt: string;

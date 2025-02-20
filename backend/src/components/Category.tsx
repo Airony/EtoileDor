@@ -1,29 +1,35 @@
 import React, { useEffect } from "react";
 import MenuItemList from "./MenuItemList";
 import { Button } from "payload/components/elements";
-import { useCategories } from "../contexts/CategoriesContext";
 import MenuItemInput from "./MenuItemInput";
 import SubCategory from "./SubCategory";
 import { useInputMenuItem } from "../reactHooks/useInputMenuItem";
+import { useMenuQuery } from "../views/fetches";
 
 interface CategoryProps {
     id: string;
 }
 
 function Category({ id }: CategoryProps) {
-    const { categories } = useCategories();
-    const { name, SubCategoriesIds, menuItemsIds } = categories.get(id);
+    const { data } = useMenuQuery();
+    const { categories } = data;
+    const { name, subCategories, menuItems } = categories.categoriesMap.get(id);
     const inputRef = React.useRef<HTMLInputElement>(null);
 
-    const { state, handleSave, handleAddBtnPress, handleCancel } =
-        useInputMenuItem({ parentId: id, parentType: "categories" });
+    const {
+        isInputting,
+        isPending,
+        handleSave,
+        handleAddBtnPress,
+        handleCancel,
+    } = useInputMenuItem({ parentId: id, parentType: "categories" });
 
     useEffect(() => {
-        if (state.inputting) {
+        if (isInputting) {
             inputRef.current?.focus();
         }
         return () => {};
-    }, [state.inputting]);
+    }, [isInputting]);
 
     return (
         <div key={id} className="categories-list__category">
@@ -41,19 +47,23 @@ function Category({ id }: CategoryProps) {
             </div>
             <div className="categories-list__category-content">
                 <div className="categories-list__items-container">
-                    <MenuItemList list={menuItemsIds} parentId={id} />
-                    {state.inputting && (
+                    <MenuItemList
+                        list={menuItems}
+                        parentId={id}
+                        parentType="categories"
+                    />
+                    {isInputting && (
                         <MenuItemInput
                             inputRef={inputRef}
-                            loading={state.loading}
+                            loading={isPending}
                             onCancel={handleCancel}
                             onSave={handleSave}
                         />
                     )}
                 </div>
-                {SubCategoriesIds.length > 0 && (
+                {subCategories.length > 0 && (
                     <div className="categories-list__sub-categories">
-                        {SubCategoriesIds.map((subId) => (
+                        {subCategories.map((subId) => (
                             <SubCategory key={subId} id={subId} parentId={id} />
                         ))}
                     </div>

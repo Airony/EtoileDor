@@ -1,8 +1,8 @@
 import { CollectionConfig } from "payload/types";
 import { isAdmin } from "../accessControls";
-import updateCategoriesHandler from "../endpointHandlers/updateCategoriesHandler";
 import deleteCategoryHandler from "../endpointHandlers/deleteCategoryHandler";
 import orderCategoriesHandler from "../endpointHandlers/orderCategoriesHandler";
+import getCategoriesHandler from "../endpointHandlers/getCategoriesHandler";
 
 const Categories: CollectionConfig = {
     slug: "categories",
@@ -19,6 +19,20 @@ const Categories: CollectionConfig = {
             defaultValue: -1,
             required: true,
         },
+        {
+            name: "sub_categories",
+            label: "Sub Categories",
+            type: "relationship",
+            relationTo: "sub_categories",
+            hasMany: true,
+        },
+        {
+            name: "menu_items",
+            label: "Menu Items",
+            type: "relationship",
+            relationTo: "menu_items",
+            hasMany: true,
+        },
     ],
     admin: {
         useAsTitle: "name",
@@ -34,11 +48,6 @@ const Categories: CollectionConfig = {
     },
     endpoints: [
         {
-            path: "/update_all",
-            method: "patch",
-            handler: updateCategoriesHandler,
-        },
-        {
             path: "/:id",
             method: "delete",
             handler: deleteCategoryHandler,
@@ -47,6 +56,11 @@ const Categories: CollectionConfig = {
             path: "/order",
             method: "patch",
             handler: orderCategoriesHandler,
+        },
+        {
+            path: "/get_all",
+            method: "get",
+            handler: getCategoriesHandler,
         },
     ],
 };

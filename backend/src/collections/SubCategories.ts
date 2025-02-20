@@ -1,6 +1,10 @@
 import { CollectionConfig } from "payload/types";
 import { isAdmin } from "../accessControls";
 import deleteSubCategoryHandler from "../endpointHandlers/deleteSubCategoryHandler";
+import orderSubCategoriesHandler from "../endpointHandlers/orderSubCategoriesHandler";
+import addSubCategoryHandler from "../endpointHandlers/addSubCategoryHandler";
+import getSubCategoriesHandler from "../endpointHandlers/getSubCategoriesHandler";
+import setSubCategoryParentHandler from "../endpointHandlers/setSubCategoryParentHandler";
 
 const SubCategories: CollectionConfig = {
     slug: "sub_categories",
@@ -16,11 +20,11 @@ const SubCategories: CollectionConfig = {
             required: true,
         },
         {
-            name: "category",
-            label: "Parent Category",
+            name: "menu_items",
+            label: "Menu Items",
             type: "relationship",
-            relationTo: ["categories"],
-            required: true,
+            relationTo: "menu_items",
+            hasMany: true,
         },
         {
             name: "index",
@@ -36,9 +40,29 @@ const SubCategories: CollectionConfig = {
     },
     endpoints: [
         {
+            path: "/get_all",
+            method: "get",
+            handler: getSubCategoriesHandler,
+        },
+        {
             path: "/:id",
             method: "delete",
             handler: deleteSubCategoryHandler,
+        },
+        {
+            path: "/order",
+            method: "patch",
+            handler: orderSubCategoriesHandler,
+        },
+        {
+            path: "/",
+            method: "post",
+            handler: addSubCategoryHandler,
+        },
+        {
+            path: "/set_parent/:id",
+            method: "patch",
+            handler: setSubCategoryParentHandler,
         },
     ],
     access: {

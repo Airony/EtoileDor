@@ -1,5 +1,6 @@
 import { PayloadHandler } from "payload/config";
 import { isAdmin } from "../accessControls";
+import { MenuItem, SubCategory } from "../payload-types";
 
 const deleteCategoryHandler: PayloadHandler = async (req, res) => {
     if (!isAdmin({ req })) {
@@ -17,39 +18,29 @@ const deleteCategoryHandler: PayloadHandler = async (req, res) => {
         const category = await req.payload.findByID({
             collection: "categories",
             id: id,
+            depth: 1,
         });
         if (!category) {
             res.status(404).end("Category not found");
             return;
         }
 
-        const subCategories = await req.payload.find({
-            collection: "sub_categories",
-            limit: 0,
-            where: {
-                "category.value": {
-                    equals: id,
-                },
-            },
-        });
-        const subCategoriesIds = subCategories.docs.map(
-            (subCategory) => subCategory.id,
-        );
+        const subCategories = (category.sub_categories as SubCategory[]) || [];
+        const menuItems = (category.menu_items as MenuItem[]) || [];
 
-        // Find all menu items that have the category as a parent, or a subcategory as a parent
-        const menuItems = await req.payload.find({
-            collection: "menu_items",
-            limit: 0,
-            where: {
-                "Category.value": {
-                    in: [...subCategoriesIds, id],
-                },
-            },
+        const menuItemsIds: string[] = [];
+        const subCategoriesIds: string[] = [];
+
+        subCategories.forEach((subCategory) => {
+            subCategoriesIds.push(subCategory.id);
+            menuItemsIds.push(...(subCategory.menu_items as string[]));
         });
+
+        menuItemsIds.push(...menuItems.map((menuItem) => menuItem.id));
 
         // Delete all menu items
         // Should use a transaction here
-        const menuItemsIds = menuItems.docs.map((menuItem) => menuItem.id);
+
         const menuItemsDelete = await req.payload.delete({
             collection: "menu_items",
             where: {
@@ -93,6 +84,7 @@ const deleteCategoryHandler: PayloadHandler = async (req, res) => {
 
         res.status(200).end();
     } catch (error) {
+        console.error(error);
         res.status(500).end("Failed to delete category");
     }
 };

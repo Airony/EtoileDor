@@ -5,8 +5,8 @@ import DragHandle from "./DragHandle";
 import { useModal } from "@faceless-ui/modal";
 import { Button } from "payload/components/elements";
 import MoreIcon from "payload/dist/admin/components/icons/More";
-import { useCategories } from "../contexts/CategoriesContext";
 import SubCategoryOptionsModal from "./SubCategoryOptionsModal";
+import { useMenuQuery } from "../views/fetches";
 
 interface SubCategorySortableItemProps {
     id: string;
@@ -17,7 +17,8 @@ function SubCategorySortableItem({
     id,
     parentId,
 }: SubCategorySortableItemProps) {
-    const { subCategories } = useCategories();
+    const { data } = useMenuQuery();
+    const { subCategories } = data;
     const { name } = subCategories.get(id);
 
     const { openModal } = useModal();

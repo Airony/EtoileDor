@@ -1,6 +1,10 @@
 import { CollectionConfig } from "payload/types";
 import onDeleteMenuItem from "../hooks/onDeleteMenuItem";
 import { isAdmin } from "../accessControls";
+import addMenuItemHandler from "../endpointHandlers/addMenuItemHandler";
+import orderMenuItemsHandler from "../endpointHandlers/orderMenuItemsHandler";
+import deleteMenuItemHandler from "../endpointHandlers/deleteMenuItemHandler";
+import setMenuItemParentHandler from "../endpointHandlers/setMenuItemParentHandler";
 
 const MenuItems: CollectionConfig = {
     slug: "menu_items",
@@ -22,14 +26,6 @@ const MenuItems: CollectionConfig = {
             required: true,
         },
         {
-            name: "Category",
-            label: "Category",
-            type: "relationship",
-            relationTo: ["sub_categories", "categories"],
-            required: true,
-            hasMany: false,
-        },
-        {
             name: "index",
             required: true,
             type: "number",
@@ -44,6 +40,28 @@ const MenuItems: CollectionConfig = {
         useAsTitle: "name",
         group: "Menu",
     },
+    endpoints: [
+        {
+            path: "/order",
+            method: "patch",
+            handler: orderMenuItemsHandler,
+        },
+        {
+            path: "/",
+            method: "post",
+            handler: addMenuItemHandler,
+        },
+        {
+            path: "/:id",
+            method: "delete",
+            handler: deleteMenuItemHandler,
+        },
+        {
+            path: "/set_parent/:id",
+            method: "patch",
+            handler: setMenuItemParentHandler,
+        },
+    ],
     access: {
         read: () => true,
         create: isAdmin,

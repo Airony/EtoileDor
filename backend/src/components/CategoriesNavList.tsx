@@ -1,10 +1,4 @@
-import React, {
-    useCallback,
-    useContext,
-    useEffect,
-    useRef,
-    useState,
-} from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
     DndContext,
     closestCenter,
@@ -25,73 +19,96 @@ import {
 } from "@dnd-kit/modifiers";
 
 import CategorySortableItem from "./CategorySortableItem";
-import {
-    CategoriesContext,
-    CategoriesDispatchContext,
-    categoryActionKind,
-} from "../contexts/CategoriesContext";
 import { Button } from "payload/components/elements";
 import CategoryInput from "./CategoryInput";
 import { toast } from "react-toastify";
-import { useMutation } from "@tanstack/react-query";
+import {
+    CancelledError,
+    useMutation,
+    useQueryClient,
+} from "@tanstack/react-query";
 import { debouncePromise } from "../utils/debouncePromise";
+import { CategoriesQueryData, useMenuQuery } from "../views/fetches";
+import { nanoid } from "nanoid";
+import checkForFutureMutation from "../utils/checkForFutureMutation";
+
+const debouncedOrderUpdate = debouncePromise(
+    async (newOrder: string[]) => {
+        const response = await fetch("/api/categories/order", {
+            credentials: "include",
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                categoryIds: newOrder,
+            }),
+        });
+
+        if (!response.ok) {
+            throw new Error(await response.text());
+        }
+    },
+    2500,
+    new CancelledError(),
+);
 
 function CategoriesNavList() {
-    const { data } = useContext(CategoriesContext);
-    const dispatch = useContext(CategoriesDispatchContext);
+    const { data } = useMenuQuery();
+    const { categories } = data;
     const sensors = useSensors(useSensor(PointerSensor));
     const [inputting, setInputting] = useState<boolean>(false);
+    const queryClient = useQueryClient();
 
-    const debouncedOrderUpdate = useCallback(
-        debouncePromise(async (newOrder: string[]) => {
-            const response = await fetch("/api/categories/order", {
-                credentials: "include",
-                method: "PATCH",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    categoryIds: newOrder,
-                }),
-            });
-
-            if (!response.ok) {
-                throw new Error(await response.text());
-            }
-        }, 10000),
-        [],
-    );
-
-    // TODO : Function not debouncing, just delayed
     const orderMutation = useMutation({
         mutationFn: debouncedOrderUpdate,
         onMutate: async (newOrder: string[]) => {
-            const previousOrder = data;
-            dispatch({
-                type: categoryActionKind.UPDATE_CATEGORIES,
-                categoryIds: newOrder,
-            });
-
-            return { previousOrder };
+            await queryClient.cancelQueries({ queryKey: ["categories"] });
+            queryClient.setQueryData(
+                ["categories"],
+                (oldData: CategoriesQueryData) => {
+                    return {
+                        ...oldData,
+                        orderedIds: newOrder,
+                    };
+                },
+            );
+            return { id: nanoid() };
         },
-        onSuccess: () => {
+        onSuccess: (_, __, context) => {
+            if (
+                checkForFutureMutation(
+                    queryClient,
+                    ["update_order"],
+                    context.id,
+                )
+            ) {
+                return;
+            }
             toast.success("Category order updated successfully", {
                 position: "bottom-center",
             });
         },
-        onError: (err, __, context) => {
-            console.error(err);
+        onError: (err, _, context) => {
+            if (err instanceof CancelledError) {
+                return;
+            }
+            if (
+                checkForFutureMutation(
+                    queryClient,
+                    ["update_order"],
+                    context.id,
+                )
+            ) {
+                return;
+            }
+
             toast.error("Failed to update category order", {
                 position: "bottom-center",
             });
-            dispatch({
-                type: categoryActionKind.UPDATE_CATEGORIES,
-                categoryIds: context.previousOrder,
-            });
+            queryClient.invalidateQueries({ queryKey: ["categories"] });
         },
-        scope: {
-            id: `categories-scope`,
-        },
+        mutationKey: ["update_order"],
     });
 
     const addMutation = useMutation({
@@ -104,7 +121,7 @@ function CategoriesNavList() {
                 },
                 body: JSON.stringify({
                     name: name,
-                    index: data.length,
+                    index: categories.orderedIds.length, // TODO :Use largest index
                 }),
             });
             if (!response.ok) {
@@ -115,16 +132,29 @@ function CategoriesNavList() {
         },
 
         onSuccess: async (responseData) => {
-            dispatch({
-                type: categoryActionKind.ADD_CATEGORY,
-                id: responseData.doc.id,
-                name: responseData.doc.name,
-                index: responseData.doc.index,
-            });
-
             toast.success("Category created successfully", {
                 position: "bottom-center",
             });
+            await queryClient.setQueryData(
+                ["categories"],
+                (oldData: CategoriesQueryData): CategoriesQueryData => {
+                    const newMap = new Map(oldData.categoriesMap);
+                    newMap.set(responseData.doc.id, {
+                        id: responseData.doc.id,
+                        name: responseData.doc.name,
+                        subCategories: [],
+                        menuItems: [],
+                    });
+                    const newOrder = [
+                        ...oldData.orderedIds,
+                        responseData.doc.id,
+                    ];
+                    return {
+                        categoriesMap: newMap,
+                        orderedIds: newOrder,
+                    };
+                },
+            );
         },
         onError: (err) => {
             console.error(err);
@@ -134,9 +164,6 @@ function CategoriesNavList() {
         },
         onSettled: () => {
             setInputting(false);
-        },
-        scope: {
-            id: `categories-scope`,
         },
     });
 
@@ -173,9 +200,9 @@ function CategoriesNavList() {
         if (!e.over) {
             return;
         }
-        const oldIndex = data.indexOf(e.active.id as string);
-        const newIndex = data.indexOf(e.over.id as string);
-        const newOrder = arrayMove(data, oldIndex, newIndex);
+        const oldIndex = categories.orderedIds.indexOf(e.active.id as string);
+        const newIndex = categories.orderedIds.indexOf(e.over.id as string);
+        const newOrder = arrayMove(categories.orderedIds, oldIndex, newIndex);
         orderMutation.mutate(newOrder);
     }
 
@@ -203,11 +230,11 @@ function CategoriesNavList() {
                     ]}
                 >
                     <SortableContext
-                        items={data}
+                        items={categories.orderedIds}
                         strategy={verticalListSortingStrategy}
                         disabled={addMutation.isPending}
                     >
-                        {data.map((catId) => (
+                        {categories.orderedIds.map((catId) => (
                             <CategorySortableItem
                                 key={catId}
                                 id={catId}

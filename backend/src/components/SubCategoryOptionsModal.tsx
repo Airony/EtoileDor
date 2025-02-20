@@ -149,7 +149,7 @@ function SubCategoryOptionsModal({
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({ parentId: parentId }),
+                // body: JSON.stringify({ parentId: parentId }),
             });
             if (!response.ok) {
                 throw new Error(await response.text());
@@ -201,8 +201,9 @@ function SubCategoryOptionsModal({
             });
             console.error(err);
             await queryClient.invalidateQueries({
-                queryKey: ["categories", "subCategories"],
+                queryKey: ["subCategories"],
             });
+            await queryClient.invalidateQueries({ queryKey: ["categories"] });
         },
     });
 

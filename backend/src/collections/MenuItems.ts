@@ -4,6 +4,7 @@ import { isAdmin } from "../accessControls";
 import addMenuItemHandler from "../endpointHandlers/addMenuItemHandler";
 import orderMenuItemsHandler from "../endpointHandlers/orderMenuItemsHandler";
 import deleteMenuItemHandler from "../endpointHandlers/deleteMenuItemHandler";
+import setMenuItemParentHandler from "../endpointHandlers/setMenuItemParentHandler";
 
 const MenuItems: CollectionConfig = {
     slug: "menu_items",
@@ -54,6 +55,11 @@ const MenuItems: CollectionConfig = {
             path: "/:id",
             method: "delete",
             handler: deleteMenuItemHandler,
+        },
+        {
+            path: "/set_parent/:id",
+            method: "patch",
+            handler: setMenuItemParentHandler,
         },
     ],
     access: {

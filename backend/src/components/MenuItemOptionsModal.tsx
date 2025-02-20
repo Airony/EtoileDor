@@ -24,7 +24,6 @@ interface MenuItemOptionsModalProps {
 }
 
 interface State {
-    loading: boolean;
     inputtedName: string;
     inputtedParentId: string;
     inputtedPrice: string;
@@ -40,135 +39,68 @@ function MenuItemOptionsModal({
     const { name, price } = menuItems.get(id);
     const { parentType } = useContext(MenuItemListContext);
     const [state, setState] = useState<State>({
-        loading: false,
         inputtedName: name,
         inputtedParentId: parentId,
-        inputtedPrice: price?.toString() || "Error",
+        inputtedPrice: price.toString(),
     });
 
     const editMutation = useEditMenuItem(id);
 
     const { closeModal, openModal } = useModal();
 
-    function close() {
-        if (state.loading) {
-            return;
-        }
-        closeModal(slug);
-    }
-    function handleCancelPress() {
-        if (state.loading) {
-            return;
-        }
-        setState({
-            loading: false,
-            inputtedName: name,
-            inputtedParentId: parentId,
-            inputtedPrice: price?.toString() || "error",
-        });
-        close();
-    }
-
-    function handleKeyDown(e: React.KeyboardEvent) {
-        if (e.key === "Enter") {
-            e.preventDefault();
-            handleSavePress();
-        } else if (e.key === "Escape") {
-            e.preventDefault();
-            handleCancelPress();
-        }
-    }
-
-    async function handleSavePress() {
-        const parsedPrice = parseInt(state.inputtedPrice);
-        if (name !== state.inputtedName || price !== parsedPrice) {
-            editMutation.mutate({
-                name: state.inputtedName,
-                price: parsedPrice,
+    const updateParentMutation = useMutation({
+        mutationFn: async ({
+            newParentId,
+            newParentType,
+        }: {
+            newParentId: string;
+            newParentType: string;
+        }) => {
+            const response = await fetch(`/api/menu_items/set_parent/${id}`, {
+                credentials: "include",
+                method: "PATCH",
+                body: JSON.stringify({ newParentId, newParentType }),
+                headers: { "Content-Type": "application/json" },
             });
-        }
-        close();
-    }
+            if (!response.ok) {
+                throw new Error(await response.text());
+            }
+        },
+        onSuccess: () => {
+            toast.success("Menu item parent updated successfully.", {
+                position: "bottom-center",
+            });
+            close();
+        },
+        onError: (err) => {
+            console.error(err);
+            toast.error("Failed to update menu item parent.", {
+                position: "bottom-center",
+            });
+        },
+        onSettled: (_, __, { newParentType }) => {
+            if (
+                parentType === "subCategories" ||
+                newParentType === "sub_categories"
+            ) {
+                queryClient.invalidateQueries({ queryKey: ["subCategories"] });
+            }
 
-    // async function updateSubCategory({ newName, newPrice, newParentId }: temp) {
-    //     setState((state) => ({ ...state, loading: true }));
-    //     try {
-    //         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    //         const body: any = {};
-    //         if (name) body.name = newName;
-    //         if (newPrice) body.price = newPrice;
-
-    //         if (newParentId) {
-    //             let parent: CategoryData | SubCategoryData;
-    //             let parentType = "categories";
-    //             if (categories.categoriesMap.has(newParentId)) {
-    //                 parent = categories.categoriesMap.get(newParentId);
-    //             } else {
-    //                 parent = subCategories.get(newParentId);
-    //                 parentType = "sub_categories";
-    //             }
-
-    //             body.index = parent.menuItems.length;
-    //             body.Category = {
-    //                 relationTo: parentType,
-    //                 value: newParentId,
-    //             };
-    //         }
-
-    //         const response = await fetch(`/api/menu_items/${id}`, {
-    //             credentials: "include",
-    //             method: "PATCH",
-    //             body: JSON.stringify(body),
-    //             headers: { "Content-Type": "application/json" },
-    //         });
-
-    //         if (!response.ok) {
-    //             throw new Error(await response.text());
-    //         }
-
-    //         // if (newName || newPrice) {
-    //         //     dispatch({
-    //         //         type: categoryActionKind.UPDATE_MENU_ITEM,
-    //         //         id,
-    //         //         name: newName || name,
-    //         //         price: newPrice || price,
-    //         //     });
-    //         // }
-
-    //         // if (newParentId) {
-    //         //     dispatch({
-    //         //         type: categoryActionKind.CHANGE_MENU_ITEM_PARENT,
-    //         //         currentParentId: parentId,
-    //         //         newParentId: newParentId,
-    //         //         id: id,
-    //         //     });
-    //         // }
-
-    //         setState((state) => ({
-    //             ...state,
-    //             inputtedName: newName || name,
-    //             inputtedParentId: newParentId || parentId,
-    //             inputtedPrice: newPrice?.toString() || price.toString(),
-    //         }));
-
-    //         setState((state) => ({ ...state, loading: false }));
-    //         close();
-    //     } catch (error) {
-    //         console.error(error);
-    //         toast.error("Failed to update menu item.");
-    //         setState((state) => ({ ...state, loading: false }));
-    //     }
-    // }
+            if (parentType === "categories" || newParentType === "categories") {
+                queryClient.invalidateQueries({ queryKey: ["categories"] });
+            }
+        },
+    });
 
     function handleUpdateName(e: React.ChangeEvent<HTMLInputElement>) {
-        if (state.loading) {
+        if (updateParentMutation.isPending) {
             return;
         }
         setState((state) => ({ ...state, inputtedName: e.target.value }));
     }
 
     function handleUpdateParentId(opt: Option) {
-        if (state.loading) {
+        if (updateParentMutation.isPending) {
             return;
         }
         setState((state) => ({
@@ -178,7 +110,7 @@ function MenuItemOptionsModal({
     }
 
     function handleUpdatePrice(e: React.ChangeEvent<HTMLInputElement>) {
-        if (state.loading) {
+        if (updateParentMutation.isPending) {
             return;
         }
         // dont accept non-numeric values
@@ -290,6 +222,56 @@ function MenuItemOptionsModal({
         },
     });
 
+    function close() {
+        closeModal(slug);
+    }
+    function handleCancelPress() {
+        if (updateParentMutation.isPending) {
+            return;
+        }
+        setState({
+            inputtedName: name,
+            inputtedParentId: parentId,
+            inputtedPrice: price.toString(),
+        });
+        close();
+    }
+
+    function handleKeyDown(e: React.KeyboardEvent) {
+        if (e.key === "Enter") {
+            e.preventDefault();
+            handleSavePress();
+        } else if (e.key === "Escape") {
+            e.preventDefault();
+            handleCancelPress();
+        }
+    }
+
+    async function handleSavePress() {
+        const parsedPrice = parseInt(state.inputtedPrice);
+        if (name !== state.inputtedName || price !== parsedPrice) {
+            editMutation.mutate({
+                name: state.inputtedName,
+                price: parsedPrice,
+            });
+        }
+
+        if (parentId !== state.inputtedParentId) {
+            const newParentType = categories.categoriesMap.has(
+                state.inputtedParentId,
+            )
+                ? "categories"
+                : "sub_categories";
+
+            updateParentMutation.mutate({
+                newParentId: state.inputtedParentId,
+                newParentType,
+            });
+        } else {
+            close();
+        }
+    }
+
     const deleteModalSlug = `delete-modal-${id}`;
 
     function handleDeletePress() {
@@ -318,7 +300,10 @@ function MenuItemOptionsModal({
             focusTrapOptions={{ initialFocus: false }}
             onKeyDown={handleKeyDown}
         >
-            <LoadingOverlay show={state.loading} animationDuration="0" />
+            <LoadingOverlay
+                show={updateParentMutation.isPending}
+                animationDuration="0"
+            />
             <h2>Edit Category</h2>
             <div className="options-modal__inputs">
                 <TextInput
@@ -357,13 +342,16 @@ function MenuItemOptionsModal({
                 </Button>
                 <div className="options-modal__save-cancel-container">
                     <Button
-                        disabled={state.loading}
+                        disabled={updateParentMutation.isPending}
                         buttonStyle="secondary"
                         onClick={handleCancelPress}
                     >
                         Cancel
                     </Button>
-                    <Button disabled={state.loading} onClick={handleSavePress}>
+                    <Button
+                        disabled={updateParentMutation.isPending}
+                        onClick={handleSavePress}
+                    >
                         Save
                     </Button>
                 </div>

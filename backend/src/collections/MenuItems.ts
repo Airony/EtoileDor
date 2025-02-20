@@ -3,6 +3,7 @@ import onDeleteMenuItem from "../hooks/onDeleteMenuItem";
 import { isAdmin } from "../accessControls";
 import addMenuItemHandler from "../endpointHandlers/addMenuItemHandler";
 import orderMenuItemsHandler from "../endpointHandlers/orderMenuItemsHandler";
+import deleteMenuItemHandler from "../endpointHandlers/deleteMenuItemHandler";
 
 const MenuItems: CollectionConfig = {
     slug: "menu_items",
@@ -48,6 +49,11 @@ const MenuItems: CollectionConfig = {
             path: "/",
             method: "post",
             handler: addMenuItemHandler,
+        },
+        {
+            path: "/:id",
+            method: "delete",
+            handler: deleteMenuItemHandler,
         },
     ],
     access: {

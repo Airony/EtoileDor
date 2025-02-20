@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { Modal, useModal } from "@faceless-ui/modal";
 import { Button } from "payload/components/elements";
 import { SelectInput, TextInput } from "payload/components/forms";
@@ -6,7 +6,17 @@ import DeleteModal from "./DeleteModal";
 import { toast } from "react-toastify";
 import { LoadingOverlay } from "payload/dist/admin/components/elements/Loading";
 import type { Option } from "payload/dist/admin/components/elements/ReactSelect/types";
-import { CategoryData, SubCategoryData, useMenuQuery } from "../views/fetches";
+import {
+    CategoriesQueryData,
+    CategoryData,
+    MenuItemsQueryData,
+    SubCategoriesQueryData,
+    SubCategoryData,
+    useMenuQuery,
+} from "../views/fetches";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import mapSet from "../utils/mapSet";
+import { MenuItemListContext } from "./MenuItemList";
 
 interface MenuItemOptionsModalProps {
     id: string;
@@ -29,6 +39,7 @@ function MenuItemOptionsModal({
     const { data } = useMenuQuery();
     const { menuItems, categories, subCategories } = data;
     const { name, price } = menuItems.get(id);
+    const { parentType } = useContext(MenuItemListContext);
     const [state, setState] = useState<State>({
         loading: false,
         inputtedName: name,
@@ -165,31 +176,6 @@ function MenuItemOptionsModal({
         }
     }
 
-    async function handleDelete() {
-        setState((state) => ({ ...state, loading: true }));
-        openModal(slug);
-        try {
-            const response = await fetch(`/api/menu_Items/${id}`, {
-                credentials: "include",
-                method: "DELETE",
-            });
-            if (!response.ok) {
-                throw new Error(await response.text());
-            }
-            // dispatch({
-            //     type: categoryActionKind.DELETE_MENU_ITEM,
-            //     id,
-            //     parentId,
-            // });
-            setState((state) => ({ ...state, loading: false }));
-            closeModal(slug);
-        } catch (error) {
-            toast.error("Failed to delete menu item.");
-            setState((state) => ({ ...state, loading: false }));
-            openModal(slug);
-        }
-    }
-
     function handleUpdateName(e: React.ChangeEvent<HTMLInputElement>) {
         if (state.loading) {
             return;
@@ -218,7 +204,112 @@ function MenuItemOptionsModal({
         }));
     }
 
+    const queryClient = useQueryClient();
+
+    const deleteMutation = useMutation({
+        mutationFn: async () => {
+            const response = await fetch(`/api/menu_items/${id}`, {
+                credentials: "include",
+                method: "DELETE",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    parentId: parentId,
+                    parentType:
+                        parentType === "categories"
+                            ? "categories"
+                            : "sub_categories",
+                }),
+            });
+            if (!response.ok) {
+                throw new Error(await response.text());
+            }
+        },
+        onMutate: async () => {
+            if (parentType === "categories") {
+                await queryClient.cancelQueries({ queryKey: "categories" });
+                queryClient.setQueryData(
+                    ["categories"],
+                    (oldData: CategoriesQueryData): CategoriesQueryData => {
+                        const newMap = mapSet(
+                            oldData.categoriesMap,
+                            parentId,
+                            (cat) => {
+                                return {
+                                    ...cat,
+                                    menuItems: cat.menuItems.filter(
+                                        (itemId) => itemId !== id,
+                                    ),
+                                };
+                            },
+                        );
+                        return {
+                            ...oldData,
+                            categoriesMap: newMap,
+                        };
+                    },
+                );
+            } else {
+                await queryClient.cancelQueries({ queryKey: "subCategories" });
+                queryClient.setQueryData(
+                    ["subCategories"],
+                    (
+                        oldData: SubCategoriesQueryData,
+                    ): SubCategoriesQueryData => {
+                        const newMap = mapSet(oldData, parentId, (subCat) => {
+                            return {
+                                ...subCat,
+                                menuItems: subCat.menuItems.filter(
+                                    (itemId) => itemId !== id,
+                                ),
+                            };
+                        });
+                        return newMap;
+                    },
+                );
+            }
+        },
+
+        onSuccess: () => {
+            toast.success("Menu item deleted successfully.", {
+                position: "bottom-center",
+            });
+
+            // Remove from the map
+            queryClient.setQueryData(
+                ["menuItems"],
+                (oldData: MenuItemsQueryData): MenuItemsQueryData => {
+                    const newItemsMap = new Map(oldData);
+                    newItemsMap.delete(id);
+                    return newItemsMap;
+                },
+            );
+        },
+        onError: async (err) => {
+            toast.error("Failed to delete menu item.", {
+                position: "bottom-center",
+            });
+            console.error(err);
+            await queryClient.invalidateQueries({
+                queryKey: ["menuItems"],
+            });
+            await queryClient.invalidateQueries({
+                queryKey: [
+                    parentType === "categories"
+                        ? "categories"
+                        : "subCategories",
+                ],
+            });
+        },
+    });
+
     const deleteModalSlug = `delete-modal-${id}`;
+
+    function handleDeletePress() {
+        close();
+        openModal(deleteModalSlug);
+    }
 
     // Select option could either be a category or a sub-category
     const selectOptions = Array.from(categories.categoriesMap.entries())
@@ -273,11 +364,8 @@ function MenuItemOptionsModal({
                 <Button
                     buttonStyle="transparent"
                     className="btn-error"
-                    onClick={() => {
-                        close();
-                        openModal(deleteModalSlug);
-                    }}
-                    disabled={state.loading}
+                    onClick={handleDeletePress}
+                    disabled={deleteMutation.isPending}
                 >
                     Delete
                 </Button>
@@ -297,7 +385,7 @@ function MenuItemOptionsModal({
             <DeleteModal
                 slug={deleteModalSlug}
                 deletedName="menu item"
-                onDeletion={handleDelete}
+                onDeletion={() => deleteMutation.mutate()}
             />
         </Modal>
     );

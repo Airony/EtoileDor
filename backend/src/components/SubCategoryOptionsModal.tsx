@@ -13,6 +13,7 @@ import mapSet from "../utils/mapSet";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { nanoid } from "nanoid";
 import checkForFutureMutation from "../utils/checkForFutureMutation";
+import { LoadingOverlay } from "payload/dist/admin/components/elements/Loading";
 
 interface SubCategoryOptionsModalProps {
     id: string;
@@ -36,6 +37,9 @@ function SubCategoryOptionsModal({
         closeModal(slug);
     }
     function handleCancelPress() {
+        if (isPending) {
+            return;
+        }
         setInputtedName(name);
         setInputtedParentId(parentId);
         close();
@@ -78,8 +82,6 @@ function SubCategoryOptionsModal({
                     return newMap;
                 },
             );
-            close();
-
             return { id: nanoid() };
         },
         onSuccess: (_, __, context) => {
@@ -109,75 +111,37 @@ function SubCategoryOptionsModal({
         mutationKey: [mutationKey],
     });
 
-    async function handleSavePress() {
-        if (inputtedName !== name) {
-            renameMutation.mutate(inputtedName);
-        }
-
-        close();
-    }
-
-    // async function updateSubCategory({
-    //     newName,
-    //     newParentId,
-    // }: {
-    //     newName?: string;
-    //     newParentId?: string;
-    // }) {
-    //     setLoading(true);
-    //     try {
-    //         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    //         const body: any = {};
-    //         if (name) body.name = newName;
-    //         if (newParentId) {
-    //             body.index =
-    //                 categories.categoriesMap.get(
-    //                     newParentId,
-    //                 ).subCategories.length;
-    //             body.category = {
-    //                 relationTo: "categories",
-    //                 value: newParentId,
-    //             };
-    //         }
-
-    //         const response = await fetch(`/api/sub_categories/${id}`, {
-    //             credentials: "include",
-    //             method: "PATCH",
-    //             body: JSON.stringify(body),
-    //             headers: { "Content-Type": "application/json" },
-    //         });
-
-    //         if (!response.ok) {
-    //             throw new Error(await response.text());
-    //         }
-
-    //         // if (newName) {
-    //         //     dispatch({
-    //         //         type: categoryActionKind.RENAME_SUB_CATEGORY,
-    //         //         id,
-    //         //         newName: newName,
-    //         //     });
-    //         //     setInputtedName(newName);
-    //         // }
-
-    //         // if (newParentId) {
-    //         //     dispatch({
-    //         //         type: categoryActionKind.CHANGE_SUB_CATEGORY_PARENT,
-    //         //         currentParentId: parentId,
-    //         //         newParentId: newParentId,
-    //         //         subCategoryId: id,
-    //         //     });
-    //         //     setInputtedParentId(newParentId);
-    //         // }
-
-    //         setLoading(false);
-    //         close();
-    //     } catch (error) {
-    //         console.error(error);
-    //         toast.error("Failed to update sub-category.");
-    //         setLoading(false);
-    //     }
-    // }
+    const updateParentMutation = useMutation({
+        mutationFn: async (newParentId: string) => {
+            const response = await fetch(
+                `/api/sub_categories/set_parent/${id}`,
+                {
+                    credentials: "include",
+                    method: "PATCH",
+                    body: JSON.stringify({ newParentId }),
+                    headers: { "Content-Type": "application/json" },
+                },
+            );
+            if (!response.ok) {
+                throw new Error(await response.text());
+            }
+        },
+        onSuccess: () => {
+            toast.success("Sub-category parent updated successfully.", {
+                position: "bottom-center",
+            });
+            close();
+        },
+        onError: (err) => {
+            console.error(err);
+            toast.error("Failed to update sub-category parent.", {
+                position: "bottom-center",
+            });
+        },
+        onSettled: () => {
+            queryClient.invalidateQueries({ queryKey: ["categories"] });
+        },
+    });
 
     const deleteMutation = useMutation({
         mutationFn: async () => {
@@ -245,13 +209,33 @@ function SubCategoryOptionsModal({
         },
     });
 
+    const isPending = updateParentMutation.isPending;
     const deleteModalSlug = `delete-modal-${id}`;
+
+    async function handleSavePress() {
+        if (isPending) {
+            return;
+        }
+        if (inputtedName !== name) {
+            renameMutation.mutate(inputtedName);
+        }
+        if (inputtedParentId !== parentId) {
+            updateParentMutation.mutate(inputtedParentId);
+        } else {
+            close();
+        }
+    }
 
     function handleDeletePress() {
         close();
         openModal(deleteModalSlug);
     }
 
+    function handleInputChange(e: React.ChangeEvent<HTMLInputElement>) {
+        if (!isPending) {
+            setInputtedName(e.target.value);
+        }
+    }
     return (
         <Modal
             slug={slug}
@@ -260,6 +244,7 @@ function SubCategoryOptionsModal({
             focusTrapOptions={{ initialFocus: false }}
             onKeyDown={handleKeyDown}
         >
+            <LoadingOverlay show={isPending} animationDuration={"0"} />
             <h2>Edit Category</h2>
             <div className="options-modal__inputs">
                 <TextInput
@@ -267,7 +252,7 @@ function SubCategoryOptionsModal({
                     name="name"
                     label="Name"
                     value={inputtedName}
-                    onChange={(e) => setInputtedName(e.target.value)}
+                    onChange={handleInputChange}
                 ></TextInput>
 
                 <SelectInput
@@ -288,12 +273,16 @@ function SubCategoryOptionsModal({
                     buttonStyle="transparent"
                     className="btn-error"
                     onClick={handleDeletePress}
-                    disabled={deleteMutation.isPending}
+                    disabled={isPending}
                 >
                     Delete
                 </Button>
                 <div className="options-modal__save-cancel-container">
-                    <Button buttonStyle="secondary" onClick={handleCancelPress}>
+                    <Button
+                        buttonStyle="secondary"
+                        onClick={handleCancelPress}
+                        disabled={isPending}
+                    >
                         Cancel
                     </Button>
                     <Button onClick={handleSavePress}>Save</Button>

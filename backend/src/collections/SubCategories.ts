@@ -4,6 +4,7 @@ import deleteSubCategoryHandler from "../endpointHandlers/deleteSubCategoryHandl
 import orderSubCategoriesHandler from "../endpointHandlers/orderSubCategoriesHandler";
 import addSubCategoryHandler from "../endpointHandlers/addSubCategoryHandler";
 import getSubCategoriesHandler from "../endpointHandlers/getSubCategoriesHandler";
+import setSubCategoryParentHandler from "../endpointHandlers/setSubCategoryParentHandler";
 
 const SubCategories: CollectionConfig = {
     slug: "sub_categories",
@@ -57,6 +58,11 @@ const SubCategories: CollectionConfig = {
             path: "/",
             method: "post",
             handler: addSubCategoryHandler,
+        },
+        {
+            path: "/set_parent/:id",
+            method: "patch",
+            handler: setSubCategoryParentHandler,
         },
     ],
     access: {

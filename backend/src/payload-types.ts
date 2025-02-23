@@ -91,8 +91,8 @@ export interface Category {
     id: string;
     name: string;
     index: number;
-    sub_categories: (string | SubCategory)[];
-    menu_items: (string | MenuItem)[];
+    sub_categories?: (string | SubCategory)[] | null;
+    menu_items?: (string | MenuItem)[] | null;
     updatedAt: string;
     createdAt: string;
 }
@@ -103,7 +103,7 @@ export interface Category {
 export interface SubCategory {
     id: string;
     name: string;
-    menu_items: (string | MenuItem)[];
+    menu_items?: (string | MenuItem)[] | null;
     index: number;
     updatedAt: string;
     createdAt: string;

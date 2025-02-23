@@ -6,3 +6,4 @@ backend/storage
 frontend/dist
 *.secret
 *.pem
+replica.key

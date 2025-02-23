@@ -43,6 +43,9 @@ export default buildConfig({
     editor: slateEditor({}),
     db: mongooseAdapter({
         url: process.env.MONGO_URL,
+        connectOptions: {
+            replicaSet: "rs0",
+        },
     }),
     typescript: {
         outputFile: path.resolve(__dirname, "payload-types.ts"),

@@ -9,16 +9,13 @@ services:
             - PORT=3456
             - FRONTEND_URL=http://frontend:7979
             - PAYLOAD_SECRET=secret
-            - MONGO_URL=mongodb://root:root@database:27017
+            - MONGO_URL=mongodb://root:root@database:27017/
             - PAYLOAD_INIT_ROOT_PASSWORD=root
             - ENVIRONMENT=development
         volumes:
             - ./backend:/app/backend
             - ./shared:/app/shared
             - /app/backend/node_modules
-        depends_on:
-            database:
-                condition: service_started
 
         ports:
             - 127.0.0.1:3456:3456
@@ -29,15 +26,16 @@ services:
             front-network:
 
     database:
-        image: mongo:7.0.14-jammy
-        restart: always
         environment:
             MONGO_INITDB_ROOT_USERNAME: root
             MONGO_INITDB_ROOT_PASSWORD: root
         volumes:
             - dev-mongo-db:/data/db
-        networks:
-            - back-network
+            - dev-mongo-db-config:/data/configdb
+    database-setup:
+        environment:
+            MONGO_INITDB_ROOT_USERNAME: root
+            MONGO_INITDB_ROOT_PASSWORD: root
 
     frontend:
         build:
@@ -77,6 +75,7 @@ services:
 volumes:
     dev-backend-storage:
     dev-mongo-db:
+    dev-mongo-db-config:
     dev-static-files:
 networks:
     back-network:

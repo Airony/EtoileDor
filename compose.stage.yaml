@@ -23,8 +23,6 @@ services:
                     - backend
             front-network:
     database:
-        image: mongo:7.0.14-jammy
-        restart: always
         secrets:
             - MONGO_PASSWORD
         environment:
@@ -32,8 +30,13 @@ services:
             MONGO_INITDB_ROOT_PASSWORD_FILE: /run/secrets/MONGO_PASSWORD
         volumes:
             - mongo-db:/data/db
-        networks:
-            - back-network
+            - mongo-db-config:/data/configdb
+    database-setup:
+        secrets:
+            - MONGO_PASSWORD
+        environment:
+            MONGO_INITDB_ROOT_USERNAME: root
+            MONGO_INITDB_ROOT_PASSWORD_FILE: /run/secrets/MONGO_PASSWORD
     frontend:
         build:
             dockerfile: ./frontend/Dockerfile
@@ -58,6 +61,7 @@ services:
 volumes:
     backend-storage:
     mongo-db:
+    mongo-db-config:
     static-files:
 secrets:
     payload_root_password:

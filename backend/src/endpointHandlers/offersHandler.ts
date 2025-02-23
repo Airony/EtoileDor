@@ -1,13 +1,13 @@
 import { PayloadRequest } from "payload/types";
 import type { Response } from "express";
-import { MenuItem, Offer, OfferImage } from "../payload-types";
+import { MenuItem, OfferImage } from "../payload-types";
 import { FetchedOffer } from "../types/FetchedOffer";
 
 async function offersHandler(req: PayloadRequest, res: Response) {
-    const offers = (await req.payload.findGlobal({
+    const offers = await req.payload.findGlobal({
         slug: "offers",
         depth: 1,
-    })) as unknown as Offer;
+    });
 
     if (
         offers.list.some((offer) => {

@@ -4,6 +4,11 @@ import dotenv from "dotenv";
 import registerReservationRoute from "./routes/reservationRoute";
 import deployRoute from "./routes/deployRoute";
 import createRootUser from "./utils/createRootUser";
+import { Config } from "./payload-types";
+
+declare module "payload" {
+    export interface GeneratedTypes extends Config {}
+}
 
 dotenv.config();
 const app = express();

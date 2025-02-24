@@ -31,10 +31,18 @@ const Reservations: CollectionConfig = {
             },
         },
         {
-            name: "time",
+            name: "start_time",
             type: "number",
             required: true,
-            validate: (time) => validateReservationTime(time) || "Invalid time",
+            validate: (time) =>
+                validateReservationTime(time) || "Invalid start time",
+        },
+        {
+            name: "end_time",
+            type: "number",
+            required: true,
+            validate: (time) =>
+                validateReservationTime(time) || "Invalid end time",
         },
         {
             name: "table",

@@ -53,7 +53,8 @@ export interface Reservation {
     last_name: string;
     tel: string;
     day: string;
-    time: number;
+    start_time: number;
+    end_time: number;
     table: {
         relationTo: "restaurant_tables";
         value: string | RestaurantTable;

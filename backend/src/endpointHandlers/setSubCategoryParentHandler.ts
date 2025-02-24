@@ -16,25 +16,40 @@ const setSubCategoryParentHandler: PayloadHandler = async (req, res) => {
         return res.status(404).send("Missing newParentId");
     }
 
-    try {
-        // Use a transaction here
-        const oldParent = (
-            await req.payload.find({
-                collection: "categories",
-                depth: 0,
-                where: {
-                    sub_categories: {
-                        contains: id,
-                    },
+    const oldParent = (
+        await req.payload.find({
+            collection: "categories",
+            depth: 0,
+            where: {
+                sub_categories: {
+                    contains: id,
                 },
-            })
-        ).docs[0];
+            },
+        })
+    ).docs[0];
 
-        if (!oldParent) {
-            return res.status(404).send("Old parent not found");
-        }
-        // Remove it from the old parent
+    if (!oldParent) {
+        return res.status(404).send("Old parent not found");
+    }
+
+    const newParent = await req.payload.find({
+        collection: "categories",
+        depth: 1,
+        where: {
+            id: {
+                equals: newParentId,
+            },
+        },
+    });
+
+    if (!newParent) {
+        return res.status(404).send("New parent not found");
+    }
+
+    req.transactionID = await req.payload.db.beginTransaction();
+    try {
         const updatedParent = await req.payload.update({
+            req,
             collection: "categories",
             id: oldParent.id,
             data: {
@@ -48,20 +63,6 @@ const setSubCategoryParentHandler: PayloadHandler = async (req, res) => {
             throw new Error("Failed to update parent");
         }
 
-        const newParent = await req.payload.find({
-            collection: "categories",
-            depth: 1,
-            where: {
-                id: {
-                    equals: newParentId,
-                },
-            },
-        });
-
-        if (!newParent) {
-            return res.status(404).send("New parent not found");
-        }
-
         // Update sub category index
         const subCategories =
             (newParent.docs[0].sub_categories as SubCategory[]) || [];
@@ -72,6 +73,7 @@ const setSubCategoryParentHandler: PayloadHandler = async (req, res) => {
         }
 
         const updatedSubCategory = await req.payload.update({
+            req,
             collection: "sub_categories",
             id,
             data: {
@@ -84,6 +86,7 @@ const setSubCategoryParentHandler: PayloadHandler = async (req, res) => {
         }
 
         const updatedNewParent = await req.payload.update({
+            req,
             collection: "categories",
             id: newParentId,
             data: {
@@ -95,8 +98,14 @@ const setSubCategoryParentHandler: PayloadHandler = async (req, res) => {
             throw new Error("Failed to update new parent");
         }
 
+        if (req.transactionID) {
+            await req.payload.db.commitTransaction(req.transactionID);
+        }
         return res.status(200).end();
     } catch (err) {
+        if (req.transactionID) {
+            await req.payload.db.rollbackTransaction(req.transactionID);
+        }
         console.error(err);
         console.error(err.stack);
         return res.status(500).send("Failed to update parent");

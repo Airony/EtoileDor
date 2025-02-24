@@ -84,9 +84,10 @@ const setMenuItemParentHandler: PayloadHandler = async (req, res) => {
 
     const newIds = newMenuItems.map((item) => item.id);
 
+    req.transactionID = await req.payload.db.beginTransaction();
     try {
-        // Use a transaction here
         const updatedMenuItem = await req.payload.update({
+            req,
             collection: "menu_items",
             id,
             data: {
@@ -98,6 +99,7 @@ const setMenuItemParentHandler: PayloadHandler = async (req, res) => {
         }
 
         const updatedOldParent = await req.payload.update({
+            req,
             collection: oldParentCollection,
             id: oldParent.id,
             data: {
@@ -110,6 +112,7 @@ const setMenuItemParentHandler: PayloadHandler = async (req, res) => {
         }
 
         const updatedNewParent = await req.payload.update({
+            req,
             collection: newParentType,
             id: newParentId,
             data: {

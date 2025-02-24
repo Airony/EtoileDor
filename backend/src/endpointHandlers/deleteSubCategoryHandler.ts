@@ -18,19 +18,33 @@ const deleteSubCategoryHandler: PayloadHandler = async (req, res) => {
         return;
     }
 
+    const parentCategory = await req.payload.findByID({
+        collection: "categories",
+        id: parentId,
+        depth: 0,
+    });
+
+    if (!parentCategory) {
+        res.status(404).end("Category not found");
+        return;
+    }
+
+    const subCategory = await req.payload.findByID({
+        collection: "sub_categories",
+        id: id,
+        depth: 0,
+    });
+    if (!subCategory) {
+        res.status(404).end("Sub-category not found");
+        return;
+    }
+
+    const menuItemsIds = (subCategory.menu_items as string[]) || [];
+
+    req.transactionID = await req.payload.db.beginTransaction();
     try {
-        const parentCategory = await req.payload.findByID({
-            collection: "categories",
-            id: parentId,
-            depth: 0,
-        });
-
-        if (!parentCategory) {
-            res.status(404).end("Category not found");
-            return;
-        }
-
         const updatedParent = await req.payload.update({
+            req,
             collection: "categories",
             id: parentId,
             data: {
@@ -44,21 +58,9 @@ const deleteSubCategoryHandler: PayloadHandler = async (req, res) => {
             throw new Error("Failed to update parent category");
         }
 
-        const subCategory = await req.payload.findByID({
-            collection: "sub_categories",
-            id: id,
-            depth: 0,
-        });
-        if (!subCategory) {
-            res.status(404).end("Sub-category not found");
-            return;
-        }
-
-        const menuItemsIds = (subCategory.menu_items as string[]) || [];
-
         // Delete all menu items
-        // Should use a transaction here
         const menuItemsDelete = await req.payload.delete({
+            req,
             collection: "menu_items",
             where: {
                 id: {
@@ -73,6 +75,7 @@ const deleteSubCategoryHandler: PayloadHandler = async (req, res) => {
 
         // Delete the category
         const subCategoryDelete = await req.payload.delete({
+            req,
             collection: "sub_categories",
             id: id,
         });
@@ -81,8 +84,14 @@ const deleteSubCategoryHandler: PayloadHandler = async (req, res) => {
             throw new Error("Failed to delete sub-category");
         }
 
+        if (req.transactionID) {
+            await req.payload.db.commitTransaction(req.transactionID);
+        }
         res.status(200).end();
     } catch (error) {
+        if (req.transactionID) {
+            await req.payload.db.rollbackTransaction(req.transactionID);
+        }
         console.error(error);
         res.status(500).end("Failed to delete sub-category");
     }

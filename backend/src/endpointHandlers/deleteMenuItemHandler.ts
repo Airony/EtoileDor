@@ -25,19 +25,21 @@ const deleteMenuItemHandler: PayloadHandler = async (req, res) => {
         return;
     }
 
+    const parentCategory = await req.payload.findByID({
+        collection: parentType,
+        id: parentId,
+        depth: 0,
+    });
+
+    if (!parentCategory) {
+        res.status(404).end("Parent not found");
+        return;
+    }
+
+    req.transactionID = await req.payload.db.beginTransaction();
     try {
-        const parentCategory = await req.payload.findByID({
-            collection: parentType,
-            id: parentId,
-            depth: 0,
-        });
-
-        if (!parentCategory) {
-            res.status(404).end("Parent not found");
-            return;
-        }
-
         const updatedParent = await req.payload.update({
+            req,
             collection: parentType,
             id: parentId,
             data: {
@@ -53,6 +55,7 @@ const deleteMenuItemHandler: PayloadHandler = async (req, res) => {
 
         // Delete the category
         const menuItem = await req.payload.delete({
+            req,
             collection: "menu_items",
             id: id,
         });
@@ -61,8 +64,14 @@ const deleteMenuItemHandler: PayloadHandler = async (req, res) => {
             throw new Error("Failed to delete menu item");
         }
 
-        res.status(200).end();
+        if (req.transactionID) {
+            await req.payload.db.commitTransaction(req.transactionID);
+        }
+        return res.status(200).end();
     } catch (error) {
+        if (req.transactionID) {
+            await req.payload.db.rollbackTransaction(req.transactionID);
+        }
         console.error(error);
         res.status(500).end("Failed to delete menu item");
     }

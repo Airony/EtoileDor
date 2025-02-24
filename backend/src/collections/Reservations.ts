@@ -1,5 +1,6 @@
 import { CollectionConfig } from "payload/types";
 import { isAdmin } from "../accessControls";
+import validateReservationTime from "../utils/validateReservationTime";
 
 const Reservations: CollectionConfig = {
     slug: "reservations",
@@ -20,11 +21,30 @@ const Reservations: CollectionConfig = {
             required: true,
         },
         {
-            name: "date",
+            name: "day",
             type: "date",
             required: true,
+            admin: {
+                date: {
+                    pickerAppearance: "dayOnly",
+                },
+            },
         },
-        { name: "party_size", type: "text", required: true },
+        {
+            name: "time",
+            type: "number",
+            required: true,
+            validate: (time) => validateReservationTime(time) || "Invalid time",
+        },
+        {
+            name: "table",
+            label: "Table",
+            type: "relationship",
+            relationTo: ["restaurant_tables"],
+            hasMany: false,
+            required: true,
+        },
+        { name: "party_size", type: "number", min: 1, required: true },
     ],
     access: {
         update: isAdmin,

@@ -1,0 +1,25 @@
+@import '~payload/scss';
+
+.category-input {
+    display: flex;
+    flex-direction: row;
+    position: relative;
+    background-color: var(--color-base-950);
+    align-items: center;
+    padding: 0.25rem 1rem 0.25rem 2rem;
+    isolation: isolate;
+
+    &__actions {
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    &__loading {
+        position: absolute;
+        inset: 0;
+        background-color: rgba(0, 0, 0, 0.4);
+        z-index: 2;
+    }
+}

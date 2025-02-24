@@ -6,17 +6,47 @@ services:
             - PORT=3456
             - FRONTEND_URL=http://frontend:7979
         depends_on:
-            - database
+            database-setup:
+                condition: service_completed_successfully
         networks:
             back-network:
                 aliases:
                     - backend
             front-network:
     database:
-        image: mongo:7.0.14-jammy
+        build:
+            dockerfile: ./database/Dockerfile
         restart: always
+        command:
+            [
+                "--replSet",
+                "rs0",
+                "--bind_ip_all",
+                "--port",
+                "27017",
+                "--keyFile",
+                "/data/replica.key",
+            ]
+        healthcheck:
+            test: mongosh --host 127.0.0.1:27017 --eval 'db.adminCommand("ping")' || exit 1
+            interval: 180s
+            timeout: 20s
+            retries: 15
+            start_period: 20s
         networks:
             - back-network
+    database-setup:
+        image: mongo:7.0.14-jammy
+        depends_on:
+            database:
+                condition: service_healthy
+        restart: on-failure
+        entrypoint:
+            ["/bin/bash", "-c", "chmod +x /setup_mongo.sh && /setup_mongo.sh"]
+        volumes:
+            - ./database/setup_mongo.sh:/setup_mongo.sh
+        networks:
+            back-network:
     frontend:
         build:
             dockerfile: ./frontend/Dockerfile

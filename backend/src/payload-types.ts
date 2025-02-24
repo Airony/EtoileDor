@@ -11,6 +11,9 @@ export interface Config {
         users: User;
         reservations: Reservation;
         "offer-images": OfferImage;
+        categories: Category;
+        sub_categories: SubCategory;
+        menu_items: MenuItem;
         "payload-preferences": PayloadPreference;
         "payload-migrations": PayloadMigration;
     };
@@ -79,6 +82,43 @@ export interface OfferImage {
             filename?: string | null;
         };
     };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "categories".
+ */
+export interface Category {
+    id: string;
+    name: string;
+    index: number;
+    sub_categories?: (string | SubCategory)[] | null;
+    menu_items?: (string | MenuItem)[] | null;
+    updatedAt: string;
+    createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "sub_categories".
+ */
+export interface SubCategory {
+    id: string;
+    name: string;
+    menu_items?: (string | MenuItem)[] | null;
+    index: number;
+    updatedAt: string;
+    createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "menu_items".
+ */
+export interface MenuItem {
+    id: string;
+    name: string;
+    price: number;
+    index: number;
+    updatedAt: string;
+    createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -168,7 +208,7 @@ export interface ContactInfo {
 export interface Offer {
     id: string;
     list: {
-        menu_item: string;
+        menu_item: string | MenuItem;
         image: string | OfferImage;
         id?: string | null;
     }[];

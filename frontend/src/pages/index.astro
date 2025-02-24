@@ -5,18 +5,10 @@ import Header from "../components/Header.astro";
 import heroImg from "../images/hero.png";
 import Image from "astro/components/Image.astro";
 import teamImg from "../images/team.jpg";
-import fabricBackground from "../images/fabric-pattern.png";
 import starBackground from "../images/8-star-pattern.png";
 import { getImage } from "astro:assets";
 import Offers from "../components/Offers.astro";
 import Cadre from "../components/Cadre.astro";
-import LineDecorator from "../components/LineDecorator.astro";
-
-const optimizedFabricBackground = await getImage({
-    src: fabricBackground,
-    format: "webp",
-    inferSize: true,
-});
 const optimizedStarBackground = await getImage({
     src: starBackground,
     format: "webp",
@@ -79,27 +71,7 @@ const socials = [
         </div>
     </section>
     <!-- Featured -->
-    <section
-        class="pdx pdy relative bg-primary-950 bg-repeat bg-blend-multiply"
-        style={`background-image: url(${optimizedFabricBackground.src})`}
-    >
-        <LineDecorator class="mb-6 nmd:mb-8 nlg:mb-10" />
-        <h2
-            class="mb-12 text-center font-main text-xl text-secondary-200 nmd:mb-10 nmd:text-2xl nlg:mb-20 nlg:text-3xl"
-        >
-            Top Picks
-        </h2>
-        <div class="mx-auto max-w-[1200px]">
-            <Offers />
-            <a
-                href="/menu"
-                class="btn-secondary nmd:btn-secondary-md nlg:btn-secondary-lg ml-auto mt-12 block w-fit nmd:mt-14 nlg:mt-16"
-            >
-                View Full Menu
-            </a>
-        </div>
-    </section>
-
+    <Offers />
     <!-- About -->
 
     <section class="pdx pdy relative isolate bg-primary-950">

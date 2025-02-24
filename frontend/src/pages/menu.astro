@@ -1,22 +1,124 @@
 ---
 import { Icon } from "astro-icon/components";
-import MenuItem from "../components/MenuItem.astro";
+import MenuItemComponent from "../components/MenuItem.astro";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import dotenv from "dotenv";
 dotenv.config();
 
-function getIdFromName(name: string) {
-    return name.replace(/\W/g, "_");
-}
-import type { Menu } from "@backend/payload-types";
 import Header from "../components/Header.astro";
 
-const response = await fetch(`${process.env.API_URL}/globals/menu`);
-if (response.status != 200) {
-    throw new Error("Failed to fetch menu.");
+import type { Category, SubCategory, MenuItem } from "@backend/payload-types";
+
+// HTML ids must start with a letter
+function fixId(id: string) {
+    return "a" + id;
 }
-const responseData: Menu = await response.json();
-let menu = responseData.categories;
+
+export interface CategoryData {
+    name: string;
+    id: string;
+    menuItems: string[];
+    subCategories: string[];
+}
+
+export interface SubCategoryData {
+    name: string;
+    id: string;
+    menuItems: string[];
+}
+export interface MenuItemData {
+    name: string;
+    price: number;
+    id: string;
+}
+
+async function fetchCategories() {
+    const response = await fetch(`${process.env.API_URL}/categories/get_all`, {
+        credentials: "include",
+    });
+
+    if (!response.ok) {
+        console.error(await response.text());
+        throw new Error("Failed to fetch categories");
+    }
+
+    const data = (await response.json()) as Category[];
+    const orderedIds = data
+        .sort((a, b) => a.index - b.index)
+        .map((category) => category.id);
+    const categoriesMap: Map<string, CategoryData> = new Map(
+        data.map((category) => [
+            category.id,
+            {
+                name: category.name,
+                id: category.id,
+                menuItems: (category.menu_items as string[]) || [],
+                subCategories: (category.sub_categories as string[]) || [],
+            },
+        ]),
+    );
+
+    return { categoriesMap, orderedIds };
+}
+
+async function fetchSubCategories() {
+    const response = await fetch(
+        `${process.env.API_URL}/sub_categories/get_all`,
+        {
+            credentials: "include",
+        },
+    );
+
+    if (!response.ok) {
+        console.error(await response.text());
+        throw new Error("Failed to fetch sub categories");
+    }
+
+    const data = (await response.json()) as SubCategory[];
+    const subCategoriesMap: Map<string, SubCategoryData> = new Map(
+        data.map((subCategory) => [
+            subCategory.id,
+            {
+                name: subCategory.name,
+                id: subCategory.id,
+                menuItems: (subCategory.menu_items as string[]) || [],
+            },
+        ]),
+    );
+
+    return subCategoriesMap;
+}
+
+async function fetchMenuItems() {
+    const response = await fetch(
+        `${process.env.API_URL}/menu_items?limit=0&depth=0`,
+        {
+            credentials: "include",
+        },
+    );
+
+    if (!response.ok) {
+        console.error(await response.text());
+        throw new Error("Failed to fetch menu items");
+    }
+
+    const data = (await response.json()).docs as MenuItem[];
+    const menuItemsMap: Map<string, MenuItemData> = new Map(
+        data.map((menuItem) => [
+            menuItem.id,
+            {
+                name: menuItem.name,
+                price: menuItem.price,
+                id: menuItem.id,
+            },
+        ]),
+    );
+    return menuItemsMap;
+}
+
+const { categoriesMap, orderedIds } = await fetchCategories();
+const subCategoriesMap = await fetchSubCategories();
+const menuItemsMap = await fetchMenuItems();
 ---
 
 <BaseLayout title="Menu">
@@ -36,84 +138,98 @@ let menu = responseData.categories;
                 aria-label="Menu Categories Selector"
             >
                 {
-                    menu.map((category, i) => (
-                        <button
-                            aria-controls={getIdFromName(
-                                category.category_name,
-                            )}
-                            class="menu-control bg-transparent font-main text-sm text-primary-400 outline-none transition-colors duration-200 aria-selected:text-secondary-200 hover:text-secondary-200 focus:outline-2 focus:outline-secondary-200 xs:text-base sm:text-lg"
-                            role="tab"
-                            aria-label={`Select ${category.category_name} menu items`}
-                            aria-selected={i === 0 ? "true" : "false"}
-                        >
-                            {category.category_name}
-                        </button>
-                    ))
+                    orderedIds.map((id, i) => {
+                        const category = categoriesMap.get(id) as CategoryData;
+                        return (
+                            <button
+                                aria-controls={fixId(id)}
+                                class="menu-control bg-transparent font-main text-sm text-primary-400 outline-none transition-colors duration-200 aria-selected:text-secondary-200 hover:text-secondary-200 focus:outline-2 focus:outline-secondary-200 xs:text-base sm:text-lg"
+                                role="tab"
+                                aria-label={`Select ${category.name} menu items`}
+                                aria-selected={i === 0 ? "true" : "false"}
+                            >
+                                {category.name}
+                            </button>
+                        );
+                    })
                 }
             </div>
             <div
                 class="menu-container mx-auto grid w-full max-w-[750px] grid-cols-1 grid-rows-1 gap-12 bg-secondary-200 px-4 py-10 sm:gap-8 sm:px-8 lg:w-4/5"
             >
                 {
-                    menu.map((category, i) => (
-                        <div
-                            role="tabpanel"
-                            class:list={[
-                                "menu-category-content col-start-1 col-end-2 row-start-1 row-end-1 flex flex-col gap-8 sm:gap-10 md:gap-12",
-                                { active: i === 0 },
-                            ]}
-                            hidden={i !== 0}
-                            id={getIdFromName(category.category_name)}
-                        >
-                            <div>
-                                <div class="mx-auto mb-8 flex w-min flex-row items-center gap-4 border-b-2 border-secondary-900 py-2">
-                                    <Icon
-                                        name="flower"
-                                        class="h-auto w-6 -scale-x-100 stroke-secondary-900"
-                                    />
-                                    <h2 class="w-max font-main text-base font-semibold text-secondary-900 xs:text-xl">
-                                        {category.category_name}
-                                    </h2>
-                                    <Icon
-                                        name="flower"
-                                        class="h-auto w-6 stroke-secondary-900 stroke-1"
-                                    />
+                    orderedIds.map((id, i) => {
+                        const { name, menuItems, subCategories } =
+                            categoriesMap.get(id) as CategoryData;
+                        return (
+                            <div
+                                role="tabpanel"
+                                class:list={[
+                                    "menu-category-content col-start-1 col-end-2 row-start-1 row-end-1 flex flex-col gap-8 sm:gap-10 md:gap-12",
+                                    { active: i === 0 },
+                                ]}
+                                hidden={i !== 0}
+                                id={fixId(id)}
+                            >
+                                <div>
+                                    <div class="mx-auto mb-8 flex w-min flex-row items-center gap-4 border-b-2 border-secondary-900 py-2">
+                                        <Icon
+                                            name="flower"
+                                            class="h-auto w-6 -scale-x-100 stroke-secondary-900"
+                                        />
+                                        <h2 class="w-max font-main text-base font-semibold text-secondary-900 xs:text-xl">
+                                            {name}
+                                        </h2>
+                                        <Icon
+                                            name="flower"
+                                            class="h-auto w-6 stroke-secondary-900 stroke-1"
+                                        />
+                                    </div>
+                                    <div class="flex flex-col gap-4">
+                                        {menuItems.map((id) => {
+                                            const menuItem = menuItemsMap.get(
+                                                id,
+                                            ) as MenuItemData;
+                                            return (
+                                                <MenuItemComponent
+                                                    name={menuItem.name}
+                                                    price={menuItem.price}
+                                                />
+                                            );
+                                        })}
+                                    </div>
                                 </div>
-                                <div class="flex flex-col gap-4">
-                                    {category.main_items?.map((item) => {
-                                        return (
-                                            <MenuItem
-                                                name={item.item}
-                                                price={item.price}
-                                            />
-                                        );
-                                    })}
-                                </div>
-                            </div>
 
-                            {category.sub_categories?.map((subCategory) => {
-                                return (
-                                    <div class="">
-                                        <h3 class="mx-auto mb-4 w-max border-b-2 border-secondary-900 pb-2 font-main text-sm text-secondary-900 xs:text-lg">
-                                            {subCategory.sub_category_name}
-                                        </h3>
-                                        <div class="flex flex-col gap-4">
-                                            {subCategory.sub_category_items.map(
-                                                (item) => {
+                                {subCategories.map((id) => {
+                                    const { name, menuItems } =
+                                        subCategoriesMap.get(
+                                            id,
+                                        ) as SubCategoryData;
+                                    return (
+                                        <div class="">
+                                            <h3 class="mx-auto mb-4 w-max border-b-2 border-secondary-900 pb-2 font-main text-sm text-secondary-900 xs:text-lg">
+                                                {name}
+                                            </h3>
+                                            <div class="flex flex-col gap-4">
+                                                {menuItems.map((id) => {
+                                                    const item =
+                                                        menuItemsMap.get(
+                                                            id,
+                                                        ) as MenuItemData;
                                                     return (
-                                                        <MenuItem
-                                                            name={item.item}
+                                                        <MenuItemComponent
+                                                            name={item.name}
                                                             price={item.price}
                                                         />
                                                     );
-                                                },
-                                            )}
+                                                })}
+                                            </div>
                                         </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    ))
+                                    );
+                                })}
+                            </div>
+                        );
+                    })
                 }
             </div>
         </div>

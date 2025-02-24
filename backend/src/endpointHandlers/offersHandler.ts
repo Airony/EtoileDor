@@ -1,59 +1,45 @@
 import { PayloadRequest } from "payload/types";
 import type { Response } from "express";
-import { detailedOffer, MenuItem } from "../types/Offers";
-import type { Offer, Menu } from "../payload-types";
+import { MenuItem, OfferImage } from "../payload-types";
+import { FetchedOffer } from "../types/FetchedOffer";
 
 async function offersHandler(req: PayloadRequest, res: Response) {
     const offers = await req.payload.findGlobal({
         slug: "offers",
+        depth: 1,
     });
 
-    const menu = await req.payload.findGlobal({
-        slug: "menu",
-    });
-
-    let fullOffers: detailedOffer;
-    try {
-        fullOffers = getNewOffers(offers, menu);
-        res.status(200).send(fullOffers).end();
-    } catch (error) {
-        res.status(500).send(error.message).end();
+    if (
+        offers.list.some((offer) => {
+            // If the menu item or image is  a string, it is an ID, Which means it was deleted, and only the ID remains.
+            return (
+                !offer.menu_item ||
+                !offer.image ||
+                typeof offer.menu_item === "string" ||
+                typeof offer.image === "string"
+            );
+        })
+    ) {
+        return res
+            .status(500)
+            .send("Some offers are missing menu items or images");
     }
-}
+    offers.list.forEach((offer) => {
+        if (!offer.menu_item || typeof offer.menu_item === "string") {
+            // Do something
+        }
+    });
 
-function getNewOffers(offers: Offer, menu: Menu): detailedOffer {
-    const detailedList = offers.list.map((listItem) => {
-        const itemDetails = findById(listItem.menu_item, menu);
+    const data: FetchedOffer[] = offers.list.map((offer) => {
+        const item = offer.menu_item as MenuItem;
         return {
-            ...listItem,
-            details: itemDetails,
+            name: item.name,
+            price: item.price,
+            imageUrl: (offer.image as OfferImage).url || "",
         };
     });
-    return {
-        ...offers,
-        list: detailedList,
-    };
+
+    res.status(200).json(data);
 }
 
-function findById(id: string, menu: Menu): MenuItem {
-    for (const category of menu.categories) {
-        if (category.main_items) {
-            for (const item of category.main_items) {
-                if (item.id === id) {
-                    return item;
-                }
-            }
-        }
-        if (category.sub_categories) {
-            for (const subCategory of category.sub_categories) {
-                for (const item of subCategory.sub_category_items) {
-                    if (item.id === id) {
-                        return item;
-                    }
-                }
-            }
-        }
-    }
-    throw new Error(`Item with id ${id} not found`);
-}
 export default offersHandler;

@@ -1,0 +1,126 @@
+@import '~payload/scss';
+@import "./editable-text.scss";
+@import "./drag-handle.scss";
+@import "./delete-modal.scss";
+@import "./category-input.scss";
+@import "./category-ordered-item.scss";
+@import "./category-nav.scss";
+@import "./options-modal.scss";
+@import "./button.scss";
+@import "./categories-list.scss";
+@import "./menu-item.scss";
+@import "./sub-category.scss";
+
+.menu__container {
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: row;
+    column-gap: 3rem;
+    row-gap: 2rem;
+}
+
+.menu-sidebar {
+    flex-basis: 30%;
+    flex: 3 0 auto;
+    min-width: 350px;
+    max-width: 450px;
+    padding: 1rem;
+}
+
+.menu-contents {
+    flex-grow: 1;
+    flex: 7 0 auto;
+    min-width: 500px;
+}
+
+.category-order__control-group {
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+    align-items: center;
+    margin-left: auto;
+
+    button {
+        margin-block: 0;
+    }
+}
+
+.category-order__category,
+.category-order__sub-category {
+    background-color: var(--color-base-950);
+    margin-top: 1rem;
+    padding: 0.5rem 1rem;
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+    gap: 1rem;
+    cursor: pointer;
+}
+
+.category-order__category {
+    justify-content: space-between;
+}
+
+.category-order__container[aria-pressed='true'] {
+    .category-order__category {
+        background-color: var(--theme-elevation-150);
+        @include shadow-lg
+    }
+}
+
+.category-order__category__collapse-button {
+    .btn__icon {
+        padding: 0.5rem;
+    }
+
+}
+
+.category-order__sub-category {
+    background-color: var;
+    background-color: var(--color-base-1000);
+    margin-left: 30px;
+    margin-top: 5px;
+
+    &[aria-pressed='true'] {
+        background-color: var(--theme-elevation-150);
+        @include shadow-lg
+    }
+}
+
+.category-order__category__container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 1rem;
+}
+
+
+.category-order__modal {
+    top: 50%;
+    left: 50%;
+    height: auto;
+    width: auto;
+    transform: translate(-50%, -50%);
+    background-color: var(--color-base-800);
+    padding: 2rem;
+    position: fixed;
+    z-index: $z-modal;
+    @include shadow-lg;
+}
+
+
+.category-order__category {
+
+    button {
+        margin-block: 0;
+    }
+
+}
+
+
+.category-order__modal__controls {
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+    margin-top: 1rem;
+}

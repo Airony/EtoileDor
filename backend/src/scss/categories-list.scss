@@ -1,0 +1,39 @@
+.categories-list {
+
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 5.5rem;
+
+    &__category-header {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+        gap: 2rem;
+        margin-bottom: 1.5rem;
+
+        h2 {
+            margin-block: 0;
+        }
+
+        button {
+            margin-block: 0;
+        }
+    }
+
+    &__category-content {
+        padding-left: 2.5rem;
+        border-left: 1px solid var(--theme-elevation-150);
+        display: flex;
+        flex-direction: column;
+        gap: 4rem;
+    }
+
+    &__sub-categories {
+        display: flex;
+        gap: 4rem;
+        flex-direction: column;
+    }
+}

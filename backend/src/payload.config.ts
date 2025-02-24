@@ -10,11 +10,31 @@ import Reservations from "./collections/Reservations";
 import offersConfig from "./globals/offersConfig";
 import { OfferImages } from "./collections/OfferImages";
 import deploymentConfig from "./globals/deploymentConfig";
+import Categories from "./collections/Categories";
+import SubCategories from "./collections/SubCategories";
+import MenuItems from "./collections/MenuItems";
+import categoryOrderView from "./views/categoryOrderView";
 
 export default buildConfig({
-    collections: [Users, Reservations, OfferImages],
+    collections: [
+        Users,
+        Reservations,
+        OfferImages,
+        Categories,
+        SubCategories,
+        MenuItems,
+    ],
     admin: {
         bundler: webpackBundler(),
+        components: {
+            views: {
+                categoryOrderView: {
+                    Component: categoryOrderView,
+                    path: "/category-order",
+                },
+            },
+        },
+        css: path.resolve(__dirname, "scss/style.scss"),
     },
     rateLimit: {
         trustProxy: true,
@@ -23,6 +43,9 @@ export default buildConfig({
     editor: slateEditor({}),
     db: mongooseAdapter({
         url: process.env.MONGO_URL,
+        connectOptions: {
+            replicaSet: "rs0",
+        },
     }),
     typescript: {
         outputFile: path.resolve(__dirname, "payload-types.ts"),

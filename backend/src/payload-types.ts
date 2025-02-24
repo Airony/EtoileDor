@@ -14,6 +14,7 @@ export interface Config {
         categories: Category;
         sub_categories: SubCategory;
         menu_items: MenuItem;
+        restaurant_tables: RestaurantTable;
         "payload-preferences": PayloadPreference;
         "payload-migrations": PayloadMigration;
     };
@@ -51,8 +52,24 @@ export interface Reservation {
     first_name: string;
     last_name: string;
     tel: string;
-    date: string;
-    party_size: string;
+    day: string;
+    time: number;
+    table: {
+        relationTo: "restaurant_tables";
+        value: string | RestaurantTable;
+    };
+    party_size: number;
+    updatedAt: string;
+    createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "restaurant_tables".
+ */
+export interface RestaurantTable {
+    id: string;
+    number: number;
+    capacity: number;
     updatedAt: string;
     createdAt: string;
 }

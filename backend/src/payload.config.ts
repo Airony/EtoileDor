@@ -14,6 +14,7 @@ import Categories from "./collections/Categories";
 import SubCategories from "./collections/SubCategories";
 import MenuItems from "./collections/MenuItems";
 import categoryOrderView from "./views/categoryOrderView";
+import RestaurantTables from "./collections/RestaurantTables";
 
 export default buildConfig({
     collections: [
@@ -23,6 +24,7 @@ export default buildConfig({
         Categories,
         SubCategories,
         MenuItems,
+        RestaurantTables,
     ],
     admin: {
         bundler: webpackBundler(),

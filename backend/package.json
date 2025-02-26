@@ -10,7 +10,7 @@
         "pre-commit": "lint-staged",
         "dev": "nodemon src/index.ts",
         "payload": "cross-env PAYLOAD_CONFIG_PATH=src/payload.config.ts payload",
-        "test": "echo \"Error: no test specified\" && exit 1"
+        "test": "vitest"
     },
     "author": "",
     "license": "ISC",
@@ -46,6 +46,7 @@
         "prettier": "^3.3.2",
         "ts-node": "^10.9.2",
         "typescript": "5.4.5",
-        "typescript-eslint": "^7.14.1"
+        "typescript-eslint": "^7.14.1",
+        "vitest": "^3.0.7"
     }
 }

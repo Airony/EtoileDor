@@ -23,6 +23,7 @@ export default async function queryReservationsByDay(
                     in: tableIds,
                 },
             },
+            depth: 0,
         })
     ).docs;
 }

@@ -1,45 +1,15 @@
-import { Payload } from "payload";
-import { calculateReservationTimeMinutes } from "./calculateReservationTime";
-import { RestaurantTable } from "../payload-types";
+import { Reservation, RestaurantTable } from "../payload-types";
 
-export default async function getFreeTables(
-    payload: Payload,
-    partySize: number,
-    day: string,
-    time: number,
-): Promise<RestaurantTable[]> {
-    const endTime = calculateReservationTimeMinutes(partySize) + time;
-
-    const tables = (
-        await payload.find({
-            collection: "restaurant_tables",
-            where: {
-                capacity: {
-                    greater_than_equal: partySize,
-                },
-            },
-        })
-    ).docs;
-
-    if (!tables) {
+export default function getFreeTables(
+    tables: RestaurantTable[],
+    reservations: Reservation[],
+    startTime: number,
+    reservationDuration: number,
+): RestaurantTable[] {
+    if (!tables || tables.length === 0) {
         return [];
     }
-    const tableIds = tables.map((table) => table.id);
-
-    const reservations = (
-        await payload.find({
-            collection: "reservations",
-            depth: 0,
-            where: {
-                table: {
-                    in: tableIds,
-                },
-                day: {
-                    equals: day,
-                },
-            },
-        })
-    ).docs;
+    const endTime = startTime + reservationDuration;
 
     const unAvailableTablesSet = new Set<string>();
 
@@ -49,7 +19,8 @@ export default async function getFreeTables(
             return;
         }
         const intersects = !(
-            endTime < reservation.start_time || reservation.end_time < time
+            endTime <= reservation.start_time ||
+            reservation.end_time <= startTime
         );
         if (intersects) {
             unAvailableTablesSet.add(tableId);

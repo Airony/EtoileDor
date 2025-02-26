@@ -10,3 +10,16 @@ export function dateTimeToMinutesPastMidnight(date: string): number {
     }
     return dateObj.getHours() * 60 + dateObj.getMinutes();
 }
+
+/**
+ * Returns an array of times in minutes past midnight between the start and end times.
+ */
+export function getTimeRange(
+    startMinutes: number,
+    endMinutes: number,
+    incrementMinutes: number,
+): number[] {
+    return Array.from({
+        length: (endMinutes - startMinutes) / incrementMinutes,
+    }).map((_, index) => startMinutes + index * incrementMinutes);
+}

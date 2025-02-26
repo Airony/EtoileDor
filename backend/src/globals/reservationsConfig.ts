@@ -45,5 +45,18 @@ export const reservationsConfig: GlobalConfig = {
             min: 1,
             max: 60 * 24 - 1,
         },
+        {
+            name: "max_party_size",
+            type: "number",
+            label: "Max Party Size",
+            min: 0,
+        },
+        {
+            name: "max_reservation_advance_days",
+            type: "number",
+            label: "Max Reservation Advance Days",
+            min: 1,
+            required: true,
+        },
     ],
 };

@@ -252,6 +252,8 @@ export interface ReservationsConfig {
     reservations_start: string;
     reservations_end: string;
     increment_minutes: number;
+    max_party_size?: number | null;
+    max_reservation_advance_days?: number | null;
     updatedAt?: string | null;
     createdAt?: string | null;
 }

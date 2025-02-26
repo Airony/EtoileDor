@@ -19,7 +19,7 @@ export default async function queryReservationsByDay(
                 day: {
                     equals: day,
                 },
-                table: {
+                "table.value": {
                     in: tableIds,
                 },
             },

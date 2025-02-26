@@ -10,6 +10,7 @@ import { Payload } from "payload";
 export default async function queryReservationsByDay(
     payload: Payload,
     day: string,
+    tableIds: string[],
 ) {
     return (
         await payload.find({
@@ -17,6 +18,9 @@ export default async function queryReservationsByDay(
             where: {
                 day: {
                     equals: day,
+                },
+                table: {
+                    in: tableIds,
                 },
             },
         })

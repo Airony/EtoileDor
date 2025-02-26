@@ -14,7 +14,12 @@ export default function getFreeTables(
     const unAvailableTablesSet = new Set<string>();
 
     reservations.forEach((reservation) => {
-        const tableId = reservation.table.value as string;
+        let tableId;
+        if (typeof reservation.table.value !== "string") {
+            tableId = reservation.table.value.id;
+        } else {
+            tableId = reservation.table.value;
+        }
         if (unAvailableTablesSet.has(tableId)) {
             return;
         }

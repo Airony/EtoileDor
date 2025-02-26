@@ -126,3 +126,10 @@ test("All tables fully booked", () => {
         ),
     ).toEqual([]);
 });
+
+test("Handle different reservation depths", () => {
+    const table = MockTable("1");
+    const reservation = MockReservation("1", 720, 810, "1");
+    reservation.table = { relationTo: "restaurant_tables", value: table };
+    expect(getFreeTables([table], [reservation], 720, 60)).toEqual([]);
+});

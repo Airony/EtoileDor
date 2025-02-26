@@ -1,7 +1,12 @@
 import type { Request, Response, Express } from "express";
 import { Result, body, validationResult } from "express-validator";
 import payload from "payload";
-import { PartySizeOptions, TimeOptions } from "shared";
+import { dateTimeToMinutesPastMidnight, getTimeRange } from "../utils/time";
+import { queryTablesBySize } from "../utils/queryTables";
+import { validateReservationDay } from "../utils/validateReservationDay";
+import { calculateReservationTimeMinutes } from "../utils/calculateReservationTime";
+import getFreeTables from "../utils/getFreeTables";
+import queryReservationsByDay from "../utils/queryReservationsByDay";
 
 function registerReservationRoute(app: Express) {
     app.options("/api/reservation", (req: Request, res: Response) => {
@@ -15,48 +20,122 @@ function registerReservationRoute(app: Express) {
     app.post(
         "/api/reservation",
         [
+            body("f-name").notEmpty(),
             body("l-name").notEmpty(),
             body("phone-number").notEmpty().isNumeric(), // TODO : further validate phone numbers to be algerian phone numbers
-            body("date").notEmpty().isDate(), // TODO: further validate the date
-            body("time")
-                .notEmpty()
-                .isIn(TimeOptions.map((opt) => opt.value)),
-            body("party-size")
-                .notEmpty()
-                .isIn(PartySizeOptions.map((opt) => opt.value)),
+            body("day").notEmpty().isISO8601(),
+            body("time").notEmpty().isNumeric(),
+            body("party-size").notEmpty().isNumeric(),
         ],
         reservationRoute,
     );
 }
-function reservationRoute(req: Request, res: Response) {
-    const result: Result = validationResult(req);
+async function reservationRoute(req: Request, res: Response) {
     res.setHeader("Access-Control-Allow-Origin", "*");
-    if (result.isEmpty()) {
-        payload.create({
-            collection: "reservations",
-            data: {
-                first_name: req.body["f-name"],
-                last_name: req.body["l-name"],
-                tel: req.body["phone-number"],
-                party_size: req.body["party-size"],
-                date: constructDate(
-                    req.body.date,
-                    req.body.time,
-                ).toDateString(),
-            },
-        });
-        res.status(200);
-        return res.end("Form submitted successfully");
+    const result: Result = validationResult(req);
+    if (!result.isEmpty()) {
+        res.status(400);
+        return res.send({ errors: result.array() });
     }
-    res.status(400);
-    res.send({ errors: result.array() });
-}
 
-function constructDate(date: string, time: string): Date {
-    const result: Date = new Date(date);
-    const [hours, minutes] = time.split(":", 2);
-    result.setHours(parseInt(hours), parseInt(minutes));
-    return result;
+    const { "party-size": partySize, day, time } = req.body;
+
+    if (partySize < 1) {
+        return res.status(400).json({
+            error: `Party size cannot be less than 1.`,
+        });
+    }
+
+    const {
+        reservations_start,
+        reservations_end,
+        increment_minutes,
+        max_party_size,
+        max_reservation_advance_days,
+    } = await payload.findGlobal({
+        slug: "reservations_config",
+        depth: 0,
+    });
+
+    if (partySize > max_party_size) {
+        return res.status(400).json({
+            error: `Party size cannot be greater than ${max_party_size}`,
+        });
+    }
+    if (!validateReservationDay(day, max_reservation_advance_days)) {
+        return res.status(400).json({
+            error: `Invalid reservation day.`,
+        });
+    }
+
+    const reservationsStartMinutes =
+        dateTimeToMinutesPastMidnight(reservations_start);
+    const reservationsEndMinutes =
+        dateTimeToMinutesPastMidnight(reservations_end);
+
+    const timeRange = getTimeRange(
+        reservationsStartMinutes,
+        reservationsEndMinutes,
+        increment_minutes,
+    );
+
+    if (!timeRange.includes(time)) {
+        return res.status(400).json({
+            error: `Invalid reservation time.`,
+        });
+    }
+
+    const tables = await queryTablesBySize(payload, partySize);
+    if (tables.length === 0) {
+        return res.status(400).json({
+            error: `No tables available at this day and time.`,
+        });
+    }
+
+    const reservations = await queryReservationsByDay(
+        payload,
+        day,
+        tables.map((table) => table.id),
+    );
+
+    console.log(reservations);
+    const reservationDuration = calculateReservationTimeMinutes(partySize);
+
+    const freeTables = getFreeTables(
+        tables,
+        reservations,
+        time,
+        reservationDuration,
+    );
+
+    if (freeTables.length === 0) {
+        return res.status(400).json({
+            error: `No tables available at this day and time.`,
+        });
+    }
+
+    const selectedTable = freeTables.reduce((prev, curr) => {
+        return prev.capacity < curr.capacity ? prev : curr;
+    }, freeTables[0]);
+
+    await payload.create({
+        collection: "reservations",
+        data: {
+            first_name: req.body["f-name"],
+            last_name: req.body["l-name"],
+            tel: req.body["phone-number"],
+            party_size: req.body["party-size"],
+            day: req.body["day"],
+            start_time: time,
+            end_time: time + reservationDuration,
+            table: {
+                relationTo: "restaurant_tables",
+                value: selectedTable.id,
+            },
+        },
+    });
+    res.status(200);
+    return res.json({ message: "Form submitted successfully" });
 }
 
 export default registerReservationRoute;

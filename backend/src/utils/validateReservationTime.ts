@@ -1,8 +1,9 @@
-export default function validateReservationTime(time: number): boolean {
-    const minutesIncrements = 30; // TODO : This should be a globally defined constant
-    const reservationTimesStart = 660;
-    const reservationTimesEnd = 1260;
-
+export default function validateReservationTime(
+    time: number,
+    minutesIncrements: number,
+    reservationTimesStart: number,
+    reservationTimesEnd: number,
+): boolean {
     return (
         time >= reservationTimesStart &&
         time <= reservationTimesEnd &&

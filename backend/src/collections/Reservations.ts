@@ -1,6 +1,5 @@
 import { CollectionConfig } from "payload/types";
 import { isAdmin } from "../accessControls";
-import validateReservationTime from "../utils/validateReservationTime";
 
 const Reservations: CollectionConfig = {
     slug: "reservations",
@@ -34,15 +33,11 @@ const Reservations: CollectionConfig = {
             name: "start_time",
             type: "number",
             required: true,
-            validate: (time) =>
-                validateReservationTime(time) || "Invalid start time",
         },
         {
             name: "end_time",
             type: "number",
             required: true,
-            validate: (time) =>
-                validateReservationTime(time) || "Invalid end time",
         },
         {
             name: "table",

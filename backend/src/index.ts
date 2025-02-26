@@ -5,6 +5,7 @@ import registerReservationRoute from "./routes/reservationRoute";
 import deployRoute from "./routes/deployRoute";
 import createRootUser from "./utils/createRootUser";
 import { Config } from "./payload-types";
+import registerGetReservationTimesRoute from "./routes/getReservationTimesRoute";
 
 declare module "payload" {
     export interface GeneratedTypes extends Config {}
@@ -33,6 +34,7 @@ const start = async () => {
     app.post("/api/deploy", deployRoute);
 
     registerReservationRoute(app);
+    registerGetReservationTimesRoute(app);
 
     app.listen(PORT, async () => {
         console.log(

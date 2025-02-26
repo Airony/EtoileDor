@@ -15,6 +15,7 @@ import SubCategories from "./collections/SubCategories";
 import MenuItems from "./collections/MenuItems";
 import categoryOrderView from "./views/categoryOrderView";
 import RestaurantTables from "./collections/RestaurantTables";
+import { reservationsConfig } from "./globals/reservationsConfig";
 
 export default buildConfig({
     collections: [
@@ -53,5 +54,11 @@ export default buildConfig({
         outputFile: path.resolve(__dirname, "payload-types.ts"),
         declare: false,
     },
-    globals: [menuConfig, contactInfoConfig, offersConfig, deploymentConfig],
+    globals: [
+        menuConfig,
+        contactInfoConfig,
+        offersConfig,
+        deploymentConfig,
+        reservationsConfig,
+    ],
 });

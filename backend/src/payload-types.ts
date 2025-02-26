@@ -23,6 +23,7 @@ export interface Config {
         contact_info: ContactInfo;
         offers: Offer;
         deployment: Deployment;
+        reservations_config: ReservationsConfig;
     };
 }
 /**
@@ -239,6 +240,18 @@ export interface Offer {
  */
 export interface Deployment {
     id: string;
+    updatedAt?: string | null;
+    createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "reservations_config".
+ */
+export interface ReservationsConfig {
+    id: string;
+    reservations_start: string;
+    reservations_end: string;
+    increment_minutes: number;
     updatedAt?: string | null;
     createdAt?: string | null;
 }

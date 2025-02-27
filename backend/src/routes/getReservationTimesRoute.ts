@@ -1,6 +1,6 @@
 import findAvailableTimeSlots from "../utils/findAvailableTimeSlots";
-import type { Request, Response, Express } from "express";
-import { Result, body, validationResult } from "express-validator";
+import { type Request, type Response, type Express } from "express";
+import { Result, query, validationResult } from "express-validator";
 import { dateTimeToMinutesPastMidnight, getTimeRange } from "../utils/time";
 import { queryTablesBySize } from "../utils/queryTables";
 import queryReservationsByDay from "../utils/queryReservationsByDay";
@@ -13,7 +13,6 @@ export default function registerGetReservationTimesRoute(app: Express) {
     app.options("/api/getReservationTimes", (req: Request, res: Response) => {
         res.setHeader("Access-Control-Allow-Origin", "*");
         res.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
-        res.setHeader("Access-Control-Allow-Headers", "Content-Type");
         res.status(200);
         res.shouldKeepAlive = true;
         res.end();
@@ -21,8 +20,8 @@ export default function registerGetReservationTimesRoute(app: Express) {
     app.get(
         "/api/getReservationTimes",
         [
-            body("day").notEmpty().custom(validateDayString),
-            body("party-size").notEmpty().isNumeric(),
+            query("day").exists().notEmpty().custom(validateDayString),
+            query("party-size").exists().notEmpty().isNumeric(),
         ],
         getReservationTimesRoute,
     );
@@ -36,8 +35,8 @@ async function getReservationTimesRoute(req: Request, res: Response) {
         return res.send({ errors: validationRes.array() });
     }
 
-    const day = req.body["day"];
-    const partySize = req.body["party-size"];
+    const day = req.query.day as string;
+    const partySize = parseInt(req.query["party-size"] as string);
 
     const {
         reservations_start,

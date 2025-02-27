@@ -39,7 +39,9 @@ async function reservationRoute(req: Request, res: Response) {
         return res.send({ errors: result.array() });
     }
 
-    const { "party-size": partySize, day, time } = req.body;
+    const partySize = parseInt(req.body["party-size"]);
+    const time = parseInt(req.body["time"]);
+    const day = req.body["day"];
 
     if (partySize < 1) {
         return res.status(400).json({

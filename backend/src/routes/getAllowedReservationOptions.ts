@@ -1,10 +1,22 @@
-import type { Request, Response } from "express";
+import type { Request, Response, Express } from "express";
 import payload from "payload";
 
-export default async function getAllowedReservationOptions(
-    req: Request,
-    res: Response,
+export default function registerGetAllowedReservationOptionsRoute(
+    app: Express,
 ) {
+    const route = "/api/allowedReservationOptions";
+    app.options(route, (req: Request, res: Response) => {
+        res.setHeader("Access-Control-Allow-Origin", "*");
+        res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
+        res.status(200);
+        res.shouldKeepAlive = true;
+        res.end();
+    });
+    app.get(route, getAllowedReservationOptions);
+}
+
+async function getAllowedReservationOptions(req: Request, res: Response) {
+    res.setHeader("Access-Control-Allow-Origin", "*");
     const { max_reservation_advance_days, max_party_size } =
         await payload.findGlobal({
             slug: "reservations_config",

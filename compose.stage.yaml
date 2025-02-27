@@ -47,6 +47,8 @@ services:
             back-network:
                 aliases:
                     - frontend
+        environment:
+            - PUBLIC_API_URL=/api # Front network
     nginx:
         build:
             context: ./nginx

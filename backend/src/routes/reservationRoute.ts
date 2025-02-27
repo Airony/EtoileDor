@@ -7,6 +7,7 @@ import { validateReservationDay } from "../utils/validateReservationDay";
 import { calculateReservationTimeMinutes } from "../utils/calculateReservationTime";
 import getFreeTables from "../utils/getFreeTables";
 import queryReservationsByDay from "../utils/queryReservationsByDay";
+import { validateDayString } from "../utils/validateDayString";
 
 function registerReservationRoute(app: Express) {
     app.options("/api/reservation", (req: Request, res: Response) => {
@@ -23,7 +24,7 @@ function registerReservationRoute(app: Express) {
             body("f-name").notEmpty(),
             body("l-name").notEmpty(),
             body("phone-number").notEmpty().isNumeric(), // TODO : further validate phone numbers to be algerian phone numbers
-            body("day").notEmpty().isISO8601(),
+            body("day").notEmpty().custom(validateDayString),
             body("time").notEmpty().isNumeric(),
             body("party-size").notEmpty().isNumeric(),
         ],

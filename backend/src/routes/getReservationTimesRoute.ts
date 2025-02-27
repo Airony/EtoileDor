@@ -7,6 +7,7 @@ import queryReservationsByDay from "../utils/queryReservationsByDay";
 import { calculateReservationTimeMinutes } from "../utils/calculateReservationTime";
 import { validateReservationDay } from "../utils/validateReservationDay";
 import payload from "payload";
+import { validateDayString } from "../utils/validateDayString";
 
 export default function registerGetReservationTimesRoute(app: Express) {
     app.options("/api/getReservationTimes", (req: Request, res: Response) => {
@@ -20,7 +21,7 @@ export default function registerGetReservationTimesRoute(app: Express) {
     app.get(
         "/api/getReservationTimes",
         [
-            body("day").notEmpty().isISO8601(),
+            body("day").notEmpty().custom(validateDayString),
             body("party-size").notEmpty().isNumeric(),
         ],
         getReservationTimesRoute,

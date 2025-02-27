@@ -49,9 +49,7 @@ services:
             - ./backend/src/types:/app/backend/src/types
             - /app/frontend/node_modules
         environment:
-            - API_URL=http://backend:3456/api
             - PUBLIC_API_URL=http://backend:3456/api
-            - CMS_URL=http://backend:3456
         ports:
             - 127.0.0.1:4321:4321
         networks:

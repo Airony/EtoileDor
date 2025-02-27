@@ -10,15 +10,16 @@ import payload from "payload";
 import { validateDayString } from "../utils/validateDayString";
 
 export default function registerGetReservationTimesRoute(app: Express) {
-    app.options("/api/getReservationTimes", (req: Request, res: Response) => {
+    const route = "/api/reservationTimes";
+    app.options(route, (req: Request, res: Response) => {
         res.setHeader("Access-Control-Allow-Origin", "*");
-        res.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
+        res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
         res.status(200);
         res.shouldKeepAlive = true;
         res.end();
     });
     app.get(
-        "/api/getReservationTimes",
+        route,
         [
             query("day").exists().notEmpty().custom(validateDayString),
             query("party-size").exists().notEmpty().isNumeric(),

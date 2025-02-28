@@ -48,7 +48,11 @@ function useDataFetch<T>(
         }
     }, [url, fetchData]);
 
-    return { isError, isLoading, data, refetch };
+    const setFetchData = useCallback((newData: T | null) => {
+        setData(newData);
+    }, []);
+
+    return { isError, isLoading, data, refetch, setFetchData };
 }
 
 export default useDataFetch;

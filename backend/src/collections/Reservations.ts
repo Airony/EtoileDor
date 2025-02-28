@@ -1,5 +1,6 @@
 import { CollectionConfig } from "payload/types";
 import { isAdmin } from "../accessControls";
+import TimeDisplay from "../components/TimeDisplay";
 
 const Reservations: CollectionConfig = {
     slug: "reservations",
@@ -33,11 +34,21 @@ const Reservations: CollectionConfig = {
             name: "start_time",
             type: "number",
             required: true,
+            admin: {
+                components: {
+                    Cell: TimeDisplay,
+                },
+            },
         },
         {
             name: "end_time",
             type: "number",
             required: true,
+            admin: {
+                components: {
+                    Cell: TimeDisplay,
+                },
+            },
         },
         {
             name: "table",

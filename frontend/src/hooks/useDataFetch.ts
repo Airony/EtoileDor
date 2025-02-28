@@ -24,6 +24,7 @@ function useDataFetch<T>(
                 }
                 const result = await response.json();
                 setData(result);
+                setIsError(false);
             } catch (error) {
                 console.error(error);
                 setIsError(true);

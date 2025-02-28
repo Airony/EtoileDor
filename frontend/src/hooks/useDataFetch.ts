@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 interface useDataFetchOptions {
     onStart?: () => void;
 }
@@ -10,8 +10,9 @@ function useDataFetch<T>(
     const [isLoading, setIsLoading] = useState(false);
     const [data, setData] = useState<T | null>(null);
 
-    useEffect(() => {
-        const fetchData = async (fetchUrl: string) => {
+    const fetchData = useCallback(
+        async (fetchUrl: string) => {
+            onStart?.();
             setIsError(false);
             setIsLoading(true);
 
@@ -31,15 +32,23 @@ function useDataFetch<T>(
                 setData(null);
             }
             setIsLoading(false);
-        };
+        },
+        [onStart, url],
+    );
 
+    useEffect(() => {
         if (url) {
-            onStart?.();
             fetchData(url);
         }
-    }, [url]);
+    }, [url, fetchData]);
 
-    return { isError, isLoading, data };
+    const refetch = useCallback(() => {
+        if (url) {
+            fetchData(url);
+        }
+    }, [url, fetchData]);
+
+    return { isError, isLoading, data, refetch };
 }
 
 export default useDataFetch;

@@ -23,6 +23,9 @@ const RestaurantTables: CollectionConfig = {
             min: 1,
         },
     ],
+    admin: {
+        useAsTitle: "number",
+    },
 };
 
 export default RestaurantTables;

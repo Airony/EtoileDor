@@ -14,6 +14,8 @@ import Categories from "./collections/Categories";
 import SubCategories from "./collections/SubCategories";
 import MenuItems from "./collections/MenuItems";
 import categoryOrderView from "./views/categoryOrderView";
+import RestaurantTables from "./collections/RestaurantTables";
+import { reservationsConfig } from "./globals/reservationsConfig";
 
 export default buildConfig({
     collections: [
@@ -23,6 +25,7 @@ export default buildConfig({
         Categories,
         SubCategories,
         MenuItems,
+        RestaurantTables,
     ],
     admin: {
         bundler: webpackBundler(),
@@ -38,7 +41,7 @@ export default buildConfig({
     },
     rateLimit: {
         trustProxy: true,
-        skip: () => process.env?.ENVIROMENT === "development",
+        skip: () => process.env?.ENVIRONMENT === "development",
     },
     editor: slateEditor({}),
     db: mongooseAdapter({
@@ -51,5 +54,11 @@ export default buildConfig({
         outputFile: path.resolve(__dirname, "payload-types.ts"),
         declare: false,
     },
-    globals: [menuConfig, contactInfoConfig, offersConfig, deploymentConfig],
+    globals: [
+        menuConfig,
+        contactInfoConfig,
+        offersConfig,
+        deploymentConfig,
+        reservationsConfig,
+    ],
 });

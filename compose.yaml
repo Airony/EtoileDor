@@ -1,10 +1,14 @@
+x-common-variables: &common-variables
+    TZ: Africa/Algiers
+
 services:
     backend:
         build:
             dockerfile: ./backend/Dockerfile
         environment:
-            - PORT=3456
-            - FRONTEND_URL=http://frontend:7979
+            <<: *common-variables
+            FRONTEND_URL: "http://frontend:7979"
+            PORT: "3456"
         depends_on:
             database-setup:
                 condition: service_completed_successfully

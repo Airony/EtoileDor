@@ -3,6 +3,7 @@ import { isAdmin } from "../accessControls";
 import TimeDisplay from "../components/TimeDisplay";
 import { clearTimeComponent } from "../utils/time";
 import DefaultCell from "../components/DefaultCell";
+import dayFieldFilter from "../fields/dayFieldFilter";
 
 const beforeValdiateDayHook: FieldHook = ({ value }): Date => {
     return clearTimeComponent(new Date(value));
@@ -38,6 +39,7 @@ const Reservations: CollectionConfig = {
             admin: {
                 components: {
                     Cell: DefaultCell,
+                    Filter: dayFieldFilter,
                 },
             },
             hooks: {

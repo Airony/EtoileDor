@@ -20,7 +20,7 @@ export function getTimeRange(
     incrementMinutes: number,
 ): number[] {
     return Array.from({
-        length: (endMinutes - startMinutes) / incrementMinutes,
+        length: (endMinutes - startMinutes) / incrementMinutes + 1,
     }).map((_, index) => startMinutes + index * incrementMinutes);
 }
 

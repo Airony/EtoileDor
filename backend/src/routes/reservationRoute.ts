@@ -1,7 +1,7 @@
 import type { Request, Response, Express } from "express";
 import { Result, body, validationResult } from "express-validator";
 import payload from "payload";
-import { dateTimeToMinutesPastMidnight, getTimeRange } from "../utils/time";
+import { getTimeRange } from "../utils/time";
 import { queryTablesBySize } from "../utils/queryTables";
 import { validateReservationDay } from "../utils/validateReservationDay";
 import { calculateReservationTimeMinutes } from "../utils/calculateReservationTime";
@@ -71,14 +71,9 @@ async function reservationRoute(req: Request, res: Response) {
         });
     }
 
-    const reservationsStartMinutes =
-        dateTimeToMinutesPastMidnight(reservations_start);
-    const reservationsEndMinutes =
-        dateTimeToMinutesPastMidnight(reservations_end);
-
     const timeRange = getTimeRange(
-        reservationsStartMinutes,
-        reservationsEndMinutes,
+        reservations_start,
+        reservations_end,
         increment_minutes,
     );
 

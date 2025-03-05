@@ -1,4 +1,5 @@
 import { GlobalConfig } from "payload/types";
+import TimeInput from "../fields/TimeInput";
 
 export const reservationsConfig: GlobalConfig = {
     slug: "reservations_config",
@@ -6,33 +7,28 @@ export const reservationsConfig: GlobalConfig = {
     fields: [
         {
             name: "reservations_start",
-            type: "date",
+            type: "number",
             label: "Reservations Start",
             required: true,
             admin: {
-                date: {
-                    pickerAppearance: "timeOnly",
-                    timeIntervals: 15,
-                    timeFormat: "HH:mm",
+                components: {
+                    Field: TimeInput,
                 },
             },
         },
         {
             name: "reservations_end",
-            type: "date",
+            type: "number",
             label: "Reservations End",
             required: true,
             admin: {
-                date: {
-                    pickerAppearance: "timeOnly",
-                    timeIntervals: 15,
-                    timeFormat: "HH:mm",
+                components: {
+                    Field: TimeInput,
                 },
             },
-            validate: (value: string, { siblingData }) => {
+            validate: (value: number, { siblingData }) => {
                 return (
-                    new Date(value) >
-                        new Date(siblingData.reservations_start) ||
+                    value > siblingData.reservations_start ||
                     "End time must be after start time"
                 );
             },

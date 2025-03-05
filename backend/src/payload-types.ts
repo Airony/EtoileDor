@@ -249,8 +249,8 @@ export interface Deployment {
  */
 export interface ReservationsConfig {
     id: string;
-    reservations_start: string;
-    reservations_end: string;
+    reservations_start: number;
+    reservations_end: number;
     increment_minutes: number;
     max_party_size?: number | null;
     max_reservation_advance_days: number;

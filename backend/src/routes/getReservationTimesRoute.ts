@@ -1,7 +1,7 @@
 import findAvailableTimeSlots from "../utils/findAvailableTimeSlots";
 import { type Request, type Response, type Express } from "express";
 import { Result, query, validationResult } from "express-validator";
-import { dateTimeToMinutesPastMidnight, getTimeRange } from "../utils/time";
+import { getTimeRange } from "../utils/time";
 import { queryTablesBySize } from "../utils/queryTables";
 import queryReservationsByDay from "../utils/queryReservationsByDay";
 import { calculateReservationTimeMinutes } from "../utils/calculateReservationTime";
@@ -70,15 +70,10 @@ async function getReservationTimesRoute(req: Request, res: Response) {
         });
     }
 
-    const reservationsStartMinutes =
-        dateTimeToMinutesPastMidnight(reservations_start);
-    const reservationsEndMinutes =
-        dateTimeToMinutesPastMidnight(reservations_end);
-
     const reservationDuration = calculateReservationTimeMinutes(partySize);
     const timeRange = getTimeRange(
-        reservationsStartMinutes,
-        reservationsEndMinutes,
+        reservations_start,
+        reservations_end,
         increment_minutes,
     );
 

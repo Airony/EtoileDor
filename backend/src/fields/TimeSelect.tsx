@@ -1,11 +1,7 @@
 import type { ReservationsConfig } from "../payload-types";
 import React, { useState, useEffect } from "react";
 import { useField, SelectInput, Label } from "payload/components/forms";
-import {
-    dateTimeToMinutesPastMidnight,
-    getTimeRange,
-    minutesPastMidnightToTimeString,
-} from "../utils/time";
+import { getTimeRange, minutesPastMidnightToTimeString } from "../utils/time";
 import { Props } from "payload/components/fields/Number";
 import { ToastContainer, toast } from "react-toastify";
 type TimeSelectProps = Props;
@@ -34,15 +30,11 @@ const TimeSelect = ({
                     reservations_end,
                     increment_minutes,
                 } = (await response.json()) as ReservationsConfig;
-                const reservationsStartMinutes =
-                    dateTimeToMinutesPastMidnight(reservations_start);
-                const reservationsEndMinutes =
-                    dateTimeToMinutesPastMidnight(reservations_end);
 
                 setOptions(
                     getTimeRange(
-                        reservationsStartMinutes,
-                        reservationsEndMinutes,
+                        reservations_start,
+                        reservations_end,
                         increment_minutes,
                     ),
                 );

@@ -7,6 +7,11 @@ const beforeValdiateDayHook: FieldHook = ({ value }): Date => {
     return clearTimeComponent(new Date(value));
 };
 
+const afterReadDayHook: FieldHook<never, string, unknown> = ({ value }) => {
+    const date = new Date(value);
+    return date.toLocaleDateString().split("T")[0];
+};
+
 const Reservations: CollectionConfig = {
     slug: "reservations",
     fields: [
@@ -31,6 +36,7 @@ const Reservations: CollectionConfig = {
             required: true,
             hooks: {
                 beforeValidate: [beforeValdiateDayHook],
+                afterRead: [afterReadDayHook],
             },
         },
         {

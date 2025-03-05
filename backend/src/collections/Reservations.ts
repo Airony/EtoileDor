@@ -69,6 +69,12 @@ const Reservations: CollectionConfig = {
                     Cell: TimeDisplay,
                 },
             },
+            validate: (value: number, { siblingData }) => {
+                return (
+                    value > siblingData.start_time ||
+                    "End time must be after start time"
+                );
+            },
         },
         {
             name: "table",

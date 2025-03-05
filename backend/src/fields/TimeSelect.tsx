@@ -15,7 +15,9 @@ const TimeSelect = ({
     required = false,
     label,
 }: TimeSelectProps) => {
-    const { value, setValue } = useField<number>({ path });
+    const { value, setValue, showError, errorMessage } = useField<number>({
+        path,
+    });
     const [options, setOptions] = useState<number[]>([]);
 
     useEffect(() => {
@@ -64,6 +66,8 @@ const TimeSelect = ({
                 required={required}
             ></Label>
             <SelectInput
+                showError={showError}
+                errorMessage={errorMessage}
                 name={name}
                 path={path}
                 options={options.map((option) => ({

@@ -14,6 +14,7 @@ export interface Config {
         categories: Category;
         sub_categories: SubCategory;
         menu_items: MenuItem;
+        restaurant_tables: RestaurantTable;
         "payload-preferences": PayloadPreference;
         "payload-migrations": PayloadMigration;
     };
@@ -22,6 +23,7 @@ export interface Config {
         contact_info: ContactInfo;
         offers: Offer;
         deployment: Deployment;
+        reservations_config: ReservationsConfig;
     };
 }
 /**
@@ -51,8 +53,25 @@ export interface Reservation {
     first_name: string;
     last_name: string;
     tel: string;
-    date: string;
-    party_size: string;
+    day: string;
+    start_time: number;
+    end_time: number;
+    table: {
+        relationTo: "restaurant_tables";
+        value: string | RestaurantTable;
+    };
+    party_size: number;
+    updatedAt: string;
+    createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "restaurant_tables".
+ */
+export interface RestaurantTable {
+    id: string;
+    number: number;
+    capacity: number;
     updatedAt: string;
     createdAt: string;
 }
@@ -221,6 +240,20 @@ export interface Offer {
  */
 export interface Deployment {
     id: string;
+    updatedAt?: string | null;
+    createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "reservations_config".
+ */
+export interface ReservationsConfig {
+    id: string;
+    reservations_start: number;
+    reservations_end: number;
+    increment_minutes: number;
+    max_party_size?: number | null;
+    max_reservation_advance_days: number;
     updatedAt?: string | null;
     createdAt?: string | null;
 }

@@ -1,9 +1,7 @@
-import { Button, Form } from "react-aria-components";
+import { Button, Form, type DateValue } from "react-aria-components";
 import TextInput from "../../components/TextInput";
-import SelectMenu from "../../components/SelectMenu";
+import SelectMenu, { type Option } from "../../components/SelectMenu";
 import MyDatePicker from "../../components/MyDatePicker";
-import { today } from "@internationalized/date";
-import { TimeOptions, PartySizeOptions } from "shared";
 import React, {
     useCallback,
     useLayoutEffect,
@@ -14,6 +12,8 @@ import React, {
 import { MoonLoader } from "react-spinners";
 import tailwindConfig from "../../../tailwind.config";
 import resolveConfig from "tailwindcss/resolveConfig";
+import useDataFetch from "../../hooks/useDataFetch";
+import { parseDate } from "@internationalized/date";
 
 interface submitState {
     loading: boolean;
@@ -45,12 +45,33 @@ function submitStateReducer(state: submitState, action: submitAction) {
 }
 
 function MyForm() {
-    const minimumDate = today(Intl.DateTimeFormat().resolvedOptions().timeZone);
     const [submitState, dispatch] = useReducer(submitStateReducer, {
         loading: false,
         error: false,
         success: false,
     });
+    const [selectedDay, setSelectedDay] = useState<DateValue | null>(null);
+    const [selectedTime, setSelectedTime] = useState<number | null>(null);
+    const [partySize, setPartySize] = useState<number | null>(null);
+
+    const allowedOptionsFetch = useDataFetch<{
+        minDay: string;
+        maxDay: string;
+        maxPartySize: number;
+    }>(`${import.meta.env.PUBLIC_API_URL}/allowedReservationOptions`);
+
+    const reservationTimesFetchUrl =
+        partySize && selectedDay
+            ? `${import.meta.env.PUBLIC_API_URL}/reservationTimes?day=${selectedDay.toString().split("T")[0]}&party-size=${partySize}`
+            : null;
+    const reservationTimesFetch = useDataFetch<number[]>(
+        reservationTimesFetchUrl,
+        {
+            onStart: useCallback(() => {
+                setSelectedTime(null);
+            }, []),
+        },
+    );
 
     const [spinnerSize, setSpinnerSize] = useState(21);
     const submitBtnRef = useRef<HTMLButtonElement>(null);
@@ -73,13 +94,6 @@ function MyForm() {
         setSpinnerSize(newSize);
     }, [submitBtnRef]);
 
-    function validateNumber(num: string) {
-        if (num.length === 10 && !isNaN(Number(num))) {
-            return null;
-        }
-        return "Invalid Number";
-    }
-
     async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
         const form = event.currentTarget;
@@ -98,24 +112,48 @@ function MyForm() {
                     body: JSON.stringify(data),
                 },
             );
-            if (response.status !== 200) {
+            if (!response.ok) {
                 throw new Error("Failed to submit form");
             }
             dispatch({ type: submitActionKind.SUCCESS });
+            setPartySize(null);
+            setSelectedDay(null);
+            reservationTimesFetch.setFetchData(null);
         } catch (error) {
             dispatch({ type: submitActionKind.ERROR });
+            reservationTimesFetch.refetch();
         }
+        setSelectedTime(null);
     }
+
+    const isLoading =
+        allowedOptionsFetch.isLoading ||
+        submitState.loading ||
+        reservationTimesFetch.isLoading;
+
+    if (allowedOptionsFetch.isError) {
+        return (
+            <p
+                className={`mt-4 w-full text-center text-sm text-red-500 sm:text-base xl:text-lg`}
+            >
+                Failed to load the form, please refresh the page. Call us if the
+                issue persists.
+            </p>
+        );
+    }
+
     return (
         <div className="relative isolate mx-auto max-w-96 p-4 sm:max-w-[800px]">
-            {submitState.loading && (
-                <>
-                    <div
-                        className={
-                            "absolute inset-0 z-10 bg-primary-900 opacity-30"
-                        }
-                    />
-                </>
+            {isLoading && (
+                <div
+                    className={
+                        "absolute inset-0 z-10 flex items-center justify-center bg-primary-900/50"
+                    }
+                >
+                    <p className="font-main text-base text-primary-100">
+                        Loading
+                    </p>
+                </div>
             )}
 
             <Form
@@ -144,38 +182,83 @@ function MyForm() {
                         type="tel"
                         autoComplete="tel-national"
                         isRequired
-                        validate={validateNumber}
-                        isDisabled={submitState.loading}
-                    />
-                    <MyDatePicker
-                        label="Date"
-                        name={"date"}
-                        minValue={minimumDate}
-                        className={"sm:col-start-1 sm:row-start-3"}
-                        isRequired
-                        isDisabled={submitState.loading}
-                    />
-                    <SelectMenu
-                        label="Time"
-                        options={TimeOptions}
-                        isRequired
-                        className={"sm:col-start-2 sm:row-start-3"}
-                        name="time"
+                        validate={validatePhoneNumber}
                         isDisabled={submitState.loading}
                     />
                     <SelectMenu
                         label="Party Size"
-                        options={PartySizeOptions}
-                        className="sm:row-start-4"
                         isRequired
                         name="party-size"
-                        isDisabled={submitState.loading}
-                    ></SelectMenu>
+                        isDisabled={isLoading}
+                        selectedKey={partySize}
+                        onSelectionChange={(size) =>
+                            setPartySize(size as number)
+                        }
+                        options={Array.from({
+                            length: allowedOptionsFetch.data?.maxPartySize || 0,
+                        }).map((_, i) => {
+                            return {
+                                value: i + 1,
+                                label: `${i + 1}`,
+                            };
+                        })}
+                    />
+                    <MyDatePicker
+                        label="Date"
+                        name="day"
+                        minValue={
+                            allowedOptionsFetch.data
+                                ? parseDate(allowedOptionsFetch.data.minDay)
+                                : undefined
+                        }
+                        maxValue={
+                            allowedOptionsFetch.data
+                                ? parseDate(allowedOptionsFetch.data.maxDay)
+                                : undefined
+                        }
+                        isRequired
+                        isDisabled={isLoading}
+                        value={selectedDay}
+                        onChange={(date) => setSelectedDay(date)}
+                    />
+                    <div>
+                        <SelectMenu
+                            label="Time"
+                            options={
+                                reservationTimesFetch.data?.map(
+                                    (time): Option => {
+                                        return {
+                                            value: time,
+                                            label: stringifyTime(time),
+                                        };
+                                    },
+                                ) || []
+                            }
+                            isRequired
+                            name="time"
+                            selectedKey={selectedTime}
+                            onSelectionChange={(time) =>
+                                setSelectedTime(time as number)
+                            }
+                            isDisabled={
+                                isLoading ||
+                                reservationTimesFetch.data === null ||
+                                reservationTimesFetch.data.length === 0
+                            }
+                        />
+                        <p className="mt-4 text-sm text-red-500 sm:text-base xl:text-lg">
+                            {!reservationTimesFetch.isLoading &&
+                                reservationTimesFetch.data?.length === 0 &&
+                                "No available times for the selected day."}
+                            {reservationTimesFetch.isError &&
+                                "Failed to load available times for the selected day. Please try again."}
+                        </p>
+                    </div>
                 </div>
                 <Button
                     type="submit"
                     className="btn-primary btn-primary-md sm:btn-primary-lg w-full"
-                    isDisabled={submitState.loading}
+                    isDisabled={isLoading}
                     ref={submitBtnRef}
                 >
                     <span className="relative">
@@ -199,7 +282,7 @@ function MyForm() {
             </Form>
             {submitState.error && (
                 <p
-                    className={`mt-4 text-sm text-red-500 sm:text-base xl:text-lg ${submitState.error && ""}`}
+                    className={`mt-4 text-sm text-red-500 sm:text-base xl:text-lg`}
                 >
                     An error occured while submitting, please try again. Or call
                     us if the issue persists.
@@ -212,6 +295,19 @@ function MyForm() {
             )}
         </div>
     );
+}
+
+function stringifyTime(time: number) {
+    const hours = Math.floor(time / 60);
+    const mins = time % 60;
+    return `${hours}:${mins < 10 ? "0" : ""}${mins}`;
+}
+
+function validatePhoneNumber(num: string) {
+    if (num.length === 10 && !isNaN(Number(num))) {
+        return null;
+    }
+    return "Invalid Number";
 }
 
 export default MyForm;

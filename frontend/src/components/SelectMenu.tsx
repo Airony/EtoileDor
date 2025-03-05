@@ -14,7 +14,7 @@ import Arrow from "../icons/arrow-drop-down.svg?react";
 import MyFieldError from "./MyFieldError";
 
 export interface Option {
-    value: string;
+    value: string | number;
     label: string;
 }
 
@@ -29,12 +29,16 @@ interface SelectMenuProps<T extends object> extends SelectProps<T> {
 function SelectMenu<T extends object>({
     options,
     className = "",
+    isDisabled = false,
     ...props
 }: SelectMenuProps<T>) {
     return (
-        <Select className={"flex flex-col " + className} {...props}>
+        <Select className={`flex flex-col ${className}`} {...props}>
             <MyLabel>{props.label}</MyLabel>
-            <Button className="group flex w-full items-center justify-between border-2 border-primary-600 p-4 outline-none focus:border-secondary-400">
+            <Button
+                className={`${isDisabled ? "cursor-not-allowed opacity-50" : ""} group flex w-full items-center justify-between border-2 border-primary-600 p-4 outline-none focus:border-secondary-400`}
+                isDisabled={isDisabled}
+            >
                 <SelectValue className="font-main text-xs text-primary-300 xs:text-sm sm:text-base" />
                 <Arrow className="w-7 fill-primary-300 transition-transform duration-200 ease-out group-aria-expanded:rotate-180" />
             </Button>

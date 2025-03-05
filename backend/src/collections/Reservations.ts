@@ -1,5 +1,19 @@
-import { CollectionConfig } from "payload/types";
+import { CollectionConfig, FieldHook } from "payload/types";
 import { isAdmin } from "../accessControls";
+import TimeDisplay from "../components/TimeDisplay";
+import { clearTimeComponent } from "../utils/time";
+import DefaultCell from "../components/DefaultCell";
+import dayFieldFilter from "../fields/dayFieldFilter";
+import ReservationTimeSelect from "../fields/ReservationTimeSelect";
+
+const beforeValdiateDayHook: FieldHook = ({ value }): Date => {
+    return clearTimeComponent(new Date(value));
+};
+
+const afterReadDayHook: FieldHook<never, string, unknown> = ({ value }) => {
+    const date = new Date(value);
+    return date.toLocaleDateString().split("T")[0];
+};
 
 const Reservations: CollectionConfig = {
     slug: "reservations",
@@ -20,11 +34,57 @@ const Reservations: CollectionConfig = {
             required: true,
         },
         {
-            name: "date",
+            name: "day",
             type: "date",
             required: true,
+            admin: {
+                components: {
+                    Cell: DefaultCell,
+                    Filter: dayFieldFilter,
+                },
+            },
+            hooks: {
+                beforeValidate: [beforeValdiateDayHook],
+                afterRead: [afterReadDayHook],
+            },
         },
-        { name: "party_size", type: "text", required: true },
+        {
+            name: "start_time",
+            type: "number",
+            required: true,
+            admin: {
+                components: {
+                    Field: ReservationTimeSelect,
+                    Cell: TimeDisplay,
+                },
+            },
+        },
+        {
+            name: "end_time",
+            type: "number",
+            required: true,
+            admin: {
+                components: {
+                    Field: ReservationTimeSelect,
+                    Cell: TimeDisplay,
+                },
+            },
+            validate: (value: number, { siblingData }) => {
+                return (
+                    value > siblingData.start_time ||
+                    "End time must be after start time"
+                );
+            },
+        },
+        {
+            name: "table",
+            label: "Table",
+            type: "relationship",
+            relationTo: ["restaurant_tables"],
+            hasMany: false,
+            required: true,
+        },
+        { name: "party_size", type: "number", min: 1, required: true },
     ],
     access: {
         update: isAdmin,

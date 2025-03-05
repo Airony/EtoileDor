@@ -1,4 +1,7 @@
-FROM node:18-alpine AS build
+FROM node:18-alpine AS base
+RUN apk add --no-cache tzdata
+
+FROM base AS build
 WORKDIR /app
 COPY backend/package*.json ./backend/
 COPY ./shared ./shared
@@ -9,7 +12,7 @@ COPY ./backend ./
 RUN ls -la
 RUN npm run build
 
-FROM node:18-alpine AS production
+FROM base AS production
 WORKDIR /app
 RUN npm config set registry https://registry.npmjs.org/
 COPY --from=build /app/backend/package*.json ./backend/
@@ -23,7 +26,7 @@ RUN npm ci --omit=dev
 RUN chmod +x ./entrypoint_overwrited.sh
 ENTRYPOINT source entrypoint_overwrited.sh
 
-FROM node:18-alpine AS development
+FROM base AS development
 WORKDIR /app/backend
 RUN npm config set registry https://registry.npmjs.org/
 CMD npm install && npm run dev

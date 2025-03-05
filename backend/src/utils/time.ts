@@ -23,3 +23,10 @@ export function getTimeRange(
         length: (endMinutes - startMinutes) / incrementMinutes,
     }).map((_, index) => startMinutes + index * incrementMinutes);
 }
+
+/**
+ * Resets the time of a date object to midnight.
+ */
+export function clearTimeComponent(date: Date) {
+    return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+}

@@ -19,7 +19,7 @@ const contanctInfo: ContactInfo = await response.json();
 </style>
 <footer class="pdx pdy bg-primary-1000">
     <div
-        class="mx-auto flex w-fit flex-row flex-wrap gap-x-14 nmd:gap-x-32 nlg:gap-48 gap-y-6 font-main"
+        class="mx-auto flex w-fit flex-row flex-wrap gap-x-14 gap-y-6 font-main nmd:gap-x-32 nlg:gap-48"
     >
         <div class="">
             <p class="title">Contact</p>
@@ -38,7 +38,11 @@ const contanctInfo: ContactInfo = await response.json();
                         ))
                     }
                 </ul>
-                <Icon name="mail" class="mt-1 nmd:mt-[2px] nlg:mt-1 icon" aria-label="Email" />
+                <Icon
+                    name="mail"
+                    class="icon mt-1 nmd:mt-[2px] nlg:mt-1"
+                    aria-label="Email"
+                />
                 <p class="text-primary-300">{contanctInfo.email}<p></p></p>
             </div>
         </div>
@@ -49,13 +53,18 @@ const contanctInfo: ContactInfo = await response.json();
             >
                 {contanctInfo.address}
             </p>
-            <iframe
-                src={contanctInfo.google_maps_link}
-                style="border:0;"
-                class="max-w-full"
-                allowfullscreen=""
-                loading="lazy"
-                referrerpolicy="no-referrer-when-downgrade"></iframe>
+            {
+                contanctInfo.google_maps_link && (
+                    <iframe
+                        src={contanctInfo.google_maps_link}
+                        style="border:0;"
+                        class="max-w-full"
+                        allowfullscreen=""
+                        loading="lazy"
+                        referrerpolicy="no-referrer-when-downgrade"
+                    />
+                )
+            }
         </div>
     </div>
 </footer>

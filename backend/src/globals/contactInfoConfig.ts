@@ -41,7 +41,6 @@ const contantInfoConfig: GlobalConfig = {
             name: "google_maps_link",
             label: "Google Maps Link",
             type: "text",
-            required: true,
         },
     ],
 };

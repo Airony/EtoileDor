@@ -216,7 +216,7 @@ export interface ContactInfo {
     }[];
     email: string;
     address: string;
-    google_maps_link: string;
+    google_maps_link?: string | null;
     updatedAt?: string | null;
     createdAt?: string | null;
 }

@@ -2,6 +2,7 @@ import { CollectionConfig, FieldHook } from "payload/types";
 import { isAdmin } from "../accessControls";
 import TimeDisplay from "../components/TimeDisplay";
 import { clearTimeComponent } from "../utils/time";
+import DefaultCell from "../components/DefaultCell";
 
 const beforeValdiateDayHook: FieldHook = ({ value }): Date => {
     return clearTimeComponent(new Date(value));
@@ -34,6 +35,11 @@ const Reservations: CollectionConfig = {
             name: "day",
             type: "date",
             required: true,
+            admin: {
+                components: {
+                    Cell: DefaultCell,
+                },
+            },
             hooks: {
                 beforeValidate: [beforeValdiateDayHook],
                 afterRead: [afterReadDayHook],

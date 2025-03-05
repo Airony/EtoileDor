@@ -30,3 +30,9 @@ export function getTimeRange(
 export function clearTimeComponent(date: Date) {
     return new Date(date.getFullYear(), date.getMonth(), date.getDate());
 }
+
+export function minutesPastMidnightToTimeString(time: number) {
+    const hours = Math.floor(time / 60);
+    const mins = time % 60;
+    return `${hours}:${mins < 10 ? "0" : ""}${mins}`;
+}

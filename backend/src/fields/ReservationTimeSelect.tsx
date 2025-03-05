@@ -4,13 +4,13 @@ import { useField, SelectInput, Label } from "payload/components/forms";
 import { getTimeRange, minutesPastMidnightToTimeString } from "../utils/time";
 import { Props } from "payload/components/fields/Number";
 import { ToastContainer, toast } from "react-toastify";
-type TimeSelectProps = Props;
-const TimeSelect = ({
+type ReservationTimeSelectProps = Props;
+const ReservationTimeSelect = ({
     path,
     name,
     required = false,
     label,
-}: TimeSelectProps) => {
+}: ReservationTimeSelectProps) => {
     const { value, setValue, showError, errorMessage } = useField<number>({
         path,
     });
@@ -76,4 +76,4 @@ const TimeSelect = ({
     );
 };
 
-export default TimeSelect;
+export default ReservationTimeSelect;

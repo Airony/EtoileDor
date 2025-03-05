@@ -4,7 +4,7 @@ import TimeDisplay from "../components/TimeDisplay";
 import { clearTimeComponent } from "../utils/time";
 import DefaultCell from "../components/DefaultCell";
 import dayFieldFilter from "../fields/dayFieldFilter";
-import TimeSelect from "../fields/TimeSelect";
+import ReservationTimeSelect from "../fields/ReservationTimeSelect";
 
 const beforeValdiateDayHook: FieldHook = ({ value }): Date => {
     return clearTimeComponent(new Date(value));
@@ -54,7 +54,7 @@ const Reservations: CollectionConfig = {
             required: true,
             admin: {
                 components: {
-                    Field: TimeSelect,
+                    Field: ReservationTimeSelect,
                     Cell: TimeDisplay,
                 },
             },
@@ -65,7 +65,7 @@ const Reservations: CollectionConfig = {
             required: true,
             admin: {
                 components: {
-                    Field: TimeSelect,
+                    Field: ReservationTimeSelect,
                     Cell: TimeDisplay,
                 },
             },

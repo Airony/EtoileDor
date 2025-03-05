@@ -1,6 +1,11 @@
-import { CollectionConfig } from "payload/types";
+import { CollectionConfig, FieldHook } from "payload/types";
 import { isAdmin } from "../accessControls";
 import TimeDisplay from "../components/TimeDisplay";
+import { clearTimeComponent } from "../utils/time";
+
+const beforeValdiateDayHook: FieldHook = ({ value }): Date => {
+    return clearTimeComponent(new Date(value));
+};
 
 const Reservations: CollectionConfig = {
     slug: "reservations",
@@ -24,10 +29,8 @@ const Reservations: CollectionConfig = {
             name: "day",
             type: "date",
             required: true,
-            admin: {
-                date: {
-                    pickerAppearance: "dayOnly",
-                },
+            hooks: {
+                beforeValidate: [beforeValdiateDayHook],
             },
         },
         {

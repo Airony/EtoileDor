@@ -1,4 +1,5 @@
 import { Payload } from "payload";
+import { clearTimeComponent } from "./time";
 
 /**
  * Queries reservations by a specific day.
@@ -12,12 +13,13 @@ export default async function queryReservationsByDay(
     day: string,
     tableIds: string[],
 ) {
+    const date = clearTimeComponent(new Date(day));
     return (
         await payload.find({
             collection: "reservations",
             where: {
                 day: {
-                    equals: day,
+                    equals: date.toISOString(),
                 },
                 "table.value": {
                     in: tableIds,

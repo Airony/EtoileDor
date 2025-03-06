@@ -15,6 +15,7 @@ export const reservationsConfig: GlobalConfig = {
                     Field: TimeInput,
                 },
             },
+            defaultValue: 11 * 60, // 11:00
         },
         {
             name: "reservations_end",
@@ -32,6 +33,7 @@ export const reservationsConfig: GlobalConfig = {
                     "End time must be after start time"
                 );
             },
+            defaultValue: 21 * 60, // 21:00
         },
         {
             name: "increment_minutes",
@@ -40,12 +42,14 @@ export const reservationsConfig: GlobalConfig = {
             required: true,
             min: 1,
             max: 60 * 24 - 1,
+            defaultValue: 30,
         },
         {
             name: "max_party_size",
             type: "number",
             label: "Max Party Size",
             min: 0,
+            defaultValue: 15,
         },
         {
             name: "max_reservation_advance_days",
@@ -53,6 +57,7 @@ export const reservationsConfig: GlobalConfig = {
             label: "Max Reservation Advance Days",
             min: 1,
             required: true,
+            defaultValue: 30,
         },
     ],
 };

@@ -24,18 +24,25 @@ const contantInfoConfig: GlobalConfig = {
                     required: true,
                 },
             ],
+            defaultValue: [
+                {
+                    phone_number: 1234567890,
+                },
+            ],
         },
         {
             name: "email",
             label: "Email",
             type: "email",
             required: true,
+            defaultValue: "contact@example.com",
         },
         {
             name: "address",
             label: "Address",
             type: "text",
             required: true,
+            defaultValue: "Example Address",
         },
         {
             name: "google_maps_link",

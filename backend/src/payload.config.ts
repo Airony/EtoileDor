@@ -2,7 +2,6 @@ import { webpackBundler } from "@payloadcms/bundler-webpack";
 import { mongooseAdapter } from "@payloadcms/db-mongodb";
 import { slateEditor } from "@payloadcms/richtext-slate";
 import { buildConfig } from "payload/config";
-import menuConfig from "./globals/menuConfig";
 import path from "path";
 import Users from "./collections/Users";
 import contactInfoConfig from "./globals/contactInfoConfig";
@@ -55,7 +54,6 @@ export default buildConfig({
         declare: false,
     },
     globals: [
-        menuConfig,
         contactInfoConfig,
         offersConfig,
         deploymentConfig,

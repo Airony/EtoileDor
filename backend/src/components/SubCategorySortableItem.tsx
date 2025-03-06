@@ -45,8 +45,8 @@ function SubCategorySortableItem({
                     <Button
                         icon={<MoreIcon />}
                         buttonStyle="icon-label"
+                        size="small"
                         onClick={() => openModal(modalId)}
-                        className="category-order__sub-category__more"
                     />
                 </div>
             </div>

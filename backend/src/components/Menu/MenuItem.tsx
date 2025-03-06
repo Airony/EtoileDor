@@ -1,14 +1,14 @@
 import { useSortable } from "@dnd-kit/sortable";
 import React, { useEffect } from "react";
-import DragHandle from "./DragHandle";
+import DragHandle from "../DragHandle";
 import { CSS } from "@dnd-kit/utilities";
 import { Button } from "payload/components/elements";
 import MoreIcon from "payload/dist/admin/components/icons/More";
 import MenuItemInput from "./MenuItemInput";
 import MenuItemOptionsModal from "./MenuItemOptionsModal";
 import { useModal } from "@faceless-ui/modal";
-import { useMenuQuery } from "../views/fetches";
-import useEditMenuItem from "../reactHooks/useEditMenuItem";
+import { useMenuQuery } from "../../views/fetches";
+import useEditMenuItem from "../../reactHooks/useEditMenuItem";
 
 interface MenuItemProps {
     id: string;

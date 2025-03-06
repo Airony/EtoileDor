@@ -2,8 +2,8 @@ import React, { useEffect } from "react";
 import MenuItemList from "./MenuItemList";
 import { Button } from "payload/components/elements";
 import MenuItemInput from "./MenuItemInput";
-import { useInputMenuItem } from "../reactHooks/useInputMenuItem";
-import { useMenuQuery } from "../views/fetches";
+import { useInputMenuItem } from "../../reactHooks/useInputMenuItem";
+import { useMenuQuery } from "../../views/fetches";
 
 interface SubCategoryProps {
     id: string;

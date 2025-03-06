@@ -27,10 +27,10 @@ import {
     useMutation,
     useQueryClient,
 } from "@tanstack/react-query";
-import { debouncePromise } from "../utils/debouncePromise";
-import { CategoriesQueryData, useMenuQuery } from "../views/fetches";
+import { debouncePromise } from "../../utils/debouncePromise";
+import { CategoriesQueryData, useMenuQuery } from "../../views/fetches";
 import { nanoid } from "nanoid";
-import checkForFutureMutation from "../utils/checkForFutureMutation";
+import checkForFutureMutation from "../../utils/checkForFutureMutation";
 
 const debouncedOrderUpdate = debouncePromise(
     async (newOrder: string[]) => {

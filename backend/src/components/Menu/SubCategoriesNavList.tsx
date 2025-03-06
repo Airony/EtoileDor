@@ -16,8 +16,8 @@ import {
     restrictToVerticalAxis,
     restrictToParentElement,
 } from "@dnd-kit/modifiers";
-import { CategoriesQueryData, useMenuQuery } from "../views/fetches";
-import { debouncePromise } from "../utils/debouncePromise";
+import { CategoriesQueryData, useMenuQuery } from "../../views/fetches";
+import { debouncePromise } from "../../utils/debouncePromise";
 import {
     CancelledError,
     useMutation,
@@ -25,8 +25,8 @@ import {
 } from "@tanstack/react-query";
 import { nanoid } from "nanoid";
 import { toast } from "react-toastify";
-import checkForFutureMutation from "../utils/checkForFutureMutation";
-import mapSet from "../utils/mapSet";
+import checkForFutureMutation from "../../utils/checkForFutureMutation";
+import mapSet from "../../utils/mapSet";
 
 interface SubCategoriesListProps {
     sensors: SensorDescriptor<SensorOptions>[];

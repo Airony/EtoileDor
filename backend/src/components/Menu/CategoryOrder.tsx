@@ -3,10 +3,10 @@ import { DefaultTemplate } from "payload/components/templates";
 import { Gutter } from "payload/components/elements";
 import { LoadingOverlayToggle } from "payload/dist/admin/components/elements/Loading";
 import { ToastContainer } from "react-toastify";
-import MenuSideBar from "../components/MenuSideBar";
+import MenuSideBar from "./MenuSideBar";
 import { ModalContainer, ModalProvider } from "@faceless-ui/modal";
-import CategoriesList from "../components/CategoriesList";
-import { useMenuQuery } from "../views/fetches";
+import CategoriesList from "./CategoriesList";
+import { useMenuQuery } from "../../views/fetches";
 
 function CategoryOrder() {
     const { isLoading } = useMenuQuery();

@@ -1,6 +1,6 @@
 import React from "react";
 import Category from "./Category";
-import { useMenuQuery } from "../views/fetches";
+import { useMenuQuery } from "../../views/fetches";
 function CategoriesList() {
     const { data } = useMenuQuery();
 

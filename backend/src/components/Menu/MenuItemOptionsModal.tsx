@@ -11,11 +11,11 @@ import {
     MenuItemsQueryData,
     SubCategoriesQueryData,
     useMenuQuery,
-} from "../views/fetches";
+} from "../../views/fetches";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import mapSet from "../utils/mapSet";
+import mapSet from "../../utils/mapSet";
 import { MenuItemListContext } from "./MenuItemList";
-import useEditMenuItem from "../reactHooks/useEditMenuItem";
+import useEditMenuItem from "../../reactHooks/useEditMenuItem";
 
 interface MenuItemOptionsModalProps {
     id: string;

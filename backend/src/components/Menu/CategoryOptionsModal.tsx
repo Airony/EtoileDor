@@ -4,10 +4,10 @@ import { Button } from "payload/components/elements";
 import { TextInput } from "payload/components/forms";
 import DeleteModal from "./DeleteModal";
 import { toast } from "react-toastify";
-import { CategoriesQueryData, useMenuQuery } from "../views/fetches";
+import { CategoriesQueryData, useMenuQuery } from "../../views/fetches";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import mapSet from "../utils/mapSet";
-import checkForFutureMutation from "../utils/checkForFutureMutation";
+import mapSet from "../../utils/mapSet";
+import checkForFutureMutation from "../../utils/checkForFutureMutation";
 import { nanoid } from "nanoid";
 
 interface CategoryOptionsModalProps {

@@ -8,11 +8,11 @@ import {
     CategoriesQueryData,
     SubCategoriesQueryData,
     useMenuQuery,
-} from "../views/fetches";
-import mapSet from "../utils/mapSet";
+} from "../../views/fetches";
+import mapSet from "../../utils/mapSet";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { nanoid } from "nanoid";
-import checkForFutureMutation from "../utils/checkForFutureMutation";
+import checkForFutureMutation from "../../utils/checkForFutureMutation";
 import { LoadingOverlay } from "payload/dist/admin/components/elements/Loading";
 
 interface SubCategoryOptionsModalProps {

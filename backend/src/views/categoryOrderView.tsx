@@ -4,7 +4,7 @@ import { AdminViewComponent } from "payload/config";
 import { DefaultTemplate } from "payload/components/templates";
 import { Redirect } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import CategoryOrder from "../components/CategoryOrder";
+import CategoryOrder from "../components/Menu/CategoryOrder";
 
 const categoryOrderView: AdminViewComponent = ({ user }) => {
     if (user) {

@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import DragHandle from "./DragHandle";
+import DragHandle from "../DragHandle";
 import { SensorDescriptor, SensorOptions } from "@dnd-kit/core";
 import { Button } from "payload/components/elements";
 import { Chevron } from "payload/components/icons";
@@ -15,9 +15,9 @@ import {
     CategoriesQueryData,
     SubCategoriesQueryData,
     useMenuQuery,
-} from "../views/fetches";
+} from "../../views/fetches";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import mapSet from "../utils/mapSet";
+import mapSet from "../../utils/mapSet";
 
 interface CategorySortableItemProps {
     id: string;

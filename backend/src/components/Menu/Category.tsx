@@ -3,8 +3,8 @@ import MenuItemList from "./MenuItemList";
 import { Button } from "payload/components/elements";
 import MenuItemInput from "./MenuItemInput";
 import SubCategory from "./SubCategory";
-import { useInputMenuItem } from "../reactHooks/useInputMenuItem";
-import { useMenuQuery } from "../views/fetches";
+import { useInputMenuItem } from "../../reactHooks/useInputMenuItem";
+import { useMenuQuery } from "../../views/fetches";
 
 interface CategoryProps {
     id: string;

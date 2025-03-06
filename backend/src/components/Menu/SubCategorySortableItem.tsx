@@ -1,12 +1,12 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import React from "react";
-import DragHandle from "./DragHandle";
+import DragHandle from "../DragHandle";
 import { useModal } from "@faceless-ui/modal";
 import { Button } from "payload/components/elements";
 import MoreIcon from "payload/dist/admin/components/icons/More";
 import SubCategoryOptionsModal from "./SubCategoryOptionsModal";
-import { useMenuQuery } from "../views/fetches";
+import { useMenuQuery } from "../../views/fetches";
 
 interface SubCategorySortableItemProps {
     id: string;

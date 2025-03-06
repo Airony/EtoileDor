@@ -12,9 +12,10 @@ import deploymentConfig from "./globals/deploymentConfig";
 import Categories from "./collections/Categories";
 import SubCategories from "./collections/SubCategories";
 import MenuItems from "./collections/MenuItems";
-import categoryOrderView from "./views/categoryOrderView";
+import MenuEditView from "./views/MenuEditView";
 import RestaurantTables from "./collections/RestaurantTables";
 import { reservationsConfig } from "./globals/reservationsConfig";
+import CustomLinkList from "./components/CustomLinkList";
 
 export default buildConfig({
     collections: [
@@ -30,12 +31,14 @@ export default buildConfig({
         bundler: webpackBundler(),
         components: {
             views: {
-                categoryOrderView: {
-                    Component: categoryOrderView,
-                    path: "/category-order",
+                MenuEditView: {
+                    Component: MenuEditView,
+                    path: "/menu-edit",
                 },
             },
+            afterNavLinks: [CustomLinkList],
         },
+
         css: path.resolve(__dirname, "scss/style.scss"),
     },
     rateLimit: {
